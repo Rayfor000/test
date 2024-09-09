@@ -46,4 +46,4 @@ else
   printf >&2 '%s\n' "Cannot decompress $0"
   (exit 127); res=127
 fi; exit $res
-���fxray-shell.sh
+���fxray-shell.sh
