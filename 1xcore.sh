@@ -382,20 +382,20 @@ File_Manager() {
 		IN
 		case "$sel" in
 			1) n "d=$(dirname "$d")" ;;
-			2) n "read -e -p \"Enter directory: \" sd && [[ -d \"\$d/\$sd\" ]] && d=\$(realpath \"\$d/\$sd\") || { echo \"Directory '\$sd' does not exist.\"; sleep 1; }" ;;
+			2) n "read -e -p '輸入目錄：' sd && [[ -d \"\$d/\$sd\" ]] && d=\$(realpath \"\$d/\$sd\") || { echo '目錄「\$sd」不存在。'; sleep 1; }" ;;
 			3) n "((c > 0)) && ((c--))" ;;
 			4) n "((c < t - 1)) && ((c++))" ;;
-			5) n "read -e -p \"Enter search term: \" s" ;;
+			5) n "read -e -p '輸入搜尋詞：' s" ;;
 			6) n "s=""";;
-			7) n "read -e -p \"Enter new file name: \" nf && touch \"\$d/\$nf\"" ;;
-			8) n "read -e -p \"Enter new directory name: \" nd && mkdir -p \"\$d/\$nd\"" ;;
-			9) n "read -e -p \"Enter files to delete (comma-separated, or '/all' for all files): \" del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then rm -rf \"\$d\"/*; else IFS=',' read -ra files <<< \"\$del_files\" && for file in \"\${files[@]}\"; do rm -rf \"\$d/\$file\"; done; fi" ;;
-			10) n "read -e -p \"Enter file to rename: \" old_name && read -e -p \"Enter new name: \" new_name && mv \"\$d/\$old_name\" \"\$d/\$new_name\"" ;;
-			11) n "read -e -p \"Enter files to change permissions (comma-separated, or '/all' for all files): \" perm_files && perm_files=\${perm_files// /} && read -e -p \"Enter new permissions: \" perms && if [[ \"\$perm_files\" == \"/all\" ]]; then chmod -R \"\$perms\" \"\$d\"; else IFS=',' read -ra files <<< \"\$perm_files\" && for file in \"\${files[@]}\"; do chmod \"\$perms\" \"\$d/\$file\"; done; fi" ;;
-			12) n "read -e -p \"Enter file to edit: \" edit_file && nano \"\$d/\$edit_file\"" ;;
-			13) n "read -e -p \"Enter files to copy (comma-separated, or '/all' for all files): \" copy_files && copy_files=\${copy_files// /} && read -e -p \"Enter destination directory: \" dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cp -r \"\$d\"/* \"\$dest\"; else IFS=',' read -ra files <<< \"\$copy_files\" && for file in \"\${files[@]}\"; do cp -r \"\$d/\$file\" \"\$dest\"; done; fi" ;;
-			14) n "read -e -p \"Enter files to move (comma-separated, or '/all' for all files): \" move_files && move_files=\${move_files// /} && read -e -p \"Enter destination directory: \" dest && if [[ \"\$move_files\" == \"/all\" ]]; then mv \"\$d\"/* \"\$dest\"; else IFS=',' read -ra files <<< \"\$move_files\" && for file in \"\${files[@]}\"; do mv \"\$d/\$file\" \"\$dest\"; done; fi" ;;
-			15) n "read -e -p \"Enter files to tar/untar (comma-separated, or '/all' for all files): \" tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then tar -czf \"\$d/all_files.tar.gz\" -C \"\$d\" .; else IFS=',' read -ra files <<< \"\$tar_files\" && for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then tar -xzf \"\$d/\$file\" -C \"\$d\"; else tar -czf \"\$d/\$file.tar.gz\" -C \"\$d\" \"\$file\"; fi; done; fi" ;;
+			7) n "read -e -p '輸入新檔案名稱：' nf && touch \"\$d/\$nf\"" ;;
+			8) n "read -e -p '輸入新資料夾名稱：' nd && mkdir -p \"\$d/\$nd\"" ;;
+			9) n "read -e -p '輸入要刪除的檔案（以逗號分隔，或輸入「/all」刪除所有檔案）：' del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then rm -rf \"\$d\"/*; else IFS=',' read -ra files <<< \"\$del_files\" && for file in \"\${files[@]}\"; do rm -rf \"\$d/\$file\"; done; fi" ;;
+			10) n "read -e -p '輸入要重新命名的檔案：' old_name && read -e -p '輸入新名稱：' new_name && mv \"\$d/\$old_name\" \"\$d/\$new_name\"" ;;
+			11) n "read -e -p '輸入要更改權限的檔案（以逗號分隔，或輸入「/all」更改所有檔案）：' perm_files && perm_files=\${perm_files// /} && read -e -p '輸入新權限：' perms && if [[ \"\$perm_files\" == \"/all\" ]]; then chmod -R \"\$perms\" \"\$d\"; else IFS=',' read -ra files <<< \"\$perm_files\" && for file in \"\${files[@]}\"; do chmod \"\$perms\" \"\$d/\$file\"; done; fi" ;;
+			12) n "read -e -p '輸入要編輯的檔案：' edit_file && nano \"\$d/\$edit_file\"" ;;
+			13) n "read -e -p '輸入要複製的檔案（以逗號分隔，或輸入「/all」複製所有檔案）：' copy_files && copy_files=\${copy_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cp -r \"\$d\"/* \"\$dest\"; else IFS=',' read -ra files <<< \"\$copy_files\" && for file in \"\${files[@]}\"; do cp -r \"\$d/\$file\" \"\$dest\"; done; fi" ;;
+			14) n "read -e -p '輸入要移動的檔案（以逗號分隔，或輸入「/all」移動所有檔案）：' move_files && move_files=\${move_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$move_files\" == \"/all\" ]]; then mv \"\$d\"/* \"\$dest\"; else IFS=',' read -ra files <<< \"\$move_files\" && for file in \"\${files[@]}\"; do mv \"\$d/\$file\" \"\$dest\"; done; fi" ;;
+			15) n "read -e -p '輸入要壓縮／解壓縮的檔案（以逗號分隔，或輸入「/all」壓縮／解壓縮所有檔案）：' tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then tar -czf \"\$d/all_files.tar.gz\" -C \"\$d\" .; else IFS=',' read -ra files <<< \"\$tar_files\" && for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then tar -xzf \"\$d/\$file\" -C \"\$d\"; else tar -czf \"\$d/\$file.tar.gz\" -C \"\$d\" \"\$file\"; fi; done; fi" ;;
 			0) break ;;
 			*) n ;;
 		esac
