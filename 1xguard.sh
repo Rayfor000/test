@@ -99,37 +99,37 @@ Run_ACT() {
 }
 
 Copyright() {
-    C $(printf '%*s' "56" '' | tr ' ' "=")
-    Y "\e[1mOG|OS OGATA-Open-Source"
-    C $(printf '%*s' "56" '' | tr ' ' "-")
-    echo "Copyright (C) 2024 OG|OS OGATA-Open-Source. All Rights Reserved."
-    echo "Licensed under the MIT License."
-    C $(printf '%*s' "56" '' | tr ' ' "-")
-    echo
-    G "\e[1mCopyright Notice"
-    C $(printf '%*s' "56" '' | tr ' ' "-")
-    echo "This script and its related files are developed and maintained by the OG|OS OGATA-Open-Source team,"
-    echo "for automated operations in system management, monitoring, and related tools."
-    echo
-    Y "\e[1mLicense Terms:"
-    echo
-    echo "This script is released under the $(echo -e "\e[36m\e[1mMIT License\e[0m"). You are free to use, modify, distribute, and reissue this software under the following terms:"
-    echo
-    echo "1. $(C "\e[1mSource Code Retention"): This copyright notice and the original author information must be retained. Any form of reissue must include this license statement."
-    echo
-    echo "2. $(C "\e[1mNo Warranty"): This software is provided 'as is', and OG|OS OGATA-Open-Source is not responsible for any issues or damages arising from its use."
-    echo
-    echo "3. $(C "\e[1mUsage Restrictions"): It can be used for personal, commercial, or academic purposes, but the authors and source of this software must be clearly stated."
-    echo
-    echo "4. $(C "\e[1mContributor License"): Modified versions can be made public, but the original information must be retained, and personal copyright statements may be added."
-    echo
-    Y "\e[1mDisclaimer:"
-    echo
-    echo "Use of this software is at your own risk. OG|OS OGATA-Open-Source or its contributors are not liable for any damages resulting from the use of this software."
-    echo
-    echo "For more information, please visit:"
-    echo -e "\e[36m\e[1mOG|OS OGATA-Open-Source GitHub page: https://github.com/OG-Open-Source\e[0m"
-    C $(printf '%*s' "56" '' | tr ' ' "=")
+	C $(printf '%*s' "56" '' | tr ' ' "=")
+	Y "\e[1mOG|OS OGATA-Open-Source"
+	C $(printf '%*s' "56" '' | tr ' ' "-")
+	echo "Copyright (C) 2024 OG|OS OGATA-Open-Source. All Rights Reserved."
+	echo "Licensed under the MIT License."
+	C $(printf '%*s' "56" '' | tr ' ' "-")
+	echo
+	G "\e[1mCopyright Notice"
+	C $(printf '%*s' "56" '' | tr ' ' "-")
+	echo "This script and its related files are developed and maintained by the OG|OS OGATA-Open-Source team,"
+	echo "for automated operations in system management, monitoring, and related tools."
+	echo
+	Y "\e[1mLicense Terms:"
+	echo
+	echo "This script is released under the $(echo -e "\e[36m\e[1mMIT License\e[0m"). You are free to use, modify, distribute, and reissue this software under the following terms:"
+	echo
+	echo "1. $(C "\e[1mSource Code Retention"): This copyright notice and the original author information must be retained. Any form of reissue must include this license statement."
+	echo
+	echo "2. $(C "\e[1mNo Warranty"): This software is provided 'as is', and OG|OS OGATA-Open-Source is not responsible for any issues or damages arising from its use."
+	echo
+	echo "3. $(C "\e[1mUsage Restrictions"): It can be used for personal, commercial, or academic purposes, but the authors and source of this software must be clearly stated."
+	echo
+	echo "4. $(C "\e[1mContributor License"): Modified versions can be made public, but the original information must be retained, and personal copyright statements may be added."
+	echo
+	Y "\e[1mDisclaimer:"
+	echo
+	echo "Use of this software is at your own risk. OG|OS OGATA-Open-Source or its contributors are not liable for any damages resulting from the use of this software."
+	echo
+	echo "For more information, please visit:"
+	echo -e "\e[36m\e[1mOG|OS OGATA-Open-Source GitHub page: https://github.com/OG-Open-Source\e[0m"
+	C $(printf '%*s' "56" '' | tr ' ' "=")
 }
 
 Sub_Menu() {
@@ -137,8 +137,8 @@ Sub_Menu() {
 	while true; do
 		CD
 		for text in "${TXT[@]}"; do
-            [ "$text" = "LI" ] && LI || [ "$text" = "DLI" ] && DLI ||  C "$text"
-        done
+			[ "$text" = "LI" ] && LI || [ "$text" = "DLI" ] && DLI ||  C "$text"
+		done
 		DLI
 		Dis_OPT
 		DLI
@@ -151,24 +151,24 @@ Sub_Menu() {
 Menu() {
 	while true; do
 		CD
-        Y "\e[1m ____   _______                     _       _     "
-        Y "\e[1m/_ \ \ / / ____|                   | |     | |    "
-        Y "\e[1m | |\ V / |  __ _   _  __ _ _ __ __| |  ___| |__  "
-        Y "\e[1m | | > <| | |_ | | | |/ _' | '__/ _' | / __| '_ \ "
-        Y "\e[1m | |/ . \ |__| | |_| | (_| | | | (_| |_\__ \ | | |"
-        Y "\e[1m |_/_/ \_\_____|\__,_|\__,_|_|  \__,_(_)___/_| |_|"
+		Y "\e[1m ____   _______                     _       _     "
+		Y "\e[1m/_ \ \ / / ____|                   | |     | |    "
+		Y "\e[1m | |\ V / |  __ _   _  __ _ _ __ __| |  ___| |__  "
+		Y "\e[1m | | > <| | |_ | | | |/ _' | '__/ _' | / __| '_ \ "
+		Y "\e[1m | |/ . \ |__| | |_| | (_| | | | (_| |_\__ \ | | |"
+		Y "\e[1m |_/_/ \_\_____|\__,_|\__,_|_|  \__,_(_)___/_| |_|"
 		DLI
 		OPT=(
 			"查看守護文件"
 			"添加文件守護"
 			"移除文件守護"
 			LI
-            "安全性檢測"
-            "安裝 ClamAV"
-            "安裝 iptable"
-            "安裝 ufw"
-            LI
-            "腳本版權"
+			"安全性檢測"
+			"安裝 ClamAV"
+			"安裝 iptable"
+			"安裝 ufw"
+			LI
+			"腳本版權"
 		)
 		Dis_OPT
 		DLI
@@ -176,7 +176,7 @@ Menu() {
 		DLI
 		INPUT
 		case $sel in
-            8) CD; Copyright; OC; Menu;;
+			8) CD; Copyright; OC; Menu;;
 			0) CD; exit;;
 			*) CD;;
 		esac
