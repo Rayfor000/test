@@ -29,6 +29,7 @@ INC() { DLI ; INPUT "確認繼續嗎？(Y/N)：" sel ; }
 OC() { echo -e "${CLR2}完成${CLR0}" ; read -n 1 -s -r -p "按任意鍵繼續..." ; CLEAN ; }
 
 ADD sudo jq tar unzip &>/dev/null
+
 Dis_TXT() {
 	CLEAN
 	for i in "${!TXT[@]}"; do
@@ -47,16 +48,28 @@ Dis_OPT() {
 	count=1
 	max_cols=1
 	col_options=()
-	print_row() {
-		for option in "$@"; do
-			if [[ $option == @* ]]; then
-				printf "     %-16s" "${option#@}"
-			elif [[ $option == \#* ]]; then
-				printf "%s" "${option#\#}"
-			else
-				printf "$(echo -e "${CLR8}%3d.${CLR0}") %-16s" "$count" "$option"
-				((count++))
+	string_width() {
+		str="$1"
+		width=0
+		for (( i=0; i<${#str}; i++ )); do
+			char="${str:$i:1}"
+			if [[ $char =~ [[:print:]] ]]; then
+				if [[ $char =~ [[:ascii:]] ]]; then
+					((width++))
+				else
+					((width+=2))
+				fi
 			fi
+		done
+		echo $width
+	}
+	print_row() {
+		max_width=20
+		for option in "$@"; do
+			option_width=$(string_width "$option")
+			padding=$((max_width - option_width))
+			printf "$(echo -e "${CLR8}%3d.${CLR0}") %s%*s" "$count" "$option" $padding " "
+			((count++))
 		done
 		echo
 	}
@@ -309,21 +322,21 @@ SYS_Setting() {
 	Sub_Menu
 }
 File_Manager() {
-	ip=20
-	c=0
-	s=""
-	d=$(pwd)
-	f() {
-		a=$1
-		b=$2
-		r=$3
+	items_per_page=20
+	current_page=0
+	search_term=""
+	current_dir=$(pwd)
+	dis_files() {
+		start=$1
+		end=$2
+		regex=$3
 		CLEAN
-		echo -e "${CLR8}Current Directory: ${CLR3}$d${CLR0}"
-		printf "${CLR8}%89s\n" | tr ' ' '-'
-		printf "${CLR2}%-28s %-20s %-14s %-10s %s${CLR0}\n" "Name" "Modification Date" "Size" "Type" "Permissions"
-		printf "${CLR8}%89s\n" | tr ' ' '-'
-		find "$d" -maxdepth 1 | tail -n +2 | awk -v a="$a" -v b="$b" -v r="$r" '
-		NR > a && NR <= b {
+		echo -e "${CLR8}當前目錄：${CLR3}$current_dir${CLR0}"
+		echo -e "${CLR8}$(LINE - "89")"
+		printf "${CLR2}%-30s %-21s %-19s %-14s %s${CLR0}\n" "名稱" "修改日期" "大小" "種類" "權限"
+		echo -e "${CLR8}$(LINE - "89")"
+		find "$current_dir" -maxdepth 1 | tail -n +2 | awk -v start="$start" -v end="$end" -v regex="$regex" '
+		NR > start && NR <= end {
 			cmd = "stat --format=\"%y\" \""$0"\" | cut -d \".\" -f 1 | cut -c1-16"
 			cmd | getline dt
 			close(cmd)
@@ -334,71 +347,72 @@ File_Manager() {
 			p = ia[1]
 			sz = ia[2]
 			n = gensub(/.*\//, "", "g", $0)
-			if (r == "" || tolower(n) ~ tolower(r)) {
-				t = (p ~ /^d/) ? "Directory" : (p ~ /^l/) ? "Link" : "File"
+			if (regex == "" || tolower(n) ~ tolower(regex)) {
+				t = (p ~ /^d/) ? "目錄" : (p ~ /^l/) ? "連結" : "文件"
 				tc = (p ~ /^d/) ? "'$CLR4'" : (p ~ /^l/) ? "'$CLR6'" : "'$CLR2'"
 				if (length(n) > 28) n = substr(n, 1, 25) "...";
 				u = (sz >= 1048576) ? "MiB" : (sz >= 1024) ? "KiB" : "Bytes"
 				nm = (sz >= 1048576) ? sz/1048576 : (sz >= 1024) ? sz/1024 : sz
-				printf "'$CLR9'%-28s'$CLR0' '$CLR3'%-16s'$CLR0' '$CLR6'%8.2f %-6s'$CLR0'    %s%-10s'$CLR0' '$CLR2'%s'$CLR0'\n", \
+				printf "'$CLR9'%-28s'$CLR0' '$CLR3'%-16s'$CLR0' '$CLR6'%8.2f %-9s'$CLR0' %s%-10s'$CLR0' '$CLR2'%s'$CLR0'\n", \
 					n, dt, nm, u, tc, t, p
 			}
 		}'
-		i=$(find "$d" -maxdepth 1 | tail -n +2 | awk -v a="$a" -v b="$b" -v r="$r" 'NR > a && NR <= b && (r == "" || tolower($0) ~ tolower(r)) {print}' | wc -l)
-		for (( j=i; j<ip; j++ )); do
+		items=$(find "$current_dir" -maxdepth 1 | tail -n +2 | awk -v start="$start" -v end="$end" -v regex="$regex" 'NR > start && NR <= end && (regex == "" || tolower($0) ~ tolower(regex)) {print}' | wc -l)
+		for (( j=items; j<items_per_page; j++ )); do
 			printf "%-28s %-20s %-14s %-10s %s\n" "" "" "" "" ""
 		done
-		printf "${CLR8}%89s\n" | tr ' ' '-'
-		echo -e "${CLR2}Page: ${CLR3}$((c + 1))/${t}${CLR0}"
-		printf "${CLR8}%89s\n" | tr ' ' '-'
+		echo -e "${CLR8}$(LINE - "89")"
+		echo -e "${CLR2}頁面：${CLR3}$((current_page + 1))/${total_pages}${CLR0}"
+		echo -e "${CLR8}$(LINE - "89")"
 	}
-	r() {
-		o=$(find "$d" -maxdepth 1 | tail -n +2 | wc -l)
-		t=$(( (o + ip - 1) / ip ))
-		f $((c * ip)) $(( (c + 1) * ip )) "$s"
+	refresh_display() {
+		total_items=$(find "$current_dir" -maxdepth 1 | tail -n +2 | wc -l)
+		total_pages=$(( (total_items + items_per_page - 1) / items_per_page ))
+		dis_files $((current_page * items_per_page)) $(( (current_page + 1) * items_per_page )) "$search_term"
 	}
-	n() {
+	run_and_refresh() {
 		eval "$@"
-		r
+		refresh_display
 	}
-	r
+	refresh_display
 	OPT=(
 		-2-
-		"Up" "Down"
+		"上級目錄" "下級目錄"
 		-2-
-		"Prev" "Next"
+		"上一頁" "下一頁"
 		LI
 		-2-
-		"Search" "Refresh"
+		"搜尋" "刷新"
 		-3-
-		"New File" "New Dir" "Delete"
-		"Rename" "Permissions" "Edit"
+		"創建文件" "創建目錄" "刪除"
+		"重命名" "權限調整" "編輯文件"
 		LI
-		"Copy" "Move" "Tar/Untar"
+		"複製" "移動" "壓縮/解壓縮"
 	)
 	while true; do
 		Dis_OPT
 		echo -e "${CLR2}  0. 返回${CLR0}"
 		IN
 		case "$sel" in
-			1) n "d=$(dirname "$d")" ;;
-			2) n "read -e -p '輸入目錄：' sd && [[ -d \"\$d/\$sd\" ]] && d=\$(realpath \"\$d/\$sd\") || { echo '目錄「\$sd」不存在。'; sleep 1; }" ;;
-			3) n "((c > 0)) && ((c--))" ;;
-			4) n "((c < t - 1)) && ((c++))" ;;
-			5) n "read -e -p '輸入搜尋詞：' s" ;;
-			6) n "s=""";;
-			7) n "read -e -p '輸入新檔案名稱：' nf && touch \"\$d/\$nf\"" ;;
-			8) n "read -e -p '輸入新資料夾名稱：' nd && mkdir -p \"\$d/\$nd\"" ;;
-			9) n "read -e -p '輸入要刪除的檔案（以逗號分隔，或輸入「/all」刪除所有檔案）：' del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then rm -rf \"\$d\"/*; else IFS=',' read -ra files <<< \"\$del_files\" && for file in \"\${files[@]}\"; do rm -rf \"\$d/\$file\"; done; fi" ;;
-			10) n "read -e -p '輸入要重新命名的檔案：' old_name && read -e -p '輸入新名稱：' new_name && mv \"\$d/\$old_name\" \"\$d/\$new_name\"" ;;
-			11) n "read -e -p '輸入要更改權限的檔案（以逗號分隔，或輸入「/all」更改所有檔案）：' perm_files && perm_files=\${perm_files// /} && read -e -p '輸入新權限：' perms && if [[ \"\$perm_files\" == \"/all\" ]]; then chmod -R \"\$perms\" \"\$d\"; else IFS=',' read -ra files <<< \"\$perm_files\" && for file in \"\${files[@]}\"; do chmod \"\$perms\" \"\$d/\$file\"; done; fi" ;;
-			12) n "read -e -p '輸入要編輯的檔案：' edit_file && nano \"\$d/\$edit_file\"" ;;
-			13) n "read -e -p '輸入要複製的檔案（以逗號分隔，或輸入「/all」複製所有檔案）：' copy_files && copy_files=\${copy_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cp -r \"\$d\"/* \"\$dest\"; else IFS=',' read -ra files <<< \"\$copy_files\" && for file in \"\${files[@]}\"; do cp -r \"\$d/\$file\" \"\$dest\"; done; fi" ;;
-			14) n "read -e -p '輸入要移動的檔案（以逗號分隔，或輸入「/all」移動所有檔案）：' move_files && move_files=\${move_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$move_files\" == \"/all\" ]]; then mv \"\$d\"/* \"\$dest\"; else IFS=',' read -ra files <<< \"\$move_files\" && for file in \"\${files[@]}\"; do mv \"\$d/\$file\" \"\$dest\"; done; fi" ;;
-			15) n "read -e -p '輸入要壓縮／解壓縮的檔案（以逗號分隔，或輸入「/all」壓縮／解壓縮所有檔案）：' tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then tar -czf \"\$d/all_files.tar.gz\" -C \"\$d\" .; else IFS=',' read -ra files <<< \"\$tar_files\" && for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then tar -xzf \"\$d/\$file\" -C \"\$d\"; else tar -czf \"\$d/\$file.tar.gz\" -C \"\$d\" \"\$file\"; fi; done; fi" ;;
+			1) run_and_refresh "current_dir=$(dirname "$current_dir")" ;;
+			2) run_and_refresh "read -e -p '輸入目錄：' sub_dir && [[ -d \"\$current_dir/\$sub_dir\" ]] && current_dir=\$(realpath \"\$current_dir/\$sub_dir\") || { echo '目錄「\$sub_dir」不存在。'; sleep 1; }" ;;
+			3) run_and_refresh "((current_page > 0)) && ((current_page--))" ;;
+			4) run_and_refresh "((current_page < total_pages - 1)) && ((current_page++))" ;;
+			5) run_and_refresh "read -e -p '輸入搜尋詞：' search_term" ;;
+			6) run_and_refresh "search_term=""";;
+			7) run_and_refresh "read -e -p '輸入新檔案名稱：' new_file && cmds=(\"touch \\\"\$current_dir/\$new_file\\\"\")" ;;
+			8) run_and_refresh "read -e -p '輸入新資料夾名稱：' new_dir && cmds=(\"mkdir -p \\\"\$current_dir/\$new_dir\\\"\")" ;;
+			9) run_and_refresh "read -e -p '輸入要刪除的檔案（以逗號分隔，或輸入「/all」刪除所有檔案）：' del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then cmds=(\"rm -rf \\\"\$current_dir\\\"/*\"); else IFS=',' read -ra files <<< \"\$del_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"rm -rf \\\"\$current_dir/\$file\\\"\"); done; fi" ;;
+			10) run_and_refresh "read -e -p '輸入要重新命名的檔案：' old_name && read -e -p '輸入新名稱：' new_name && cmds=(\"mv \\\"\$current_dir/\$old_name\\\" \\\"\$current_dir/\$new_name\\\"\")" ;;
+			11) run_and_refresh "read -e -p '輸入要更改權限的檔案（以逗號分隔，或輸入「/all」更改所有檔案）：' perm_files && perm_files=\${perm_files// /} && read -e -p '輸入新權限：' perms && if [[ \"\$perm_files\" == \"/all\" ]]; then cmds=(\"chmod -R \\\"\$perms\\\" \\\"\$current_dir\\\"\"); else IFS=',' read -ra files <<< \"\$perm_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"chmod \\\"\$perms\\\" \\\"\$current_dir/\$file\\\"\"); done; fi" ;;
+			12) run_and_refresh "read -e -p '輸入要編輯的檔案：' edit_file && nano \"\$current_dir/\$edit_file\"" ;;
+			13) run_and_refresh "read -e -p '輸入要複製的檔案（以逗號分隔，或輸入「/all」複製所有檔案）：' copy_files && copy_files=\${copy_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cmds=(\"cp -r \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$copy_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"cp -r \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi" ;;
+			14) run_and_refresh "read -e -p '輸入要移動的檔案（以逗號分隔，或輸入「/all」移動所有檔案）：' move_files && move_files=\${move_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$move_files\" == \"/all\" ]]; then cmds=(\"mv \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$move_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"mv \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi" ;;
+			15) run_and_refresh "read -e -p '輸入要壓縮／解壓縮的檔案（以逗號分隔，或輸入「/all」壓縮／解壓縮所有檔案）：' tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then cmds=(\"tar -czf \\\"\$current_dir/all_files.tar.gz\\\" -C \\\"\$current_dir\\\" .\"); else IFS=',' read -ra files <<< \"\$tar_files\" && cmds=(); for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then cmds+=(\"tar -xzf \\\"\$current_dir/\$file\\\" -C \\\"\$current_dir\\\"\"); else cmds+=(\"tar -czf \\\"\$current_dir/\$file.tar.gz\\\" -C \\\"\$current_dir\\\" \\\"\$file\\\"\"); fi; done; fi" ;;
 			0) break ;;
-			*) n ;;
+			*) run_and_refresh ;;
 		esac
+		PROGRESS
 	done
 }
 
