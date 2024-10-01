@@ -5,10 +5,16 @@
 # 默認root密碼:password
 
 # 顏色定義
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-PLAIN='\033[0m'
+CLR1="\033[31m"
+CLR2="\033[32m"
+CLR3="\033[0;33m"
+CLR4="\033[34m"
+CLR5="\033[35m"
+CLR6="\033[36m"
+CLR7="\033[37m"
+CLR8="\033[96m"
+CLR9="\033[97m"
+CLR0="\033[0m"
 
 # 全局變量
 DIST=''
@@ -24,10 +30,10 @@ NIC=''
 BOOT_OPTION=''
 
 # 檢測root權限
-[[ $EUID -ne 0 ]] && echo -e "${RED}錯誤:${PLAIN} 必須使用root用戶運行此腳本!" && exit 1
+[[ $EUID -ne 0 ]] && echo -e "${CLR1}錯誤:${CLR0} 必須使用root用戶運行此腳本!" && exit 1
 
 # 檢測系統架構
-[[ $(uname -m) != x86_64 ]] && echo -e "${RED}錯誤:${PLAIN} 不支持32位系統!" && exit 1
+[[ $(uname -m) != x86_64 ]] && echo -e "${CLR1}錯誤:${CLR0} 不支持32位系統!" && exit 1
 
 # 主要功能函數
 get_system_info() {
@@ -39,14 +45,17 @@ get_system_info() {
 set_mirror() {
   # 設置安裝源鏡像
   case $DIST in
-    debian|ubuntu)
+    debian)
       MIRROR="http://deb.debian.org/debian"
+      ;;
+    ubuntu)
+      MIRROR="http://archive.ubuntu.com/ubuntu"
       ;;
     centos)
       MIRROR="http://mirror.centos.org/centos"
       ;;
     *)
-      echo -e "${RED}錯誤:${PLAIN} 不支持的發行版!"
+      echo -e "${CLR1}錯誤:${CLR0} 不支持的發行版!"
       exit 1
       ;;
   esac
@@ -68,12 +77,16 @@ set_network() {
 
 download_image() {
   # 下載系統鏡像
-  echo -e "${YELLOW}開始下載系統鏡像...${PLAIN}"
+  echo -e "${CLR3}開始下載系統鏡像...${CLR0}"
   ADD wget
   case $DIST in
-    debian|ubuntu)
-      wget -O /tmp/initrd.img $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/$DIST-installer/amd64/initrd.gz
-      wget -O /tmp/vmlinuz $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/$DIST-installer/amd64/linux
+    debian)
+      wget -O /tmp/initrd.img $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/debian-installer/amd64/initrd.gz
+      wget -O /tmp/vmlinuz $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/debian-installer/amd64/linux
+      ;;
+    ubuntu)
+      wget -O /tmp/initrd.img $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz
+      wget -O /tmp/vmlinuz $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux
       ;;
     centos)
       wget -O /tmp/initrd.img $MIRROR/$VER/os/x86_64/isolinux/initrd.img
