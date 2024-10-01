@@ -53,7 +53,7 @@ set_mirror() {
 }
 
 set_network() {
-  # 配置網絡
+  # 自動獲取網絡配置
   IP=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n 1)
   NETMASK=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}/\d+' | cut -d'/' -f2 | head -n 1)
   GATEWAY=$(ip route | grep default | awk '{print $3}')
@@ -64,25 +64,12 @@ set_network() {
   echo -e "網關: $GATEWAY"
   echo -e "DNS1: $DNS1"
   echo -e "DNS2: $DNS2"
-  
-  read -p "是否需要修改網絡配置? [y/N]: " answer
-  case $answer in
-    [Yy]* )
-      read -p "輸入IP地址: " IP
-      read -p "輸入子網掩碼: " NETMASK
-      read -p "輸入網關: " GATEWAY
-      read -p "輸入DNS1: " DNS1
-      read -p "輸入DNS2: " DNS2
-      ;;
-    * )
-      echo "保持當前網絡配置"
-      ;;
-  esac
 }
 
 download_image() {
   # 下載系統鏡像
   echo -e "${YELLOW}開始下載系統鏡像...${PLAIN}"
+  ADD wget
   case $DIST in
     debian|ubuntu)
       wget -O /tmp/initrd.img $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/$DIST-installer/amd64/initrd.gz
@@ -105,6 +92,9 @@ install_os() {
   # 安裝操作系統
   echo -e "${GREEN}開始安裝操作系統...${PLAIN}"
   # 這裡可以添加具體的安裝步驟
+  
+  # 安裝基本工具
+  ADD curl jq sudo tar unzip
 }
 
 # 主程序
