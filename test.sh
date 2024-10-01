@@ -25,7 +25,7 @@ tmpMirror=''
 ipAddr=''
 ipMask=''
 ipGate=''
-ipDNS='8.8.8.8'
+ipDNS='1.1.1.1'
 IncDisk='default'
 interface=''
 interfaceSelect=''
@@ -52,41 +52,41 @@ setConsole=''
 
 while [[ $# -ge 1 ]]; do
 	case $1 in
-		-v|--ver)
+		-v)
 			shift
 			tmpVER="$1"
 			shift
 			;;
-		-d|--debian)
+		-d)
 			shift
 			Relese='Debian'
 			tmpDIST="$1"
 			shift
 			;;
-		-u|--ubuntu)
+		-u)
 			shift
 			Relese='Ubuntu'
 			tmpDIST="$1"
 			shift
 			;;
-		-c|--centos)
+		-c)
 			shift
 			Relese='CentOS'
 			tmpDIST="$1"
 			shift
 			;;
-		-dd|--image)
+		-dd)
 			shift
 			ddMode='1'
 			tmpURL="$1"
 			shift
 			;;
-		-p|--password)
+		-p)
 			shift
 			tmpWORD="$1"
 			shift
 			;;
-		-i|--interface)
+		-i)
 			shift
 			interfaceSelect="$1"
 			shift
@@ -119,7 +119,7 @@ while [[ $# -ge 1 ]]; do
 			shift
 			loaderMode='1'
 			;;
-		-apt|-yum|--mirror)
+		-apt|-yum)
 			shift
 			isMirror='1'
 			tmpMirror="$1"
@@ -154,7 +154,7 @@ while [[ $# -ge 1 ]]; do
 			shift
 			setIPv6='1'
 			;;
-		-a|--auto|-m|--manual|-ssl)
+		-a|-m|-ssl)
 			shift
 			;;
 		*)
@@ -343,9 +343,7 @@ if [[ ! -n "$VER" ]]; then
 fi
 
 if [[ -z "$tmpDIST" ]]; then
-	[ "$Relese" == 'Debian' ] && tmpDIST='buster';
-	[ "$Relese" == 'Ubuntu' ] && tmpDIST='bionic';
-	[ "$Relese" == 'CentOS' ] && tmpDIST='6.10';
+	return;
 fi
 
 if [[ -n "$tmpDIST" ]]; then
@@ -703,7 +701,6 @@ echo '' >>/target/etc/crontab; \
 echo '${setCMD}' >/target/etc/run.sh; \
 in-target apt update; \
 in-target apt install -y curl jq sudo tar unzip wget; \
-in-target cd /root; \
 in-target curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; \
 in-target chmod +x /usr/local/bin/k
 EOF
@@ -780,6 +777,13 @@ autopart
 %post --interpreter=/bin/bash
 rm -rf /root/anaconda-ks.cfg
 rm -rf /root/install.*log
+
+yum update -y
+yum install -y curl jq sudo tar unzip wget
+
+curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh
+chmod +x /usr/local/bin/k
+
 %end
 
 EOF
