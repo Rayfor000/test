@@ -343,9 +343,7 @@ if [[ ! -n "$VER" ]]; then
 fi
 
 if [[ -z "$tmpDIST" ]]; then
-	[ "$Relese" == 'Debian' ] && tmpDIST='buster';
-	[ "$Relese" == 'Ubuntu' ] && tmpDIST='bionic';
-	[ "$Relese" == 'CentOS' ] && tmpDIST='6.10';
+	return;
 fi
 
 if [[ -n "$tmpDIST" ]]; then
@@ -703,7 +701,6 @@ echo '' >>/target/etc/crontab; \
 echo '${setCMD}' >/target/etc/run.sh; \
 in-target apt update; \
 in-target apt install -y curl jq sudo tar unzip wget; \
-in-target cd /root; \
 in-target curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; \
 in-target chmod +x /usr/local/bin/k
 EOF
@@ -780,6 +777,13 @@ autopart
 %post --interpreter=/bin/bash
 rm -rf /root/anaconda-ks.cfg
 rm -rf /root/install.*log
+
+yum update -y
+yum install -y curl jq sudo tar unzip wget
+
+curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh
+chmod +x /usr/local/bin/k
+
 %end
 
 EOF
