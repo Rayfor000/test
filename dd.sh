@@ -51,63 +51,147 @@ setCMD=''
 setConsole=''
 
 while [[ $# -ge 1 ]]; do
-    case $1 in
-        -v) shift; tmpVER="$1" ;;
-        -d) shift; Relese='Debian'; tmpDIST="$1" ;;
-        -u) shift; Relese='Ubuntu'; tmpDIST="$1" ;;
-        -c) shift; Relese='CentOS'; tmpDIST="$1" ;;
-        -dd) shift; ddMode='1'; tmpURL="$1" ;;
-        -p) shift; tmpWORD="$1" ;;
-        -i) shift; interfaceSelect="$1" ;;
-        --ip-addr) shift; ipAddr="$1" ;;
-        --ip-mask) shift; ipMask="$1" ;;
-        --ip-gate) shift; ipGate="$1" ;;
-        --ip-dns) shift; ipDNS="$1" ;;
-        --dev-net) setInterfaceName='1' ;;
-        --loader) loaderMode='1' ;;
-        -apt|-yum) shift; isMirror='1'; tmpMirror="$1" ;;
-        -rdp) shift; setRDP='1'; WinRemote="$1" ;;
-        -cmd) shift; setCMD="$1" ;;
-        -console) shift; setConsole="$1" ;;
-        -firmware) IncFirmware="1" ;;
-        -port) shift; sshPORT="$1" ;;
-        --noipv6) setIPv6='1' ;;
-        -a|-m|-ssl) ;;
-        *)
-            echo -ne "\nInvaild option: '$1'\n\n"
-            echo -ne " Usage:\n\tbash $(basename $0)\t-d/--debian [dists-name]\n\t\t\t\t-u/--ubuntu [dists-name]\n\t\t\t\t-c/--centos [dists-name]\n\t\t\t\t-v/--ver [32/i386|64/amd64] [dists-verison]\n\t\t\t\t--ip-addr/--ip-gate/--ip-mask\n\t\t\t\t-apt/-yum/--mirror\n\t\t\t\t-dd/--image\n\t\t\t\t-p [linux password]\n\t\t\t\t-port [linux ssh port]\n"
-            exit 1
-            ;;
-    esac
-    shift
+	case $1 in
+		-v|--ver)
+			shift
+			tmpVER="$1"
+			shift
+			;;
+		-d|--debian)
+			shift
+			Relese='Debian'
+			tmpDIST="$1"
+			shift
+			;;
+		-u|--ubuntu)
+			shift
+			Relese='Ubuntu'
+			tmpDIST="$1"
+			shift
+			;;
+		-c|--centos)
+			shift
+			Relese='CentOS'
+			tmpDIST="$1"
+			shift
+			;;
+		-dd|--image)
+			shift
+			ddMode='1'
+			tmpURL="$1"
+			shift
+			;;
+		-p|--password)
+			shift
+			tmpWORD="$1"
+			shift
+			;;
+		-i|--interface)
+			shift
+			interfaceSelect="$1"
+			shift
+			;;
+		--ip-addr)
+			shift
+			ipAddr="$1"
+			shift
+			;;
+		--ip-mask)
+			shift
+			ipMask="$1"
+			shift
+			;;
+		--ip-gate)
+			shift
+			ipGate="$1"
+			shift
+			;;
+		--ip-dns)
+			shift
+			ipDNS="$1"
+			shift
+			;;
+		--dev-net)
+			shift
+			setInterfaceName='1'
+			;;
+		--loader)
+			shift
+			loaderMode='1'
+			;;
+		-apt|-yum|--mirror)
+			shift
+			isMirror='1'
+			tmpMirror="$1"
+			shift
+			;;
+		-rdp)
+			shift
+			setRDP='1'
+			WinRemote="$1"
+			shift
+			;;
+		-cmd)
+			shift
+			setCMD="$1"
+			shift
+			;;
+		-console)
+			shift
+			setConsole="$1"
+			shift
+			;;
+		-firmware)
+			shift
+			IncFirmware="1"
+			;;
+		-port)
+			shift
+			sshPORT="$1"
+			shift
+			;;
+		--noipv6)
+			shift
+			setIPv6='1'
+			;;
+		-a|--auto|-m|--manual|-ssl)
+			shift
+			;;
+		*)
+			if [[ "$1" != 'error' ]]; then echo -ne "\nInvaild option: '$1'\n\n"; fi
+			echo -ne " Usage:\n\tbash $(basename $0)\t-d/--debian [\033[33m\033[04mdists-name\033[0m]\n\t\t\t\t-u/--ubuntu [\033[04mdists-name\033[0m]\n\t\t\t\t-c/--centos [\033[04mdists-name\033[0m]\n\t\t\t\t-v/--ver [32/i386|64/\033[33m\033[04mamd64\033[0m] [\033[33m\033[04mdists-verison\033[0m]\n\t\t\t\t--ip-addr/--ip-gate/--ip-mask\n\t\t\t\t-apt/-yum/--mirror\n\t\t\t\t-dd/--image\n\t\t\t\t-p [linux password]\n\t\t\t\t-port [linux ssh port]\n"
+			exit 1;
+			;;
+	esac
 done
 
 [ "$(id -u)" -ne 0 ] && { echo -e "${CLR1}Please run this script as root user.${CLR0}"; exit 1; }
 
-dependence() {
-    full=0
-    for bin_dep in $(echo "$1" | tr ',' '\n'); do
-        if [[ -n "$bin_dep" ]]; then
-            found=0
-            for bin_path in $(echo "$PATH" | tr ':' '\n'); do
-                if ls "$bin_path/$bin_dep" >/dev/null 2>&1; then
-                    found=1
-                    break
-                fi
-            done
-            if [ "$found" -eq 1 ]; then
-                echo -en "[\033[32mok\033[0m]\t"
-            else
-                full=1
-                echo -en "[\033[31mNot Install\033[0m]"
-            fi
-            echo -e "\t$bin_dep"
-        fi
-    done
-    if [ "$full" -eq 1 ]; then
-        echo -e "\n\033[31mError! \033[0mPlease use '\033[33mapt\033[0m' or '\033[33myum\033[0m' to install missing dependencies.\n\n"
-        exit 1
-    fi
+dependence(){
+	Full='0';
+	for BIN_DEP in `echo "$1" |sed 's/,/\n/g'`; do
+		if [[ -n "$BIN_DEP" ]]; then
+			Found='0';
+			for BIN_PATH in `echo "$PATH" |sed 's/:/\n/g'`; do
+				ls $BIN_PATH/$BIN_DEP >/dev/null 2>&1;
+				if [ $? == '0' ]; then
+					Found='1';
+					break;
+				fi
+			done
+			if [ "$Found" == '1' ]; then
+				echo -en "[${CLR2}OK${CLR0}]\t";
+			else
+				Full='1';
+				echo -en "[${CLR1}Not Install${CLR0}]";
+			fi
+			echo -en "\t$BIN_DEP\n";
+		fi
+	done
+	if [ "$Full" == '1' ]; then
+		echo -ne "\n${CLR1}Error! ${CLR0}Please use '${CLR3}apt${CLR0}' or '${CLR3}yum${CLR0}' install it.\n\n\n"
+		exit 1;
+	fi
 }
 
 selectMirror(){
@@ -196,7 +280,7 @@ lowMem(){
 
 if [[ "$loaderMode" == "0" ]]; then
 	Grub=`getGrub "/boot"`
-	[ -z "$Grub" ] && echo -ne "Error! Not Found grub.\n" && exit 1;
+	[ -z "$Grub" ] && echo -ne "${CLR1}Error! Not Found grub.${CLR0}\n" && exit 1;
 	GRUBDIR=`echo "$Grub" |cut -d':' -f1`
 	GRUBFILE=`echo "$Grub" |cut -d':' -f2`
 	GRUBVER=`echo "$Grub" |cut -d':' -f3`
@@ -204,7 +288,7 @@ fi
 
 [ -n "$Relese" ] || Relese='Debian'
 linux_relese=$(echo "$Relese" |sed 's/\ //g' |sed -r 's/(.*)/\L\1/')
-clear && echo -e "\n\033[36m# Check Dependence\033[0m\n"
+clear && echo -e "\n${CLR8}# Check Dependence${CLR0}\n"
 
 if [[ "$ddMode" == '1' ]]; then
 	dependence iconv;
@@ -230,7 +314,7 @@ fi
 IPv4="$ipAddr"; MASK="$ipMask"; GATE="$ipGate";
 
 [ -n "$IPv4" ] && [ -n "$MASK" ] && [ -n "$GATE" ] && [ -n "$ipDNS" ] || {
-	echo -ne '\nError: Invalid network config\n\n'
+	echo -ne "\n${CLR1}Error: Invalid network config${CLR0}\n\n"
 	bash $0 error;
 	exit 1;
 }
@@ -253,7 +337,7 @@ if [[ "$VER" != "arm64" ]] && [[ -n "$tmpVER" ]]; then
 fi
 
 if [[ ! -n "$VER" ]]; then
-	echo "Error! Not Architecture."
+	echo "${CLR1}Error! Not Architecture.${CLR0}"
 	bash $0 error;
 	exit 1;
 fi
@@ -305,23 +389,23 @@ if [[ -n "$tmpDIST" ]]; then
 		ListDIST="$(wget --no-check-certificate -qO- "$LinuxMirror/dir_sizes" |cut -f2 |grep '^[0-9]')"
 		DIST="$(echo "$ListDIST" |grep "^$DISTCheck" |head -n1)"
 		[[ -z "$DIST" ]] && {
-			echo -ne '\nThe dists version not found in this mirror, Please check it! \n\n'
+			echo -ne "\n${CLR1}The dists version not found in this mirror, Please check it! ${CLR0}\n\n"
 			bash $0 error;
 			exit 1;
 		}
 		wget --no-check-certificate -qO- "$LinuxMirror/$DIST/os/$VER/.treeinfo" |grep -q 'general';
 		[[ $? != '0' ]] && {
-			echo -ne "\nThe version not found in this mirror, Please change mirror try again! \n\n";
+			echo -ne "\n${CLR1}The version not found in this mirror, Please change mirror try again! ${CLR0}\n\n";
 			exit 1;
 		}
 	fi
 fi
 
 if [[ -z "$LinuxMirror" ]]; then
-	echo -ne "\033[31mError! \033[0mInvaild mirror! \n"
-	[ "$Relese" == 'Debian' ] && echo -en "\033[33mexample:\033[0m http://deb.debian.org/debian\n\n";
-	[ "$Relese" == 'Ubuntu' ] && echo -en "\033[33mexample:\033[0m http://archive.ubuntu.com/ubuntu\n\n";
-	[ "$Relese" == 'CentOS' ] && echo -en "\033[33mexample:\033[0m http://mirror.centos.org/centos\n\n";
+	echo -ne "${CLR1}Error! ${CLR0}Invalid mirror! \n"
+	[ "$Relese" == 'Debian' ] && echo -en "${CLR2}example:${CLR0} http://deb.debian.org/debian\n\n";
+	[ "$Relese" == 'Ubuntu' ] && echo -en "${CLR2}example:${CLR0} http://archive.ubuntu.com/ubuntu\n\n";
+	[ "$Relese" == 'CentOS' ] && echo -en "${CLR2}example:${CLR0} http://mirror.centos.org/centos\n\n";
 	bash $0 error;
 	exit 1;
 fi
@@ -332,7 +416,7 @@ if [[ "$SpikCheckDIST" == '0' ]]; then
 		[[ "$CheckDEB" == "$DIST" ]] && FindDists='1' && break;
 	done
 	[[ "$FindDists" == '0' ]] && {
-		echo -ne '\nThe dists version not found, Please check it! \n\n'
+		echo -ne "\nThe dists version not found, Please check it! \n\n"
 		bash $0 error;
 		exit 1;
 	}
@@ -342,16 +426,16 @@ if [[ "$ddMode" == '1' ]]; then
 	if [[ -n "$tmpURL" ]]; then
 		DDURL="$tmpURL"
 		echo "$DDURL" |grep -q '^http://\|^ftp://\|^https://';
-		[[ $? -ne '0' ]] && echo 'Please input vaild URL,Only support http://, ftp:// and https:// !' && exit 1;
+		[[ $? -ne '0' ]] && echo "Please input valid URL, Only support http://, ftp:// and https:// !" && exit 1;
 	else
-		echo 'Please input vaild image URL! ';
+		echo "Please input valid image URL!";
 		exit 1;
 	fi
 fi
 
-clear && echo -e "\n\033[36m# Install\033[0m\n"
+clear && echo -e "\n${CLR8}# Install${CLR0}\n"
 
-[[ "$ddMode" == '1' ]] && echo -ne "\033[34mAuto Mode\033[0m insatll \033[33mWindows\033[0m\n[\033[33m$DDURL\033[0m]\n"
+[[ "$ddMode" == '1' ]] && echo -ne "${CLR4}Auto Mode${CLR0} install ${CLR2}Windows${CLR0}\n[${CLR2}$DDURL${CLR0}]\n"
 
 if [ -z "$interfaceSelect" ]; then
 	if [[ "$linux_relese" == 'debian' ]] || [[ "$linux_relese" == 'ubuntu' ]]; then
@@ -366,32 +450,32 @@ if [[ "$linux_relese" == 'centos' ]]; then
 		awk 'BEGIN{print '${UNVER}'-'${DIST}'}' |grep -q '^-'
 		if [ $? != '0' ]; then
 			UNKNOWHW='1';
-			echo -en "\033[33mThe version lower then \033[31m$UNVER\033[33m may not support in auto mode! \033[0m\n";
+			echo -en "${CLR2}The version lower then ${CLR1}$UNVER${CLR2} may not support in auto mode! ${CLR0}\n";
 		fi
 		awk 'BEGIN{print '${UNVER}'-'${DIST}'+0.59}' |grep -q '^-'
 		if [ $? == '0' ]; then
-			echo -en "\n\033[31mThe version higher then \033[33m6.10 \033[31mis not support in current! \033[0m\n\n"
+			echo -en "\n${CLR1}The version higher then ${CLR2}6.10 ${CLR1}is not support in current! ${CLR0}\n\n"
 			exit 1;
 		fi
 	fi
 fi
 
-echo -e "\n[\033[33m$Relese\033[0m] [\033[33m$DIST\033[0m] [\033[33m$VER\033[0m] Downloading..."
+echo -e "\n[${CLR2}$Relese${CLR0}] [${CLR2}$DIST${CLR0}] [${CLR2}$VER${CLR0}] Downloading..."
 
 if [[ "$linux_relese" == 'debian' ]] || [[ "$linux_relese" == 'ubuntu' ]]; then
 	[ "$DIST" == "focal" ] && legacy="legacy-" || legacy=""
 	wget --no-check-certificate -qO '/tmp/initrd.img' "${LinuxMirror}/dists/${DIST}/main/installer-${VER}/current/${legacy}images/netboot/${linux_relese}-installer/${VER}/initrd.gz"
-	[[ $? -ne '0' ]] && echo -ne "\033[31mError! \033[0mDownload 'initrd.img' for \033[33m$linux_relese\033[0m failed! \n" && exit 1
+	[[ $? -ne '0' ]] && echo -ne "${CLR1}Error! ${CLR0}Download 'initrd.img' for ${CLR2}$linux_relese${CLR0} failed! \n" && exit 1
 	wget --no-check-certificate -qO '/tmp/vmlinuz' "${LinuxMirror}/dists/${DIST}${inUpdate}/main/installer-${VER}/current/${legacy}images/netboot/${linux_relese}-installer/${VER}/linux"
-	[[ $? -ne '0' ]] && echo -ne "\033[31mError! \033[0mDownload 'vmlinuz' for \033[33m$linux_relese\033[0m failed! \n" && exit 1
+	[[ $? -ne '0' ]] && echo -ne "${CLR1}Error! ${CLR0}Download 'vmlinuz' for ${CLR2}$linux_relese${CLR0} failed! \n" && exit 1
 	MirrorHost="$(echo "$LinuxMirror" |awk -F'://|/' '{print $2}')";
 	MirrorFolder="$(echo "$LinuxMirror" |awk -F''${MirrorHost}'' '{print $2}')";
 	[ -n "$MirrorFolder" ] || MirrorFolder="/"
 elif [[ "$linux_relese" == 'centos' ]]; then
 	wget --no-check-certificate -qO '/tmp/initrd.img' "${LinuxMirror}/${DIST}/os/${VER}/isolinux/initrd.img"
-	[[ $? -ne '0' ]] && echo -ne "\033[31mError! \033[0mDownload 'initrd.img' for \033[33m$linux_relese\033[0m failed! \n" && exit 1
+	[[ $? -ne '0' ]] && echo -ne "${CLR1}Error! ${CLR0}Download 'initrd.img' for ${CLR2}$linux_relese${CLR0} failed! \n" && exit 1
 	wget --no-check-certificate -qO '/tmp/vmlinuz' "${LinuxMirror}/${DIST}/os/${VER}/isolinux/vmlinuz"
-	[[ $? -ne '0' ]] && echo -ne "\033[31mError! \033[0mDownload 'vmlinuz' for \033[33m$linux_relese\033[0m failed! \n" && exit 1
+	[[ $? -ne '0' ]] && echo -ne "${CLR1}Error! ${CLR0}Download 'vmlinuz' for ${CLR2}$linux_relese${CLR0} failed! \n" && exit 1
 else
 	bash $0 error;
 	exit 1;
@@ -399,7 +483,7 @@ fi
 if [[ "$linux_relese" == 'debian' ]]; then
 	if [[ "$IncFirmware" == '1' ]]; then
 		wget --no-check-certificate -qO '/tmp/firmware.cpio.gz' "http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/${DIST}/current/firmware.cpio.gz"
-		[[ $? -ne '0' ]] && echo -ne "\033[31mError! \033[0mDownload 'firmware' for \033[33m$linux_relese\033[0m failed! \n" && exit 1
+		[[ $? -ne '0' ]] && echo -ne "${CLR1}Error! ${CLR0}Download 'firmware' for ${CLR2}$linux_relese${CLR0} failed! \n" && exit 1
 	fi
 	if [[ "$ddMode" == '1' ]]; then
 		vKernel_udeb=$(wget --no-check-certificate -qO- "http://$DISTMirror/dists/$DIST/main/installer-$VER/current/images/udeb.list" |grep '^acpi-modules' |head -n1 |grep -o '[0-9]\{1,2\}.[0-9]\{1,2\}.[0-9]\{1,2\}-[0-9]\{1,2\}' |head -n1)
@@ -437,7 +521,7 @@ fi
 
 		sed -n "$CFG0,$CFG1"p $READGRUB >/tmp/grub.new;
 		[[ -f /tmp/grub.new ]] && [[ "$(grep -c '{' /tmp/grub.new)" -eq "$(grep -c '}' /tmp/grub.new)" ]] || {
-			echo -ne "\033[31mError! \033[0mNot configure $GRUBFILE. \n";
+			echo -ne "${CLR1}Error! ${CLR0}Not configure $GRUBFILE. \n";
 			exit 1;
 		}
 	fi
@@ -468,7 +552,7 @@ if [[ "$loaderMode" == "0" ]]; then
 
 	[[ "$setInterfaceName" == "1" ]] && Add_OPTION="net.ifnames=0 biosdevname=0" || Add_OPTION=""
 	[[ "$setIPv6" == "1" ]] && Add_OPTION="$Add_OPTION ipv6.disable=1"
-	
+
 	lowMem || Add_OPTION="$Add_OPTION lowmem=+2"
 
 	if [[ "$linux_relese" == 'debian' ]] || [[ "$linux_relese" == 'ubuntu' ]]; then
@@ -476,7 +560,7 @@ if [[ "$loaderMode" == "0" ]]; then
 	elif [[ "$linux_relese" == 'centos' ]]; then
 		BOOT_OPTION="ks=file://ks.cfg $Add_OPTION ksdevice=$interfaceSelect"
 	fi
-	
+
 	[ -n "$setConsole" ] && BOOT_OPTION="$BOOT_OPTION --- console=$setConsole"
 
 	[[ "$Type" == 'InBoot' ]] && {
@@ -490,7 +574,7 @@ if [[ "$loaderMode" == "0" ]]; then
 	}
 
 	sed -i '$a\\n' /tmp/grub.new;
-	
+
 	sed -i ''${INSERTGRUB}'i\\n' $GRUBDIR/$GRUBFILE;
 	sed -i ''${INSERTGRUB}'r /tmp/grub.new' $GRUBDIR/$GRUBFILE;
 	[[ -f  $GRUBDIR/grubenv ]] && sed -i 's/saved_entry/#saved_entry/g' $GRUBDIR/grubenv;
@@ -529,97 +613,95 @@ $UNCOMP < /tmp/$NewIMG | cpio --extract --verbose --make-directories --no-absolu
 if [[ "$linux_relese" == 'debian' ]] || [[ "$linux_relese" == 'ubuntu' ]]; then
 	CurrentKernelVersion=`ls -1 ./lib/modules 2>/dev/null |head -n1`
 	[ -n "$CurrentKernelVersion" ] && SelectLowmem="di-utils-exit-installer,driver-injection-disk-detect,fdisk-udeb,netcfg-static,parted-udeb,partman-auto,partman-ext3,ata-modules-${CurrentKernelVersion}-di,efi-modules-${CurrentKernelVersion}-di,sata-modules-${CurrentKernelVersion}-di,scsi-modules-${CurrentKernelVersion}-di,scsi-nic-modules-${CurrentKernelVersion}-di" || SelectLowmem=""
-cat >/tmp/boot/preseed.cfg<<EOF
-d-i debian-installer/locale string en_US.UTF-8
-d-i debian-installer/country string US
-d-i debian-installer/language string en
+	echo "d-i debian-installer/locale string en_US.UTF-8" > /tmp/boot/preseed.cfg
+	echo "d-i debian-installer/country string US" >> /tmp/boot/preseed.cfg
+	echo "d-i debian-installer/language string en" >> /tmp/boot/preseed.cfg
 
-d-i console-setup/layoutcode string us
+	echo "d-i console-setup/layoutcode string us" >> /tmp/boot/preseed.cfg
 
-d-i keyboard-configuration/xkb-keymap string us
-d-i lowmem/low note
-d-i anna/choose_modules_lowmem multiselect $SelectLowmem
+	echo "d-i keyboard-configuration/xkb-keymap string us" >> /tmp/boot/preseed.cfg
+	echo "d-i lowmem/low note" >> /tmp/boot/preseed.cfg
+	echo "d-i anna/choose_modules_lowmem multiselect $SelectLowmem" >> /tmp/boot/preseed.cfg
 
-d-i netcfg/choose_interface select $interfaceSelect
+	echo "d-i netcfg/choose_interface select $interfaceSelect" >> /tmp/boot/preseed.cfg
 
-d-i netcfg/disable_autoconfig boolean true
-d-i netcfg/dhcp_failed note
-d-i netcfg/dhcp_options select Configure network manually
-d-i netcfg/get_ipaddress string $IPv4
-d-i netcfg/get_netmask string $MASK
-d-i netcfg/get_gateway string $GATE
-d-i netcfg/get_nameservers string $ipDNS
-d-i netcfg/no_default_route boolean true
-d-i netcfg/confirm_static boolean true
+	echo "d-i netcfg/disable_autoconfig boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i netcfg/dhcp_failed note" >> /tmp/boot/preseed.cfg
+	echo "d-i netcfg/dhcp_options select Configure network manually" >> /tmp/boot/preseed.cfg
+	echo "d-i netcfg/get_ipaddress string $IPv4" >> /tmp/boot/preseed.cfg
+	echo "d-i netcfg/get_netmask string $MASK" >> /tmp/boot/preseed.cfg
+	echo "d-i netcfg/get_gateway string $GATE" >> /tmp/boot/preseed.cfg
+	echo "d-i netcfg/get_nameservers string $ipDNS" >> /tmp/boot/preseed.cfg
+	echo "d-i netcfg/no_default_route boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i netcfg/confirm_static boolean true" >> /tmp/boot/preseed.cfg
 
-d-i hw-detect/load_firmware boolean true
+	echo "d-i hw-detect/load_firmware boolean true" >> /tmp/boot/preseed.cfg
 
-d-i mirror/country string manual
-d-i mirror/http/hostname string $MirrorHost
-d-i mirror/http/directory string $MirrorFolder
-d-i mirror/http/proxy string
+	echo "d-i mirror/country string manual" >> /tmp/boot/preseed.cfg
+	echo "d-i mirror/http/hostname string $MirrorHost" >> /tmp/boot/preseed.cfg
+	echo "d-i mirror/http/directory string $MirrorFolder" >> /tmp/boot/preseed.cfg
+	echo "d-i mirror/http/proxy string" >> /tmp/boot/preseed.cfg
 
-d-i passwd/root-login boolean ture
-d-i passwd/make-user boolean false
-d-i passwd/root-password-crypted password $myPASSWORD
-d-i user-setup/allow-password-weak boolean true
-d-i user-setup/encrypt-home boolean false
+	echo "d-i passwd/root-login boolean ture" >> /tmp/boot/preseed.cfg
+	echo "d-i passwd/make-user boolean false" >> /tmp/boot/preseed.cfg
+	echo "d-i passwd/root-password-crypted password $myPASSWORD" >> /tmp/boot/preseed.cfg
+	echo "d-i user-setup/allow-password-weak boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i user-setup/encrypt-home boolean false" >> /tmp/boot/preseed.cfg
 
-d-i clock-setup/utc boolean true
-d-i time/zone string US/Eastern
-d-i clock-setup/ntp boolean false
+	echo "d-i clock-setup/utc boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i time/zone string US/Eastern" >> /tmp/boot/preseed.cfg
+	echo "d-i clock-setup/ntp boolean false" >> /tmp/boot/preseed.cfg
 
-d-i preseed/early_command string anna-install libfuse2-udeb fuse-udeb ntfs-3g-udeb libcrypto1.1-udeb libpcre2-8-0-udeb libssl1.1-udeb libuuid1-udeb zlib1g-udeb wget-udeb
-d-i partman/early_command string [[ -n "\$(blkid -t TYPE='vfat' -o device)" ]] && umount "\$(blkid -t TYPE='vfat' -o device)"; \
-debconf-set partman-auto/disk "\$(list-devices disk |head -n1)"; \
-wget -qO- '$DDURL' |gunzip -dc |/bin/dd of=\$(list-devices disk |head -n1); \
-mount.ntfs-3g \$(list-devices partition |head -n1) /mnt; \
-cd '/mnt/ProgramData/Microsoft/Windows/Start Menu/Programs'; \
-cd Start* || cd start*; \
-cp -f '/net.bat' './net.bat'; \
-/sbin/reboot; \
-umount /media || true; \
+	echo "d-i preseed/early_command string anna-install libfuse2-udeb fuse-udeb ntfs-3g-udeb libcrypto1.1-udeb libpcre2-8-0-udeb libssl1.1-udeb libuuid1-udeb zlib1g-udeb wget-udeb" >> /tmp/boot/preseed.cfg
+	echo "d-i partman/early_command string [[ -n \"\$(blkid -t TYPE='vfat' -o device)\" ]] && umount \"\$(blkid -t TYPE='vfat' -o device)\"; \\" >> /tmp/boot/preseed.cfg
+	echo "debconf-set partman-auto/disk \"\$(list-devices disk |head -n1)\"; \\" >> /tmp/boot/preseed.cfg
+	echo "wget -qO- '$DDURL' |gunzip -dc |/bin/dd of=\$(list-devices disk |head -n1); \\" >> /tmp/boot/preseed.cfg
+	echo "mount.ntfs-3g \$(list-devices partition |head -n1) /mnt; \\" >> /tmp/boot/preseed.cfg
+	echo "cd '/mnt/ProgramData/Microsoft/Windows/Start Menu/Programs'; \\" >> /tmp/boot/preseed.cfg
+	echo "cd Start* || cd start*; \\" >> /tmp/boot/preseed.cfg
+	echo "cp -f '/net.bat' './net.bat'; \\" >> /tmp/boot/preseed.cfg
+	echo "/sbin/reboot; \\" >> /tmp/boot/preseed.cfg
+	echo "umount /media || true; \\" >> /tmp/boot/preseed.cfg
 
-d-i partman-partitioning/confirm_write_new_label boolean true
-d-i partman/mount_style select uuid
-d-i partman/choose_partition select finish
-d-i partman-auto/method string regular
-d-i partman-auto/init_automatically_partition select Guided - use entire disk
-d-i partman-auto/choose_recipe select All files in one partition (recommended for new users)
-d-i partman-md/device_remove_md boolean true
-d-i partman-lvm/device_remove_lvm boolean true
-d-i partman-lvm/confirm boolean true
-d-i partman-lvm/confirm_nooverwrite boolean true
-d-i partman/confirm boolean true
-d-i partman/confirm_nooverwrite boolean true
+	echo "d-i partman-partitioning/confirm_write_new_label boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i partman/mount_style select uuid" >> /tmp/boot/preseed.cfg
+	echo "d-i partman/choose_partition select finish" >> /tmp/boot/preseed.cfg
+	echo "d-i partman-auto/method string regular" >> /tmp/boot/preseed.cfg
+	echo "d-i partman-auto/init_automatically_partition select Guided - use entire disk" >> /tmp/boot/preseed.cfg
+	echo "d-i partman-auto/choose_recipe select All files in one partition (recommended for new users)" >> /tmp/boot/preseed.cfg
+	echo "d-i partman-md/device_remove_md boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i partman-lvm/device_remove_lvm boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i partman-lvm/confirm boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i partman-lvm/confirm_nooverwrite boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i partman/confirm boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i partman/confirm_nooverwrite boolean true" >> /tmp/boot/preseed.cfg
 
-d-i debian-installer/allow_unauthenticated boolean true
+	echo "d-i debian-installer/allow_unauthenticated boolean true" >> /tmp/boot/preseed.cfg
 
-tasksel tasksel/first multiselect minimal
-d-i pkgsel/update-policy select none
-d-i pkgsel/include string openssh-server
-d-i pkgsel/upgrade select none
-d-i apt-setup/services-select multiselect
+	echo "tasksel tasksel/first multiselect minimal" >> /tmp/boot/preseed.cfg
+	echo "d-i pkgsel/update-policy select none" >> /tmp/boot/preseed.cfg
+	echo "d-i pkgsel/include string openssh-server" >> /tmp/boot/preseed.cfg
+	echo "d-i pkgsel/upgrade select none" >> /tmp/boot/preseed.cfg
+	echo "d-i apt-setup/services-select multiselect" >> /tmp/boot/preseed.cfg
 
-popularity-contest popularity-contest/participate boolean false
+	echo "popularity-contest popularity-contest/participate boolean false" >> /tmp/boot/preseed.cfg
 
-d-i grub-installer/only_debian boolean true
-d-i grub-installer/bootdev string $IncDisk
-d-i grub-installer/force-efi-extra-removable boolean true
-d-i finish-install/reboot_in_progress note
-d-i debian-installer/exit/reboot boolean true
-d-i preseed/late_command string	\
-sed -ri 's/^#?Port.*/Port ${sshPORT}/g' /target/etc/ssh/sshd_config; \
-sed -ri 's/^#?PermitRootLogin.*/PermitRootLogin yes/g' /target/etc/ssh/sshd_config; \
-sed -ri 's/^#?PasswordAuthentication.*/PasswordAuthentication yes/g' /target/etc/ssh/sshd_config; \
-echo '@reboot root cat /etc/run.sh 2>/dev/null |base64 -d >/tmp/run.sh; rm -rf /etc/run.sh; sed -i /^@reboot/d /etc/crontab; bash /tmp/run.sh' >>/target/etc/crontab; \
-echo '' >>/target/etc/crontab; \
-echo '${setCMD}' >/target/etc/run.sh; \
-in-target apt update; \
-in-target apt install -y curl jq sudo tar unzip wget; \
-in-target curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; \
-in-target chmod +x /usr/local/bin/k
-EOF
+	echo "d-i grub-installer/only_debian boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i grub-installer/bootdev string $IncDisk" >> /tmp/boot/preseed.cfg
+	echo "d-i grub-installer/force-efi-extra-removable boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i finish-install/reboot_in_progress note" >> /tmp/boot/preseed.cfg
+	echo "d-i debian-installer/exit/reboot boolean true" >> /tmp/boot/preseed.cfg
+	echo "d-i preseed/late_command string	\\" >> /tmp/boot/preseed.cfg
+	echo "sed -ri 's/^#?Port.*/Port ${sshPORT}/g' /target/etc/ssh/sshd_config; \\" >> /tmp/boot/preseed.cfg
+	echo "sed -ri 's/^#?PermitRootLogin.*/PermitRootLogin yes/g' /target/etc/ssh/sshd_config; \\" >> /tmp/boot/preseed.cfg
+	echo "sed -ri 's/^#?PasswordAuthentication.*/PasswordAuthentication yes/g' /target/etc/ssh/sshd_config; \\" >> /tmp/boot/preseed.cfg
+	echo "echo '@reboot root cat /etc/run.sh 2>/dev/null |base64 -d >/tmp/run.sh; rm -rf /etc/run.sh; sed -i /^@reboot/d /etc/crontab; bash /tmp/run.sh' >>/target/etc/crontab; \\" >> /tmp/boot/preseed.cfg
+	echo "echo '' >>/target/etc/crontab; \\" >> /tmp/boot/preseed.cfg
+	echo "echo '${setCMD}' >/target/etc/run.sh; \\" >> /tmp/boot/preseed.cfg
+	echo "in-target apt update; \\" >> /tmp/boot/preseed.cfg
+	echo "in-target apt install -y curl file gawk jq openssl sudo tar unzip wget xz-utils; \\" >> /tmp/boot/preseed.cfg
+	echo "in-target curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; \\" >> /tmp/boot/preseed.cfg
+	echo "in-target chmod +x /usr/local/bin/k" >> /tmp/boot/preseed.cfg
 
 	if [[ "$loaderMode" != "0" ]] && [[ "$setNet" == '0' ]]; then
 		sed -i '/netcfg\/disable_autoconfig/d' /tmp/boot/preseed.cfg
@@ -661,49 +743,45 @@ EOF
 	}
 
 elif [[ "$linux_relese" == 'centos' ]]; then
-cat >/tmp/boot/ks.cfg<<EOF
-#platform=x86, AMD64, or Intel EM64T
-firewall --enabled --ssh
-install
-url --url="$LinuxMirror/$DIST/os/$VER/"
-rootpw --iscrypted $myPASSWORD
-auth --useshadow --passalgo=sha512
-firstboot --disable
-lang en_US
-keyboard us
-selinux --disabled
-logging --level=info
-reboot
-text
-unsupported_hardware
-vnc
-skipx
-timezone --isUtc Asia/Hong_Kong
-#ONDHCP network --bootproto=dhcp --onboot=on
-network --bootproto=static --ip=$IPv4 --netmask=$MASK --gateway=$GATE --nameserver=$ipDNS --onboot=on
-bootloader --location=mbr --append="rhgb quiet crashkernel=auto"
-zerombr
-clearpart --all --initlabel 
-autopart
+	echo "#platform=x86, AMD64, or Intel EM64T" > /tmp/boot/ks.cfg
+	echo "firewall --enabled --ssh" >> /tmp/boot/ks.cfg
+	echo "install" >> /tmp/boot/ks.cfg
+	echo "url --url=\"$LinuxMirror/$DIST/os/$VER/\"" >> /tmp/boot/ks.cfg
+	echo "rootpw --iscrypted $myPASSWORD" >> /tmp/boot/ks.cfg
+	echo "auth --useshadow --passalgo=sha512" >> /tmp/boot/ks.cfg
+	echo "firstboot --disable" >> /tmp/boot/ks.cfg
+	echo "lang en_US" >> /tmp/boot/ks.cfg
+	echo "keyboard us" >> /tmp/boot/ks.cfg
+	echo "selinux --disabled" >> /tmp/boot/ks.cfg
+	echo "logging --level=info" >> /tmp/boot/ks.cfg
+	echo "reboot" >> /tmp/boot/ks.cfg
+	echo "text" >> /tmp/boot/ks.cfg
+	echo "unsupported_hardware" >> /tmp/boot/ks.cfg
+	echo "vnc" >> /tmp/boot/ks.cfg
+	echo "skipx" >> /tmp/boot/ks.cfg
+	echo "timezone --isUtc Asia/Hong_Kong" >> /tmp/boot/ks.cfg
+	echo "#ONDHCP network --bootproto=dhcp --onboot=on" >> /tmp/boot/ks.cfg
+	echo "network --bootproto=static --ip=$IPv4 --netmask=$MASK --gateway=$GATE --nameserver=$ipDNS --onboot=on" >> /tmp/boot/ks.cfg
+	echo "bootloader --location=mbr --append=\"rhgb quiet crashkernel=auto\"" >> /tmp/boot/ks.cfg
+	echo "zerombr" >> /tmp/boot/ks.cfg
+	echo "clearpart --all --initlabel" >> /tmp/boot/ks.cfg
+	echo "autopart" >> /tmp/boot/ks.cfg
 
-%packages
-@base
-%end
+	echo "%packages" >> /tmp/boot/ks.cfg
+	echo "@base" >> /tmp/boot/ks.cfg
+	echo "%end" >> /tmp/boot/ks.cfg
 
-%post --interpreter=/bin/bash
-rm -rf /root/anaconda-ks.cfg
-rm -rf /root/install.*log
+	echo "%post --interpreter=/bin/bash" >> /tmp/boot/ks.cfg
+	echo "rm -rf /root/anaconda-ks.cfg" >> /tmp/boot/ks.cfg
+	echo "rm -rf /root/install.*log" >> /tmp/boot/ks.cfg
 
-yum update -y
-yum install -y curl jq sudo tar unzip wget
+	echo "yum update -y" >> /tmp/boot/ks.cfg
+	echo "yum install -y curl file gawk jq openssl sudo tar unzip wget xz" >> /tmp/boot/ks.cfg
 
-curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh
-chmod +x /usr/local/bin/k
+	echo "curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh" >> /tmp/boot/ks.cfg
+	echo "chmod +x /usr/local/bin/k" >> /tmp/boot/ks.cfg
 
-%end
-
-EOF
-
+	echo "%end" >> /tmp/boot/ks.cfg
 
 	[[ "$UNKNOWHW" == '1' ]] && sed -i 's/^unsupported_hardware/#unsupported_hardware/g' /tmp/boot/ks.cfg
 	[[ "$(echo "$DIST" |grep -o '^[0-9]\{1\}')" == '5' ]] && sed -i '0,/^%end/s//#%end/' /tmp/boot/ks.cfg
