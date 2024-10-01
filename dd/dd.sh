@@ -160,7 +160,7 @@ download_image() {
             wget -O /tmp/vmlinuz http://ftp.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/debian-installer/amd64/linux
             ;;
         ubuntu)
-            VER=$(curl -s https://releases.ubuntu.com/ | grep -oP 'Ubuntu \K[0-9.]+(?= LTS)' | head -n1)
+            VER="focal"  # 使用 Ubuntu 20.04 LTS (Focal Fossa)
             wget -O /tmp/initrd.gz http://archive.ubuntu.com/ubuntu/dists/${VER}/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/initrd.gz
             wget -O /tmp/vmlinuz http://archive.ubuntu.com/ubuntu/dists/${VER}/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/linux
             ;;
@@ -182,7 +182,7 @@ download_image() {
 }
 
 make_image() {
-    echo -e "${CLR3}開始製作���定義鏡像...${CLR0}"
+    echo -e "${CLR3}開始製作定義鏡像...${CLR0}"
     # 解壓並修改 initrd
     cd /tmp
     mkdir initrd
