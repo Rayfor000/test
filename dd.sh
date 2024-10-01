@@ -25,7 +25,7 @@ tmpMirror=''
 ipAddr=''
 ipMask=''
 ipGate=''
-ipDNS='8.8.8.8'
+ipDNS='1.1.1.1'
 IncDisk='default'
 interface=''
 interfaceSelect=''
@@ -52,41 +52,41 @@ setConsole=''
 
 while [[ $# -ge 1 ]]; do
 	case $1 in
-		-v|--ver)
+		-v)
 			shift
 			tmpVER="$1"
 			shift
 			;;
-		-d|--debian)
+		-d)
 			shift
 			Relese='Debian'
 			tmpDIST="$1"
 			shift
 			;;
-		-u|--ubuntu)
+		-u)
 			shift
 			Relese='Ubuntu'
 			tmpDIST="$1"
 			shift
 			;;
-		-c|--centos)
+		-c)
 			shift
 			Relese='CentOS'
 			tmpDIST="$1"
 			shift
 			;;
-		-dd|--image)
+		-dd)
 			shift
 			ddMode='1'
 			tmpURL="$1"
 			shift
 			;;
-		-p|--password)
+		-p)
 			shift
 			tmpWORD="$1"
 			shift
 			;;
-		-i|--interface)
+		-i)
 			shift
 			interfaceSelect="$1"
 			shift
@@ -119,7 +119,7 @@ while [[ $# -ge 1 ]]; do
 			shift
 			loaderMode='1'
 			;;
-		-apt|-yum|--mirror)
+		-apt|-yum)
 			shift
 			isMirror='1'
 			tmpMirror="$1"
@@ -154,7 +154,7 @@ while [[ $# -ge 1 ]]; do
 			shift
 			setIPv6='1'
 			;;
-		-a|--auto|-m|--manual|-ssl)
+		-a|-m|-ssl)
 			shift
 			;;
 		*)

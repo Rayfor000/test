@@ -2,7 +2,6 @@
 
 SH="$0"
 X="/usr/local/bin/x"
-[ ! -f "$SH~" ] && { gzexe $SH; rm "$SH~"; touch "$SH~" ; }
 cp -f "$SH" "$X" &>/dev/null
 
 FILE="function.sh"
@@ -22,24 +21,24 @@ CLR8="\033[96m"
 CLR9="\033[97m"
 CLR0="\033[0m"
 
-LI() { echo -e "${CLR8}$(LINE - "24")${CLR0}" ; }
-DLI() { echo -e "${CLR8}$(LINE = "24")${CLR0}" ; }
-IN() { DLI ; INPUT "請輸入：" sel ; }
-INC() { DLI ; INPUT "確認繼續嗎？(Y/N)：" sel ; }
-OC() { echo -e "${CLR2}完成${CLR0}" ; read -n 1 -s -r -p "按任意鍵繼續..." ; CLEAN ; }
+LI() { echo -e "${CLR8}$(LINE - "24")${CLR0}"; }
+DLI() { echo -e "${CLR8}$(LINE = "24")${CLR0}"; }
+IN() { DLI; INPUT "請輸入：" sel; }
+INC() { DLI; INPUT "確認繼續嗎？(Y/N)：" sel; }
+OC() { echo -e "${CLR2}完成${CLR0}"; read -n 1 -s -r -p "按任意鍵繼續..."; CLEAN; }
 
-ADD sudo jq tar unzip &>/dev/null
+ADD curl jq sudo tar unzip wget &>/dev/null
 
 Dis_TXT() {
 	CLEAN
 	for i in "${!TXT[@]}"; do
 		case "$i" in
-			0) echo -e "${CLR3}${TXT[$i]}${CLR0}" ;;
-			1) DLI ; echo -e "${CLR8}${TXT[$i]}${CLR0}" ;;
+			0) echo -e "${CLR3}${TXT[$i]}${CLR0}";;
+			1) DLI; echo -e "${CLR8}${TXT[$i]}${CLR0}";;
 			*) case "${TXT[$i]}" in
-				"LI") LI ;;
-				*) echo -e "${CLR8}${TXT[$i]}${CLR0}" ;;
-			esac ;;
+				"LI") LI;;
+				*) echo -e "${CLR8}${TXT[$i]}${CLR0}";;
+			esac;;
 		esac
 	done
 	DLI
@@ -75,7 +74,7 @@ Dis_OPT() {
 	}
 	for option in "${OPT[@]}"; do
 		case "$option" in
-			"LI") LI ; col_options=() ;;
+			"LI") LI; col_options=();;
 			"-"*)
 				max_cols=${option//[-]/}
 				[ ${#col_options[@]} -gt 0 ] && print_row "${col_options[@]}"
@@ -83,7 +82,7 @@ Dis_OPT() {
 				;;
 			*)
 				col_options+=("$option")
-				[ ${#col_options[@]} -eq $max_cols ] && { print_row "${col_options[@]}" ; col_options=() ; }
+				[ ${#col_options[@]} -eq $max_cols ] && { print_row "${col_options[@]}"; col_options=(); }
 				;;
 		esac
 	done
@@ -94,10 +93,10 @@ Run_ACT() {
 	return=${1:-Menu}
 	count=1
 	for action in "${ACT[@]}"; do
-		[ "$sel" = "$count" ] && { CLEAN ; IFS=';' read -ra steps <<< "$action" ; for step in "${steps[@]}" ; do eval "$step" ; done ; OC ; return 0 ; }
+		[ "$sel" = "$count" ] && { CLEAN; IFS=';' read -ra steps <<< "$action"; for step in "${steps[@]}"; do eval "$step"; done; OC; return 0; }
 		((count++))
 	done
-	[ $count -gt ${#ACT[@]} ] && case $sel in 0) $return ;; *) CLEAN ;; esac
+	[ $count -gt ${#ACT[@]} ] && case $sel in 0) $return;; *) CLEAN;; esac
 }
 
 Tools() {
@@ -126,27 +125,27 @@ Tools() {
 		"移除指定工具"
 	)
 	ACT=(
-		"ADD curl ; CLEAN ; curl --help"
-		"ADD wget ; CLEAN ; wget --help"
-		"ADD socat; CLEAN ; socat -help"
-		"ADD htop ; CLEAN ; htop"
-		"ADD iftop ; CLEAN ; iftop"
-		"ADD tmux ; CLEAN ; tmux --help"
-		"ADD ffmpeg ; CLEAN ; ffmpeg --help"
-		"ADD btop ; CLEAN ; btop"
-		"ADD ncdu ; cd / ; CLEAN ; ncdu"
-		"ADD ranger ; cd / ; CLEAN ; ranger"
-		"ADD fzf ; cd / ; CLEAN ; fzf"
-		"ADD vim ; cd / ; CLEAN ; vim -h"
-		"ADD nano ; cd / ; CLEAN ; nano -h"
-		"ADD git ; cd / ; CLEAN ; git --help"
+		"ADD curl; CLEAN; curl --help"
+		"ADD wget; CLEAN; wget --help"
+		"ADD socat; CLEAN; socat -help"
+		"ADD htop; CLEAN; htop"
+		"ADD iftop; CLEAN; iftop"
+		"ADD tmux; CLEAN; tmux --help"
+		"ADD ffmpeg; CLEAN; ffmpeg --help"
+		"ADD btop; CLEAN; btop"
+		"ADD ncdu; cd /; CLEAN; ncdu"
+		"ADD ranger; cd /; CLEAN; ranger"
+		"ADD fzf; cd /; CLEAN; fzf"
+		"ADD vim; cd /; CLEAN; vim -h"
+		"ADD nano; cd /; CLEAN; nano -h"
+		"ADD git; cd /; CLEAN; git --help"
 		"ADD curl wget socat htop iftop tmux ffmpeg btop ncdu ranger fzf vim nano git"
 		"DEL curl wget socat htop iftop tmux ffmpeg btop ncdu ranger fzf vim nano git"
 		"Install_Tool"
 		"Remove_Tool"
 	)
-	Install_Tool() { INPUT 請輸入欲安裝工具： Tools && ADD $Tools ; }
-	Remove_Tool() { INPUT 請輸入欲移除工具： Tools && DEL $Tools ; }
+	Install_Tool() { INPUT 請輸入欲安裝工具： Tools && ADD $Tools; }
+	Remove_Tool() { INPUT 請輸入欲移除工具： Tools && DEL $Tools; }
 	Sub_Menu
 }
 Setting() {
@@ -156,58 +155,13 @@ Setting() {
 		包括更新、卸載等操作
 	)
 	OPT=(
-		"快捷鍵設定"
-		"切換腳本語言"
 		"腳本版權及授權"
 		"卸載腳本"
 	)
 	ACT=(
-		"Hotkey; Sub_Menu 'Setting'"
-		"Language; Sub_Menu 'Setting'"
 		"Copyright; Sub_Menu 'Setting'"
-		"Remove; Sub_Menu 'Setting'"
+		"rm -f $SH; rm -f $X"
 	)
-	Hotkey() {
-		TXT=(
-			" > > 快捷鍵設定"
-			這裡您可以設定腳本的快捷鍵
-		)
-		OPT=(
-			"設置快捷鍵"
-			"查看當前快捷鍵"
-		)
-		ACT=(
-			"Set_Hotkey; Sub_Menu 'Hotkey'"
-			"Show_Hotkeys; Sub_Menu 'Hotkey'"
-		)
-		Set_Hotkey() {
-			INPUT "請輸入新的快捷鍵：" new_hotkey
-			# 假設有一個變量保存當前快捷鍵
-			CURRENT_HOTKEY="$new_hotkey"
-			echo -e "快捷鍵已設置為: ${CLR2}$CURRENT_HOTKEY${CLR0}"
-		}
-		Show_Hotkeys() {
-			echo -e "當前快捷鍵為: ${CLR2}$CURRENT_HOTKEY${CLR0}"
-		}
-	}
-	Language() {
-		TXT=(
-			" > > 切換腳本語言"
-			這裡您可以選擇腳本的語言
-		)
-		OPT=(
-			"中文"
-			"英文"
-		)
-		ACT=(
-			"Set_Language 'zh'; Sub_Menu 'Language'"
-			"Set_Language 'en'; Sub_Menu 'Language'"
-		)
-		Set_Language() {
-			lang="$1"
-			echo -e "語言已切換為: ${CLR2}$lang${CLR0}"
-		}
-	}
 	Copyright() {
 		echo -e "${CLR8}$(LINE = "56")${CLR0}"
 		echo -e "${CLR8}OG|OS OGATA-Open-Source${CLR0}"
@@ -232,94 +186,6 @@ Setting() {
 		echo -e "${CLR8}$(LINE = "56")${CLR0}"
 		OC
 	}
-	Remove() {
-		TXT=(
-			" > > 卸載腳本"
-			這裡您可以卸載腳本
-		)
-		OPT=(
-			"確認卸載"
-		)
-		ACT=(
-			"Confirm_Remove; Sub_Menu 'Remove'"
-		)
-		Confirm_Remove() {
-			INC
-			if [[ $sel =~ ^[Yy]$ ]]; then
-				echo -e "${CLR2}腳本已卸載。${CLR0}"
-				exit
-			else
-				echo -e "${CLR2}卸載已取消。${CLR0}"
-			fi
-		}
-	}
-	Sub_Menu
-}
-SYS_Setting() {
-	TXT=(
-		" > 系統設定"
-		這裡您可以進行系統的相關設定
-		包括網絡配置、用戶管理、安全設置等操作
-	)
-	OPT=(
-		"網路管理"
-		"用戶管理"
-		"安全性"
-	)
-	ACT=(
-		"Network_Manger; Sub_Menu 'SYS_Setting'"
-		"User_Manger; Sub_Menu 'SYS_Setting'"
-		"Security_Manger; Sub_Menu 'SYS_Setting'"
-	)
-	Network_Manger() {
-		TXT=(
-			" > > 網路管理"
-			這裡您可以進行網路相關的設定
-		)
-		OPT=(
-			"查看網路配置"
-			"修改IP地址"
-			"設置DNS"
-		)
-		ACT=(
-			"ifconfig"
-			"Edit_IP"
-			"Edit_DNS"
-		)
-	}
-	User_Manger() {
-		TXT=(
-			" > > 用戶管理"
-			這裡您可以進行用戶相關的操作
-		)
-		OPT=(
-			"添加用戶"
-			"刪除用戶"
-			"修改用戶密碼"
-		)
-		ACT=(
-			"Add_User"
-			"Del_User"
-			"Change_Password"
-		)
-	}
-	Security_Manger() {
-		TXT=(
-			" > > 安全性"
-			這裡您可以進行系統安全相關的設置
-		)
-		OPT=(
-			"防火牆設置"
-			"SSH設置"
-			"系統更新"
-		)
-		ACT=(
-			"Firewall_Settings"
-			"SSH_Settings"
-			"System_Update"
-		)
-	}
-	Sub_Menu
 }
 File_Manager() {
 	items_per_page=20
@@ -333,7 +199,7 @@ File_Manager() {
 		CLEAN
 		echo -e "${CLR8}當前目錄：${CLR3}$current_dir${CLR0}"
 		echo -e "${CLR8}$(LINE - "89")"
-		printf "${CLR2}%-30s %-21s %-19s %-14s %s${CLR0}\n" "名稱" "修改日期" "大小" "種類" "權限"
+		printf "${CLR2}%-30s %-24s %-20s %-10s %s${CLR0}\n" "名稱" "修改日期" "大小" "種類" "權限"
 		echo -e "${CLR8}$(LINE - "89")"
 		find "$current_dir" -maxdepth 1 | tail -n +2 | awk -v start="$start" -v end="$end" -v regex="$regex" '
 		NR > start && NR <= end {
@@ -346,14 +212,15 @@ File_Manager() {
 			split(fi, ia, " ")
 			p = ia[1]
 			sz = ia[2]
-			n = gensub(/.*\//, "", "g", $0)
+			n = $0
+			gsub(/.*\//, "", n)
 			if (regex == "" || tolower(n) ~ tolower(regex)) {
 				t = (p ~ /^d/) ? "目錄" : (p ~ /^l/) ? "連結" : "文件"
 				tc = (p ~ /^d/) ? "'$CLR4'" : (p ~ /^l/) ? "'$CLR6'" : "'$CLR2'"
 				if (length(n) > 28) n = substr(n, 1, 25) "...";
 				u = (sz >= 1048576) ? "MiB" : (sz >= 1024) ? "KiB" : "Bytes"
 				nm = (sz >= 1048576) ? sz/1048576 : (sz >= 1024) ? sz/1024 : sz
-				printf "'$CLR9'%-28s'$CLR0' '$CLR3'%-16s'$CLR0' '$CLR6'%8.2f %-9s'$CLR0' %s%-10s'$CLR0' '$CLR2'%s'$CLR0'\n", \
+				printf "'$CLR9'%-28s'$CLR0' '$CLR3'%-20s'$CLR0' '$CLR6'%8.2f %-9s'$CLR0' %s%-10s'$CLR0' '$CLR2'%s'$CLR0'\n", \
 					n, dt, nm, u, tc, t, p
 			}
 		}'
@@ -365,16 +232,16 @@ File_Manager() {
 		echo -e "${CLR2}頁面：${CLR3}$((current_page + 1))/${total_pages}${CLR0}"
 		echo -e "${CLR8}$(LINE - "89")"
 	}
-	refresh_display() {
+	refresh() {
 		total_items=$(find "$current_dir" -maxdepth 1 | tail -n +2 | wc -l)
 		total_pages=$(( (total_items + items_per_page - 1) / items_per_page ))
 		dis_files $((current_page * items_per_page)) $(( (current_page + 1) * items_per_page )) "$search_term"
 	}
 	run_and_refresh() {
 		eval "$@"
-		refresh_display
+		refresh
 	}
-	refresh_display
+	refresh
 	OPT=(
 		-2-
 		"上級目錄" "下級目錄"
@@ -394,23 +261,23 @@ File_Manager() {
 		echo -e "${CLR2}  0. 返回${CLR0}"
 		IN
 		case "$sel" in
-			1) run_and_refresh "current_dir=$(dirname "$current_dir")" ;;
-			2) run_and_refresh "read -e -p '輸入目錄：' sub_dir && [[ -d \"\$current_dir/\$sub_dir\" ]] && current_dir=\$(realpath \"\$current_dir/\$sub_dir\") || { echo '目錄「\$sub_dir」不存在。'; sleep 1; }" ;;
-			3) run_and_refresh "((current_page > 0)) && ((current_page--))" ;;
-			4) run_and_refresh "((current_page < total_pages - 1)) && ((current_page++))" ;;
-			5) run_and_refresh "read -e -p '輸入搜尋詞：' search_term" ;;
+			1) run_and_refresh "current_dir=$(dirname "$current_dir")";;
+			2) run_and_refresh "read -e -p '輸入目錄：' sub_dir && [[ -d \"\$current_dir/\$sub_dir\" ]] && current_dir=\$(realpath \"\$current_dir/\$sub_dir\") || { echo '目錄「\$sub_dir」不存在。'; sleep 1; }";;
+			3) run_and_refresh "((current_page > 0)) && ((current_page--))";;
+			4) run_and_refresh "((current_page < total_pages - 1)) && ((current_page++))";;
+			5) run_and_refresh "read -e -p '輸入搜尋詞：' search_term";;
 			6) run_and_refresh "search_term=""";;
-			7) run_and_refresh "read -e -p '輸入新檔案名稱：' new_file && cmds=(\"touch \\\"\$current_dir/\$new_file\\\"\")" ;;
-			8) run_and_refresh "read -e -p '輸入新資料夾名稱：' new_dir && cmds=(\"mkdir -p \\\"\$current_dir/\$new_dir\\\"\")" ;;
-			9) run_and_refresh "read -e -p '輸入要刪除的檔案（以逗號分隔，或輸入「/all」刪除所有檔案）：' del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then cmds=(\"rm -rf \\\"\$current_dir\\\"/*\"); else IFS=',' read -ra files <<< \"\$del_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"rm -rf \\\"\$current_dir/\$file\\\"\"); done; fi" ;;
-			10) run_and_refresh "read -e -p '輸入要重新命名的檔案：' old_name && read -e -p '輸入新名稱：' new_name && cmds=(\"mv \\\"\$current_dir/\$old_name\\\" \\\"\$current_dir/\$new_name\\\"\")" ;;
-			11) run_and_refresh "read -e -p '輸入要更改權限的檔案（以逗號分隔，或輸入「/all」更改所有檔案）：' perm_files && perm_files=\${perm_files// /} && read -e -p '輸入新權限：' perms && if [[ \"\$perm_files\" == \"/all\" ]]; then cmds=(\"chmod -R \\\"\$perms\\\" \\\"\$current_dir\\\"\"); else IFS=',' read -ra files <<< \"\$perm_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"chmod \\\"\$perms\\\" \\\"\$current_dir/\$file\\\"\"); done; fi" ;;
-			12) run_and_refresh "read -e -p '輸入要編輯的檔案：' edit_file && nano \"\$current_dir/\$edit_file\"" ;;
-			13) run_and_refresh "read -e -p '輸入要複製的檔案（以逗號分隔，或輸入「/all」複製所有檔案）：' copy_files && copy_files=\${copy_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cmds=(\"cp -r \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$copy_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"cp -r \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi" ;;
-			14) run_and_refresh "read -e -p '輸入要移動的檔案（以逗號分隔，或輸入「/all」移動所有檔案）：' move_files && move_files=\${move_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$move_files\" == \"/all\" ]]; then cmds=(\"mv \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$move_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"mv \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi" ;;
-			15) run_and_refresh "read -e -p '輸入要壓縮／解壓縮的檔案（以逗號分隔，或輸入「/all」壓縮／解壓縮所有檔案）：' tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then cmds=(\"tar -czf \\\"\$current_dir/all_files.tar.gz\\\" -C \\\"\$current_dir\\\" .\"); else IFS=',' read -ra files <<< \"\$tar_files\" && cmds=(); for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then cmds+=(\"tar -xzf \\\"\$current_dir/\$file\\\" -C \\\"\$current_dir\\\"\"); else cmds+=(\"tar -czf \\\"\$current_dir/\$file.tar.gz\\\" -C \\\"\$current_dir\\\" \\\"\$file\\\"\"); fi; done; fi" ;;
-			0) break ;;
-			*) run_and_refresh ;;
+			7) run_and_refresh "read -e -p '輸入新檔案名稱：' new_file && cmds=(\"touch \\\"\$current_dir/\$new_file\\\"\")";;
+			8) run_and_refresh "read -e -p '輸入新資料夾名稱：' new_dir && cmds=(\"mkdir -p \\\"\$current_dir/\$new_dir\\\"\")";;
+			9) run_and_refresh "read -e -p '輸入要刪除的檔案（以逗號分隔，或輸入「/all」刪除所有檔案）：' del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then cmds=(\"rm -rf \\\"\$current_dir\\\"/*\"); else IFS=',' read -ra files <<< \"\$del_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"rm -rf \\\"\$current_dir/\$file\\\"\"); done; fi";;
+			10) run_and_refresh "read -e -p '輸入要重新命名的檔案：' old_name && read -e -p '輸入新名稱：' new_name && cmds=(\"mv \\\"\$current_dir/\$old_name\\\" \\\"\$current_dir/\$new_name\\\"\")";;
+			11) run_and_refresh "read -e -p '輸入要更改權限的檔案（以逗號分隔，或輸入「/all」更改所有檔案）：' perm_files && perm_files=\${perm_files// /} && read -e -p '輸入新權限：' perms && if [[ \"\$perm_files\" == \"/all\" ]]; then cmds=(\"chmod -R \\\"\$perms\\\" \\\"\$current_dir\\\"\"); else IFS=',' read -ra files <<< \"\$perm_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"chmod \\\"\$perms\\\" \\\"\$current_dir/\$file\\\"\"); done; fi";;
+			12) run_and_refresh "read -e -p '輸入要編輯的檔案：' edit_file && nano \"\$current_dir/\$edit_file\"";;
+			13) run_and_refresh "read -e -p '輸入要複製的檔案（以逗號分隔，或輸入「/all」複製所有檔案）：' copy_files && copy_files=\${copy_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cmds=(\"cp -r \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$copy_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"cp -r \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi";;
+			14) run_and_refresh "read -e -p '輸入要移動的檔案（以逗號分隔，或輸入「/all」移動所有檔案）：' move_files && move_files=\${move_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$move_files\" == \"/all\" ]]; then cmds=(\"mv \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$move_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"mv \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi";;
+			15) run_and_refresh "read -e -p '輸入要壓縮／解壓縮的檔案（以逗號分隔，或輸入「/all」壓縮／解壓縮所有檔案）：' tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then cmds=(\"tar -czf \\\"\$current_dir/all_files.tar.gz\\\" -C \\\"\$current_dir\\\" .\"); else IFS=',' read -ra files <<< \"\$tar_files\" && cmds=(); for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then cmds+=(\"tar -xzf \\\"\$current_dir/\$file\\\" -C \\\"\$current_dir\\\"\"); else cmds+=(\"tar -czf \\\"\$current_dir/\$file.tar.gz\\\" -C \\\"\$current_dir\\\" \\\"\$file\\\"\"); fi; done; fi";;
+			0) break;;
+			*) run_and_refresh;;
 		esac
 		PROGRESS
 	done
@@ -418,7 +285,7 @@ File_Manager() {
 
 Sub_Menu() {
 	return="$1"
-	while true ; do
+	while true; do
 		Dis_TXT
 		Dis_OPT
 		echo -e "${CLR2}  0. 返回${CLR0}"
@@ -427,7 +294,7 @@ Sub_Menu() {
 	done
 }
 Menu() {
-	while true ; do
+	while true; do
 		TXT=(
 			" ____   __                        _
 /_ \ \ / /                       | |
@@ -454,15 +321,14 @@ Menu() {
 		echo -e "${CLR2}  0. 退出${CLR0}"
 		IN
 		case $sel in
-			1) CLEAN ; SYS_INFO ; OC ; Menu ;;
-			2) CLEAN ; SYS_UPDATE ; OC ; Menu ;;
-			3) CLEAN ; SYS_CLEAN ; OC ; Menu ;;
-			4) Tools ; Sub_Menu ;;
-			5) File_Manager ;;
-			6) Setting ; Sub_Menu ;;
-			7) SYS_Setting ; Sub_Menu ;;
-			0) CLEAN ; exit ;;
-			*) CLEAN ;;
+			1) CLEAN; SYS_INFO; OC; Menu;;
+			2) CLEAN; SYS_UPDATE; OC; Menu;;
+			3) CLEAN; SYS_CLEAN; OC; Menu;;
+			4) Tools; Sub_Menu;;
+			5) File_Manager;;
+			6) Setting; Sub_Menu;;
+			0) CLEAN; exit;;
+			*) CLEAN;;
 		esac
 	done
 }
