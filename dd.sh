@@ -51,147 +51,63 @@ setCMD=''
 setConsole=''
 
 while [[ $# -ge 1 ]]; do
-	case $1 in
-		-v)
-			shift
-			tmpVER="$1"
-			shift
-			;;
-		-d)
-			shift
-			Relese='Debian'
-			tmpDIST="$1"
-			shift
-			;;
-		-u)
-			shift
-			Relese='Ubuntu'
-			tmpDIST="$1"
-			shift
-			;;
-		-c)
-			shift
-			Relese='CentOS'
-			tmpDIST="$1"
-			shift
-			;;
-		-dd)
-			shift
-			ddMode='1'
-			tmpURL="$1"
-			shift
-			;;
-		-p)
-			shift
-			tmpWORD="$1"
-			shift
-			;;
-		-i)
-			shift
-			interfaceSelect="$1"
-			shift
-			;;
-		--ip-addr)
-			shift
-			ipAddr="$1"
-			shift
-			;;
-		--ip-mask)
-			shift
-			ipMask="$1"
-			shift
-			;;
-		--ip-gate)
-			shift
-			ipGate="$1"
-			shift
-			;;
-		--ip-dns)
-			shift
-			ipDNS="$1"
-			shift
-			;;
-		--dev-net)
-			shift
-			setInterfaceName='1'
-			;;
-		--loader)
-			shift
-			loaderMode='1'
-			;;
-		-apt|-yum)
-			shift
-			isMirror='1'
-			tmpMirror="$1"
-			shift
-			;;
-		-rdp)
-			shift
-			setRDP='1'
-			WinRemote="$1"
-			shift
-			;;
-		-cmd)
-			shift
-			setCMD="$1"
-			shift
-			;;
-		-console)
-			shift
-			setConsole="$1"
-			shift
-			;;
-		-firmware)
-			shift
-			IncFirmware="1"
-			;;
-		-port)
-			shift
-			sshPORT="$1"
-			shift
-			;;
-		--noipv6)
-			shift
-			setIPv6='1'
-			;;
-		-a|-m|-ssl)
-			shift
-			;;
-		*)
-			if [[ "$1" != 'error' ]]; then echo -ne "\nInvaild option: '$1'\n\n"; fi
-			echo -ne " Usage:\n\tbash $(basename $0)\t-d/--debian [\033[33m\033[04mdists-name\033[0m]\n\t\t\t\t-u/--ubuntu [\033[04mdists-name\033[0m]\n\t\t\t\t-c/--centos [\033[04mdists-name\033[0m]\n\t\t\t\t-v/--ver [32/i386|64/\033[33m\033[04mamd64\033[0m] [\033[33m\033[04mdists-verison\033[0m]\n\t\t\t\t--ip-addr/--ip-gate/--ip-mask\n\t\t\t\t-apt/-yum/--mirror\n\t\t\t\t-dd/--image\n\t\t\t\t-p [linux password]\n\t\t\t\t-port [linux ssh port]\n"
-			exit 1;
-			;;
-	esac
+    case $1 in
+        -v) shift; tmpVER="$1" ;;
+        -d) shift; Relese='Debian'; tmpDIST="$1" ;;
+        -u) shift; Relese='Ubuntu'; tmpDIST="$1" ;;
+        -c) shift; Relese='CentOS'; tmpDIST="$1" ;;
+        -dd) shift; ddMode='1'; tmpURL="$1" ;;
+        -p) shift; tmpWORD="$1" ;;
+        -i) shift; interfaceSelect="$1" ;;
+        --ip-addr) shift; ipAddr="$1" ;;
+        --ip-mask) shift; ipMask="$1" ;;
+        --ip-gate) shift; ipGate="$1" ;;
+        --ip-dns) shift; ipDNS="$1" ;;
+        --dev-net) setInterfaceName='1' ;;
+        --loader) loaderMode='1' ;;
+        -apt|-yum) shift; isMirror='1'; tmpMirror="$1" ;;
+        -rdp) shift; setRDP='1'; WinRemote="$1" ;;
+        -cmd) shift; setCMD="$1" ;;
+        -console) shift; setConsole="$1" ;;
+        -firmware) IncFirmware="1" ;;
+        -port) shift; sshPORT="$1" ;;
+        --noipv6) setIPv6='1' ;;
+        -a|-m|-ssl) ;;
+        *)
+            echo -ne "\nInvaild option: '$1'\n\n"
+            echo -ne " Usage:\n\tbash $(basename $0)\t-d/--debian [dists-name]\n\t\t\t\t-u/--ubuntu [dists-name]\n\t\t\t\t-c/--centos [dists-name]\n\t\t\t\t-v/--ver [32/i386|64/amd64] [dists-verison]\n\t\t\t\t--ip-addr/--ip-gate/--ip-mask\n\t\t\t\t-apt/-yum/--mirror\n\t\t\t\t-dd/--image\n\t\t\t\t-p [linux password]\n\t\t\t\t-port [linux ssh port]\n"
+            exit 1
+            ;;
+    esac
+    shift
 done
 
 [ "$(id -u)" -ne 0 ] && { echo -e "${CLR1}Please run this script as root user.${CLR0}"; exit 1; }
 
-dependence(){
-	Full='0';
-	for BIN_DEP in `echo "$1" |sed 's/,/\n/g'`; do
-		if [[ -n "$BIN_DEP" ]]; then
-			Found='0';
-			for BIN_PATH in `echo "$PATH" |sed 's/:/\n/g'`; do
-				ls $BIN_PATH/$BIN_DEP >/dev/null 2>&1;
-				if [ $? == '0' ]; then
-					Found='1';
-					break;
-				fi
-			done
-			if [ "$Found" == '1' ]; then
-				echo -en "[\033[32mok\033[0m]\t";
-			else
-				Full='1';
-				echo -en "[\033[31mNot Install\033[0m]";
-			fi
-			echo -en "\t$BIN_DEP\n";
-		fi
-	done
-	if [ "$Full" == '1' ]; then
-		echo -ne "\n\033[31mError! \033[0mPlease use '\033[33mapt\033[0m' or '\033[33myum\033[0m' install it.\n\n\n"
-		exit 1;
-	fi
+dependence() {
+    full=0
+    for bin_dep in $(echo "$1" | tr ',' '\n'); do
+        if [[ -n "$bin_dep" ]]; then
+            found=0
+            for bin_path in $(echo "$PATH" | tr ':' '\n'); do
+                if ls "$bin_path/$bin_dep" >/dev/null 2>&1; then
+                    found=1
+                    break
+                fi
+            done
+            if [ "$found" -eq 1 ]; then
+                echo -en "[\033[32mok\033[0m]\t"
+            else
+                full=1
+                echo -en "[\033[31mNot Install\033[0m]"
+            fi
+            echo -e "\t$bin_dep"
+        fi
+    done
+    if [ "$full" -eq 1 ]; then
+        echo -e "\n\033[31mError! \033[0mPlease use '\033[33mapt\033[0m' or '\033[33myum\033[0m' to install missing dependencies.\n\n"
+        exit 1
+    fi
 }
 
 selectMirror(){
