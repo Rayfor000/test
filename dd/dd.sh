@@ -258,7 +258,8 @@ d-i grub-installer/with_other_os boolean true
 d-i finish-install/reboot_in_progress note
 
 # 安裝完成後執行的命令
-d-i preseed/late_command string in-target apt-get update; in-target apt-get install -y curl jq sudo tar unzip wget
+d-i preseed/late_command string
+in-target apt update -y; in-target apt install -y curl jq sudo tar unzip wget
 EOF
     elif [[ "$DIST" == 'centos' ]]; then
         # 修改 kickstart 文件
@@ -287,6 +288,7 @@ reboot
 
 %post
 # 安裝基本工具
+yum update -y
 yum install -y curl jq sudo tar unzip wget
 %end
 EOF
