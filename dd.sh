@@ -387,7 +387,7 @@ if [[ "$linux_relese" == 'centos' ]]; then
 	fi
 fi
 
-echo -e "\n[${CLR2}$Relese${CLR0}] [${CLR2}$DIST${CLR0}] [${CLR2}$VER${CLR0}] Downloading..."
+echo -e "\n${CLR2}[$Relese]${CLR0} ${CLR2}[$DIST]${CLR0} ${CLR2}[$VER]${CLR0} Downloading..."
 
 if [[ "$linux_relese" == 'debian' ]] || [[ "$linux_relese" == 'ubuntu' ]]; then
 	[ "$DIST" == "focal" ] && legacy="legacy-" || legacy=""
@@ -627,6 +627,8 @@ if [[ "$linux_relese" == 'debian' ]] || [[ "$linux_relese" == 'ubuntu' ]]; then
 	echo "echo '${setCMD}' >/target/etc/run.sh; \\" >> /tmp/boot/preseed.cfg
 	echo "in-target apt update; \\" >> /tmp/boot/preseed.cfg
 	echo "in-target apt install -y curl file gawk jq openssl sudo tar unzip wget xz-utils; \\" >> /tmp/boot/preseed.cfg
+	echo "in-target mkdir -p /root; \\" >> /tmp/boot/preseed.cfg
+	echo "in-target curl -sS -o /root/function.sh https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/function.sh; \\" >> /tmp/boot/preseed.cfg
 	echo "in-target curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; \\" >> /tmp/boot/preseed.cfg
 	echo "in-target chmod +x /usr/local/bin/k" >> /tmp/boot/preseed.cfg
 
@@ -705,6 +707,8 @@ elif [[ "$linux_relese" == 'centos' ]]; then
 	echo "yum update -y" >> /tmp/boot/ks.cfg
 	echo "yum install -y curl file gawk jq openssl sudo tar unzip wget xz" >> /tmp/boot/ks.cfg
 
+	echo "mkdir -p /root" >> /tmp/boot/ks.cfg
+	echo "curl -sS -o /root/function.sh https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/function.sh" >> /tmp/boot/ks.cfg
 	echo "curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh" >> /tmp/boot/ks.cfg
 	echo "chmod +x /usr/local/bin/k" >> /tmp/boot/ks.cfg
 
