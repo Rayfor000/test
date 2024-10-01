@@ -29,6 +29,7 @@ DD_URL=''
 NIC=''
 BOOT_OPTION=''
 LANG='en'  # 默認語言為英語
+ROOT_PASSWORD='password'  # 默認root密碼
 
 # 語言設置
 declare -A MESSAGES
@@ -110,126 +111,73 @@ done
 
 # 主要功能函數
 get_system_info() {
-	# 獲取當前系統信息
-	DIST=$(grep "^ID=" /etc/os-release | cut -d= -f2 | tr -d '"')
-	VER=$(grep "^VERSION_ID=" /etc/os-release | cut -d= -f2 | tr -d '"')
+    # 獲取當前系統信息
+    DIST=$(grep "^ID=" /etc/os-release | cut -d= -f2 | tr -d '"')
+    VER=$(grep "^VERSION_ID=" /etc/os-release | cut -d= -f2 | tr -d '"')
 }
 
 set_mirror() {
-	# 設置安裝源鏡像
-	case $DIST in
-		debian)
-			MIRROR="http://deb.debian.org/debian"
-			;;
-		ubuntu)
-			MIRROR="http://archive.ubuntu.com/ubuntu"
-			;;
-		centos)
-			MIRROR="http://mirror.centos.org/centos"
-			;;
-		*)
-			echo -e "${CLR1}錯誤:${CLR0} 不支持的發行版!"
-			exit 1
-			;;
-	esac
+    # 設置安裝源鏡像
+    case $DIST in
+        debian)
+            MIRROR="http://deb.debian.org/debian"
+            ;;
+        ubuntu)
+            MIRROR="http://archive.ubuntu.com/ubuntu"
+            ;;
+        centos)
+            MIRROR="http://mirror.centos.org/centos"
+            ;;
+        *)
+            echo -e "${CLR1}錯誤:${CLR0} 不支持的發行版!"
+            exit 1
+            ;;
+    esac
 }
 
 set_network() {
-	# 自動獲取網絡配置
-	IP=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n 1)
-	NETMASK=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}/\d+' | cut -d'/' -f2 | head -n 1)
-	GATEWAY=$(ip route | grep default | awk '{print $3}')
-	
-	echo -e "${CLR3}當前網絡配置:${CLR0}"
-	echo -e "IP: $IP"
-	echo -e "子網掩碼: $NETMASK"
-	echo -e "網關: $GATEWAY"
-	echo -e "DNS1: $DNS1"
-	echo -e "DNS2: $DNS2"
+    # 自動獲取網絡配置
+    NIC=$(ip -o -4 route show to default | awk '{print $5}')
+    IP=$(ip -4 addr show $NIC | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    NETMASK=$(ip -4 addr show $NIC | grep -oP '(?<=inet\s)\d+(\.\d+){3}/\d+' | cut -d'/' -f2)
+    GATEWAY=$(ip route | grep default | awk '{print $3}')
+    
+    echo -e "${CLR3}當前網絡配置:${CLR0}"
+    echo -e "網絡接口: $NIC"
+    echo -e "IP: $IP"
+    echo -e "子網掩碼: $NETMASK"
+    echo -e "網關: $GATEWAY"
+    echo -e "DNS1: $DNS1"
+    echo -e "DNS2: $DNS2"
 }
 
 download_image() {
-	# 下載系統鏡像
-	echo -e "${CLR3}開始下載系統鏡像...${CLR0}"
-	ADD wget
-	case $DIST in
-		debian)
-			wget -O /tmp/initrd.img $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/debian-installer/amd64/initrd.gz
-			wget -O /tmp/vmlinuz $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/debian-installer/amd64/linux
-			;;
-		ubuntu)
-			wget -O /tmp/initrd.img $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz
-			wget -O /tmp/vmlinuz $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux
-			;;
-		centos)
-			wget -O /tmp/initrd.img $MIRROR/$VER/os/x86_64/isolinux/initrd.img
-			wget -O /tmp/vmlinuz $MIRROR/$VER/os/x86_64/isolinux/vmlinuz
-			;;
-	esac
+    echo -e "${CLR3}開始下載系統鏡像...${CLR0}"
+    mkdir -p /tmp/root
+    case $DIST in
+        debian|ubuntu)
+            wget -O /tmp/initrd.gz $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/$DIST-installer/amd64/initrd.gz
+            wget -O /tmp/vmlinuz $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/$DIST-installer/amd64/linux
+            ;;
+        centos)
+            wget -O /tmp/initrd.img $MIRROR/$VER/os/x86_64/isolinux/initrd.img
+            wget -O /tmp/vmlinuz $MIRROR/$VER/os/x86_64/isolinux/vmlinuz
+            ;;
+    esac
 }
 
 make_image() {
-	# 製作自定義鏡像
-	echo -e "${CLR3}開始製作自定義鏡像...${CLR0}"
-	# 這裡可以添加自定義鏡像的製作過程
-}
-
-# 安裝軟件包的函數
-ADD() {
-    if [[ "$DIST" == 'debian' ]] || [[ "$DIST" == 'ubuntu' ]]; then
-        chroot /tmp/root apt-get update
-        chroot /tmp/root apt-get install -y "$@"
-    elif [[ "$DIST" == 'centos' ]]; then
-        chroot /tmp/root yum install -y "$@"
-    fi
-}
-
-install_os() {
-    echo -e "${CLR2}開始安裝操作系統...${CLR0}"
-    
-    # 創建必要的目錄
-    mkdir -p /tmp/boot /tmp/root
-
-    # 準備引導選項
-    if [[ "$DIST" == 'debian' ]] || [[ "$DIST" == 'ubuntu' ]]; then
-        BOOT_OPTION="auto=true priority=critical $BOOT_OPTION hostname=$DIST domain=$DIST quiet"
-    elif [[ "$DIST" == 'centos' ]]; then
-        BOOT_OPTION="ks=file://ks.cfg $BOOT_OPTION ksdevice=$NIC"
-    fi
-
-    # 添加控制台設置（如果需要）
-    [ -n "$setConsole" ] && BOOT_OPTION="$BOOT_OPTION --- console=$setConsole"
-
-    # 準備 GRUB 配置
-    cat > /tmp/grub.new <<EOF
-menuentry 'Install OS' {
-    linux /boot/vmlinuz $BOOT_OPTION
-    initrd /boot/initrd.img
-}
-EOF
-
-    # 解壓並處理 initrd
-    echo -e "${CLR3}處理 initrd 鏡像...${CLR0}"
+    echo -e "${CLR3}開始製作自定義鏡像...${CLR0}"
+    # 解壓並修改 initrd
     cd /tmp
-    case $DIST in
-        debian|ubuntu)
-            gzip -d < initrd.img | cpio --extract --verbose --make-directories --no-absolute-filenames
-            ;;
-        centos)
-            COMPTYPE=$(file initrd.img | grep -o ':.*compressed data' | cut -d' ' -f2 | tr '[:upper:]' '[:lower:]' | head -n1)
-            case $COMPTYPE in
-                gzip) UNCOMP="gzip -d" ;;
-                xz) UNCOMP="xz --decompress" ;;
-                *) echo "不支持的壓縮類型: $COMPTYPE" && exit 1 ;;
-            esac
-            $UNCOMP < initrd.img | cpio --extract --verbose --make-directories --no-absolute-filenames
-            ;;
-    esac
-
-    # 修改 initrd 中的配置文件
+    mkdir initrd
+    cd initrd
+    gzip -dc ../initrd.gz | cpio -id
+    
+    # 修改 preseed 或 kickstart 文件
     if [[ "$DIST" == 'debian' ]] || [[ "$DIST" == 'ubuntu' ]]; then
-        # 修改 preseed 文件
-        cat > /tmp/preseed.cfg <<EOF
+        cat > preseed.cfg <<EOF
+# 基本設置
 d-i debian-installer/locale string en_US
 d-i keyboard-configuration/xkb-keymap select us
 d-i netcfg/choose_interface select auto
@@ -237,7 +185,7 @@ d-i netcfg/get_hostname string $DIST
 d-i netcfg/get_domain string localdomain
 d-i mirror/country string manual
 d-i mirror/http/hostname string $MIRROR
-d-i mirror/http/directory string /debian
+d-i mirror/http/directory string /$DIST
 d-i mirror/http/proxy string
 d-i passwd/root-password password $ROOT_PASSWORD
 d-i passwd/root-password-again password $ROOT_PASSWORD
@@ -258,12 +206,11 @@ d-i grub-installer/with_other_os boolean true
 d-i finish-install/reboot_in_progress note
 
 # 安裝完成後執行的命令
-d-i preseed/late_command string
-in-target apt update -y; in-target apt install -y curl jq sudo tar unzip wget
+d-i preseed/late_command string in-target apt-get update; in-target apt-get install -y curl jq sudo tar unzip wget
 EOF
     elif [[ "$DIST" == 'centos' ]]; then
-        # 修改 kickstart 文件
-        cat > /tmp/ks.cfg <<EOF
+        cat > ks.cfg <<EOF
+# 基本設置
 install
 url --url="$MIRROR/$VER/os/x86_64"
 lang en_US.UTF-8
@@ -282,65 +229,62 @@ autopart
 auth --enableshadow --passalgo=sha512
 firstboot --disabled
 reboot
+
+# 安裝包
 %packages
 @core
 %end
 
+# 安裝完成後執行的命令
 %post
-# 安裝基本工具
 yum update -y
 yum install -y curl jq sudo tar unzip wget
 %end
 EOF
     fi
-
-    # 重新打包 initrd
-    echo -e "${CLR3}重新打包 initrd...${CLR0}"
-    find . | cpio -H newc --create --verbose | gzip -9 > /boot/initrd.img
     
-    # 複製內核
+    # 重新打包 initrd
+    find . | cpio -H newc -o | gzip -9 > ../initrd.gz
+    cd ..
+    rm -rf initrd
+}
+
+install_os() {
+    echo -e "${CLR3}開始安裝操作系統...${CLR0}"
+    
+    # 準備 GRUB 配置
+    cat > /tmp/grub.cfg <<EOF
+menuentry 'Install OS' {
+    linux /vmlinuz $BOOT_OPTION
+    initrd /initrd.gz
+}
+EOF
+
+    # 複製文件到 /boot
     cp /tmp/vmlinuz /boot/vmlinuz
+    cp /tmp/initrd.gz /boot/initrd.gz
+    cp /tmp/grub.cfg /boot/grub/grub.cfg
 
     # 安裝 GRUB
-    echo -e "${CLR3}安裝 GRUB...${CLR0}"
     if [ -d /sys/firmware/efi ]; then
-        # UEFI 系統
         grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=$DIST
     else
-        # BIOS 系統
         grub-install /dev/sda
     fi
-    cp /tmp/grub.new /boot/grub/grub.cfg
 
-    # 設置網絡
-    if [ -n "$IP" ] && [ -n "$NETMASK" ] && [ -n "$GATEWAY" ]; then
-        echo -e "${CLR3}設置網絡...${CLR0}"
-        cat > /tmp/root/etc/network/interfaces <<EOF
-auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet static
-    address $IP
-    netmask $NETMASK
-    gateway $GATEWAY
-    dns-nameservers $DNS1 $DNS2
-EOF
-    fi
-
-    echo -e "${CLR2}操作系統安裝完成。重啟後將進入新系統。${CLR0}"
-    echo -e "${CLR3}基本工具（curl、jq、sudo、tar、unzip、wget）已經安裝。${CLR0}"
+    echo -e "${CLR2}操作系統安裝準備完成。請重啟系統以開始安裝過程。${CLR0}"
+    echo -e "${CLR3}安裝完成後，基本工具（curl、jq、sudo、tar、unzip、wget）將自動安裝。${CLR0}"
     echo -e "${CLR3}請記得修改默認root密碼！${CLR0}"
 }
 
 # 主程序
 main() {
-	get_system_info
-	set_mirror  
-	set_network
-	download_image
-	make_image
-	install_os
+    get_system_info
+    set_mirror  
+    set_network
+    download_image
+    make_image
+    install_os
 }
 
 main
