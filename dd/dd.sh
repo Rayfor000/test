@@ -256,6 +256,9 @@ d-i pkgsel/upgrade select full-upgrade
 d-i grub-installer/only_debian boolean true
 d-i grub-installer/with_other_os boolean true
 d-i finish-install/reboot_in_progress note
+
+# 安裝完成後執行的命令
+d-i preseed/late_command string in-target apt-get update; in-target apt-get install -y curl jq sudo tar unzip wget
 EOF
     elif [[ "$DIST" == 'centos' ]]; then
         # 修改 kickstart 文件
@@ -280,6 +283,11 @@ firstboot --disabled
 reboot
 %packages
 @core
+%end
+
+%post
+# 安裝基本工具
+yum install -y curl jq sudo tar unzip wget
 %end
 EOF
     fi
@@ -318,11 +326,8 @@ iface eth0 inet static
 EOF
     fi
 
-    # 安裝基本工具
-    echo -e "${CLR3}安裝基本工具...${CLR0}"
-    ADD curl jq sudo tar unzip wget
-
     echo -e "${CLR2}操作系統安裝完成。重啟後將進入新系統。${CLR0}"
+    echo -e "${CLR3}基本工具（curl、jq、sudo、tar、unzip、wget）已經安裝。${CLR0}"
     echo -e "${CLR3}請記得修改默認root密碼！${CLR0}"
 }
 

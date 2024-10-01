@@ -4,6 +4,11 @@
 
 ## 版本歷史
 
+### v0.005.000
+- 改進基本工具安裝方法，現在在系統安裝完成後進行安裝
+- 使用 in-target 命令確保在新系統中正確安裝工具
+- 更新了 preseed 和 kickstart 配置以包含基本工具的安裝
+
 ### v0.004.000
 - 添加自動安裝基本工具（curl、jq、sudo、tar、unzip、wget）的功能
 
@@ -46,7 +51,8 @@
 - 可選擇是否保留數據
 - 命令行參數支持
 - 多語言支持（英語和中文）
-- 自動安裝基本工具（curl、jq、sudo、tar、unzip、wget）
+- 在新系統中自動安裝基本工具（curl、jq、sudo、tar、unzip、wget）
+- 支持UEFI和BIOS系統
 
 ## 使用方法
 
@@ -73,6 +79,7 @@
 - 重裝過程中會格式化硬盤，請注意數據備份
 - 默認root密碼為：password，請及時修改
 - 如果重裝失敗，可查看 /var/log/reinstall.log 排查問題
+- 安裝完成後，基本工具（curl、jq、sudo、tar、unzip、wget）將自動安裝在新系統中
 
 ## 參數說明
 
