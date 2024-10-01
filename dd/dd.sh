@@ -117,10 +117,9 @@ get_system_info() {
 }
 
 set_mirror() {
-    # 設置安裝源鏡像
     case $DIST in
         debian)
-            MIRROR="http://deb.debian.org/debian"
+            MIRROR="http://ftp.debian.org/debian"
             ;;
         ubuntu)
             MIRROR="http://archive.ubuntu.com/ubuntu"
@@ -155,19 +154,35 @@ download_image() {
     echo -e "${CLR3}開始下載系統鏡像...${CLR0}"
     mkdir -p /tmp/root
     case $DIST in
-        debian|ubuntu)
-            wget -O /tmp/initrd.gz $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/$DIST-installer/amd64/initrd.gz
-            wget -O /tmp/vmlinuz $MIRROR/dists/$VER/main/installer-amd64/current/images/netboot/$DIST-installer/amd64/linux
+        debian)
+            VER=$(curl -s https://www.debian.org/releases/ | grep -oP 'The current stable distribution of Debian is version \K[0-9]+' | head -n1)
+            wget -O /tmp/initrd.gz http://ftp.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/debian-installer/amd64/initrd.gz
+            wget -O /tmp/vmlinuz http://ftp.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/debian-installer/amd64/linux
+            ;;
+        ubuntu)
+            VER=$(curl -s https://releases.ubuntu.com/ | grep -oP 'Ubuntu \K[0-9.]+(?= LTS)' | head -n1)
+            wget -O /tmp/initrd.gz http://archive.ubuntu.com/ubuntu/dists/${VER}/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/initrd.gz
+            wget -O /tmp/vmlinuz http://archive.ubuntu.com/ubuntu/dists/${VER}/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/linux
             ;;
         centos)
-            wget -O /tmp/initrd.img $MIRROR/$VER/os/x86_64/isolinux/initrd.img
-            wget -O /tmp/vmlinuz $MIRROR/$VER/os/x86_64/isolinux/vmlinuz
+            VER=$(curl -s http://mirror.centos.org/centos/ | grep -oP '8\.[0-9]+\.[0-9]+' | sort -V | tail -n1)
+            wget -O /tmp/initrd.img http://mirror.centos.org/centos/${VER}/BaseOS/x86_64/os/images/pxeboot/initrd.img
+            wget -O /tmp/vmlinuz http://mirror.centos.org/centos/${VER}/BaseOS/x86_64/os/images/pxeboot/vmlinuz
+            ;;
+        *)
+            echo -e "${CLR1}錯誤:${CLR0} 不支持的發行版!"
+            exit 1
             ;;
     esac
+
+    if [ $? -ne 0 ]; then
+        echo -e "${CLR1}錯誤:${CLR0} 下載系統鏡像失敗!"
+        exit 1
+    fi
 }
 
 make_image() {
-    echo -e "${CLR3}開始製作自定義鏡像...${CLR0}"
+    echo -e "${CLR3}開始製作���定義鏡像...${CLR0}"
     # 解壓並修改 initrd
     cd /tmp
     mkdir initrd
