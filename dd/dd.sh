@@ -174,6 +174,16 @@ make_image() {
 	# 這裡可以添加自定義鏡像的製作過程
 }
 
+# 安裝軟件包的函數
+ADD() {
+    if [[ "$DIST" == 'debian' ]] || [[ "$DIST" == 'ubuntu' ]]; then
+        chroot /tmp/root apt-get update
+        chroot /tmp/root apt-get install -y "$@"
+    elif [[ "$DIST" == 'centos' ]]; then
+        chroot /tmp/root yum install -y "$@"
+    fi
+}
+
 install_os() {
     echo -e "${CLR2}開始安裝操作系統...${CLR0}"
     
@@ -310,7 +320,7 @@ EOF
 
     # 安裝基本工具
     echo -e "${CLR3}安裝基本工具...${CLR0}"
-    ADD curl jq sudo tar unzip
+    ADD curl jq sudo tar unzip wget
 
     echo -e "${CLR2}操作系統安裝完成。重啟後將進入新系統。${CLR0}"
     echo -e "${CLR3}請記得修改默認root密碼！${CLR0}"
