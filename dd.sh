@@ -52,122 +52,51 @@ setConsole=''
 
 while [[ $# -ge 1 ]]; do
 	case $1 in
-		-v|--ver)
-			shift
-			tmpVER="$1"
-			shift
-			;;
-		-d|--debian)
-			shift
-			Relese='Debian'
-			tmpDIST="$1"
-			shift
-			;;
-		-u|--ubuntu)
-			shift
-			Relese='Ubuntu'
-			tmpDIST="$1"
-			shift
-			;;
-		-c|--centos)
-			shift
-			Relese='CentOS'
-			tmpDIST="$1"
-			shift
-			;;
-		-dd|--image)
-			shift
-			ddMode='1'
-			tmpURL="$1"
-			shift
-			;;
-		-p|--password)
-			shift
-			tmpWORD="$1"
-			shift
-			;;
-		-i|--interface)
-			shift
-			interfaceSelect="$1"
-			shift
-			;;
-		--ip-addr)
-			shift
-			ipAddr="$1"
-			shift
-			;;
-		--ip-mask)
-			shift
-			ipMask="$1"
-			shift
-			;;
-		--ip-gate)
-			shift
-			ipGate="$1"
-			shift
-			;;
-		--ip-dns)
-			shift
-			ipDNS="$1"
-			shift
-			;;
-		--dev-net)
-			shift
-			setInterfaceName='1'
-			;;
-		--loader)
-			shift
-			loaderMode='1'
-			;;
-		-apt|-yum|--mirror)
-			shift
-			isMirror='1'
-			tmpMirror="$1"
-			shift
-			;;
-		-rdp)
-			shift
-			setRDP='1'
-			WinRemote="$1"
-			shift
-			;;
-		-cmd)
-			shift
-			setCMD="$1"
-			shift
-			;;
-		-console)
-			shift
-			setConsole="$1"
-			shift
-			;;
-		-firmware)
-			shift
-			IncFirmware="1"
-			;;
-		-port)
-			shift
-			sshPORT="$1"
-			shift
-			;;
-		--noipv6)
-			shift
-			setIPv6='1'
-			;;
-		-a|--auto|-m|--manual|-ssl)
-			shift
-			;;
+		-v|--ver) shift; tmpVER="$1" ;;
+		-d|--debian) shift; Relese='Debian'; tmpDIST="$1" ;;
+		-u|--ubuntu) shift; Relese='Ubuntu'; tmpDIST="$1" ;;
+		-c|--centos) shift; Relese='CentOS'; tmpDIST="$1" ;;
+		-dd|--image) shift; ddMode='1'; tmpURL="$1" ;;
+		-p|--password) shift; tmpWORD="$1" ;;
+		-i|--interface) shift; interfaceSelect="$1" ;;
+		--ip-addr) shift; ipAddr="$1" ;;
+		--ip-mask) shift; ipMask="$1" ;;
+		--ip-gate) shift; ipGate="$1" ;;
+		--ip-dns) shift; ipDNS="$1" ;;
+		--dev-net) setInterfaceName='1' ;;
+		--loader) loaderMode='1' ;;
+		-apt|-yum|--mirror) shift; isMirror='1'; tmpMirror="$1" ;;
+		-rdp) shift; setRDP='1'; WinRemote="$1" ;;
+		-cmd) shift; setCMD="$1" ;;
+		-console) shift; setConsole="$1" ;;
+		-firmware) IncFirmware="1" ;;
+		-port) shift; sshPORT="$1" ;;
+		--noipv6) setIPv6='1' ;;
+		-a|--auto|-m|--manual|-ssl) ;;
 		*)
-			if [[ "$1" != 'error' ]]; then echo -ne "\nInvaild option: '$1'\n\n"; fi
-			echo -ne " Usage:\n\tbash $(basename $0)\t-d/--debian [\033[33m\033[04mdists-name\033[0m]\n\t\t\t\t-u/--ubuntu [\033[04mdists-name\033[0m]\n\t\t\t\t-c/--centos [\033[04mdists-name\033[0m]\n\t\t\t\t-v/--ver [32/i386|64/\033[33m\033[04mamd64\033[0m] [\033[33m\033[04mdists-verison\033[0m]\n\t\t\t\t--ip-addr/--ip-gate/--ip-mask\n\t\t\t\t-apt/-yum/--mirror\n\t\t\t\t-dd/--image\n\t\t\t\t-p [linux password]\n\t\t\t\t-port [linux ssh port]\n"
-			exit 1;
+			[ "$1" != 'error' ] && echo -e "\n${CLR1}Invalid option:${CLR0} '$1'\n"
+			echo -e "${CLR2}Usage:${CLR0}\n\tbash $(basename $0) [OPTIONS]\n"
+			echo -e "${CLR3}Options:${CLR0}"
+			echo -e "\t${CLR8}-d, --debian${CLR0} DIST\tSpecify Debian distribution"
+			echo -e "\t${CLR8}-u, --ubuntu${CLR0} DIST\tSpecify Ubuntu distribution"
+			echo -e "\t${CLR8}-c, --centos${CLR0} DIST\tSpecify CentOS distribution"
+			echo -e "\t${CLR8}-v, --ver${CLR0} VER\t\tSpecify version (32/i386 or 64/amd64)"
+			echo -e "\t${CLR8}--ip-addr${CLR0} IP\t\tSet IP address"
+			echo -e "\t${CLR8}--ip-gate${CLR0} GATEWAY\tSet gateway"
+			echo -e "\t${CLR8}--ip-mask${CLR0} MASK\t\tSet subnet mask"
+			echo -e "\t${CLR8}-apt, -yum, --mirror${CLR0}\tUse mirror"
+			echo -e "\t${CLR8}-dd, --image${CLR0} URL\tSpecify image URL"
+			echo -e "\t${CLR8}-p${CLR0} PASSWORD\t\tSet Linux password"
+			echo -e "\t${CLR8}-port${CLR0} PORT\t\tSet SSH port"
+			exit 1
 			;;
 	esac
+	shift
 done
 
 [ "$(id -u)" -ne 0 ] && { echo -e "${CLR1}Please run this script as root user.${CLR0}"; exit 1; }
 
-dependence(){
+dependence() {
 	Full='0';
 	for BIN_DEP in `echo "$1" |sed 's/,/\n/g'`; do
 		if [[ -n "$BIN_DEP" ]]; then
@@ -194,7 +123,7 @@ dependence(){
 	fi
 }
 
-selectMirror(){
+selectMirror() {
 	[ $# -ge 3 ] || exit 1
 	Relese=$(echo "$1" |sed -r 's/(.*)/\L\1/')
 	DIST=$(echo "$2" |sed 's/\ //g' |sed -r 's/(.*)/\L\1/')
@@ -236,7 +165,7 @@ netmask() {
 	echo "$m"
 }
 
-getInterface(){
+getInterface() {
 	interface=""
 	Interfaces=`cat /proc/net/dev |grep ':' |cut -d':' -f1 |sed 's/\s//g' |grep -iv '^lo\|^sit\|^stf\|^gif\|^dummy\|^vmnet\|^vir\|^gre\|^ipip\|^ppp\|^bond\|^tun\|^tap\|^ip6gre\|^ip6tnl\|^teql\|^ocserv\|^vpn'`
 	defaultRoute=`ip route show default |grep "^default"`
@@ -248,14 +177,14 @@ getInterface(){
 	echo "$interface"
 }
 
-getDisk(){
+getDisk() {
 	disks=`lsblk | sed 's/[[:space:]]*$//g' |grep "disk$" |cut -d' ' -f1 |grep -v "fd[0-9]*\|sr[0-9]*" |head -n1`
 	[ -n "$disks" ] || echo ""
 	echo "$disks" |grep -q "/dev"
 	[ $? -eq 0 ] && echo "$disks" || echo "/dev/$disks"
 }
 
-getGrub(){
+getGrub() {
 	Boot="${1:-/boot}"
 	folder=`find "$Boot" -type d -name "grub*" 2>/dev/null |head -n1`
 	[ -n "$folder" ] || return
@@ -272,7 +201,7 @@ getGrub(){
 	echo "${folder}:${fileName}:${ver}"
 }
 
-lowMem(){
+lowMem() {
 	mem=`grep "^MemTotal:" /proc/meminfo 2>/dev/null |grep -o "[0-9]*"`
 	[ -n "$mem" ] || return 0
 	[ "$mem" -le "524288" ] && return 1 || return 0
@@ -343,7 +272,9 @@ if [[ ! -n "$VER" ]]; then
 fi
 
 if [[ -z "$tmpDIST" ]]; then
-	return;
+	[ "$Relese" == 'Debian' ] && tmpDIST='bookworm';
+	[ "$Relese" == 'Ubuntu' ] && tmpDIST='focal';
+	[ "$Relese" == 'CentOS' ] && tmpDIST='6.10';
 fi
 
 if [[ -n "$tmpDIST" ]]; then
@@ -363,8 +294,7 @@ if [[ -n "$tmpDIST" ]]; then
 			}
 		}
 		LinuxMirror=$(selectMirror "$Relese" "$DIST" "$VER" "$tmpMirror")
-	fi
-	if [[ "$Relese" == 'Ubuntu' ]]; then
+	elif [[ "$Relese" == 'Ubuntu' ]]; then
 		SpikCheckDIST='0'
 		DIST="$(echo "$tmpDIST" |sed -r 's/(.*)/\L\1/')";
 		echo "$DIST" |grep -q '[0-9]';
@@ -376,13 +306,10 @@ if [[ -n "$tmpDIST" ]]; then
 				[[ "$isDigital" == '16.04' ]] && DIST='xenial';
 				[[ "$isDigital" == '18.04' ]] && DIST='bionic';
 				[[ "$isDigital" == '20.04' ]] && DIST='focal';
-				# [[ "$isDigital" == '22.04' ]] && DIST='jammy';
-				# [[ "$isDigital" == '24.04' ]] && DIST='noble';
 			}
 		}
 		LinuxMirror=$(selectMirror "$Relese" "$DIST" "$VER" "$tmpMirror")
-	fi
-	if [[ "$Relese" == 'CentOS' ]]; then
+	elif [[ "$Relese" == 'CentOS' ]]; then
 		SpikCheckDIST='1'
 		DISTCheck="$(echo "$tmpDIST" |grep -o '[\.0-9]\{1,\}' |head -n1)";
 		LinuxMirror=$(selectMirror "$Relese" "$DISTCheck" "$VER" "$tmpMirror")
@@ -721,10 +648,10 @@ if [[ "$linux_relese" == 'debian' ]] || [[ "$linux_relese" == 'ubuntu' ]]; then
 	fi
 
 	[[ "$ddMode" == '1' ]] && {
-		WinNoDHCP(){
+		WinNoDHCP() {
 			echo -ne "for\0040\0057f\0040\0042tokens\00753\0052\0042\0040\0045\0045i\0040in\0040\0050\0047netsh\0040interface\0040show\0040interface\0040\0136\0174more\0040\00533\0040\0136\0174findstr\0040\0057I\0040\0057R\0040\0042本地\0056\0052\0040以太\0056\0052\0040Local\0056\0052\0040Ethernet\0042\0047\0051\0040do\0040\0050set\0040EthName\0075\0045\0045j\0051\r\nnetsh\0040\0055c\0040interface\0040ip\0040set\0040address\0040name\0075\0042\0045EthName\0045\0042\0040source\0075static\0040address\0075$IPv4\0040mask\0075$MASK\0040gateway\0075$GATE\r\nnetsh\0040\0055c\0040interface\0040ip\0040add\0040dnsservers\0040name\0075\0042\0045EthName\0045\0042\0040address\00758\00568\00568\00568\0040index\00751\0040validate\0075no\r\n\r\n" >>'/tmp/boot/net.tmp';
 		}
-		WinRDP(){
+		WinRDP() {
 			echo -ne "netsh\0040firewall\0040set\0040portopening\0040protocol\0075ALL\0040port\0075$WinRemote\0040name\0075RDP\0040mode\0075ENABLE\0040scope\0075ALL\0040profile\0075ALL\r\nnetsh\0040firewall\0040set\0040portopening\0040protocol\0075ALL\0040port\0075$WinRemote\0040name\0075RDP\0040mode\0075ENABLE\0040scope\0075ALL\0040profile\0075CURRENT\r\nreg\0040add\0040\0042HKLM\0134SYSTEM\0134CurrentControlSet\0134Control\0134Network\0134NewNetworkWindowOff\0042\0040\0057f\r\nreg\0040add\0040\0042HKLM\0134SYSTEM\0134CurrentControlSet\0134Control\0134Terminal\0040Server\0042\0040\0057v\0040fDenyTSConnections\0040\0057t\0040reg\0137dword\0040\0057d\00400\0040\0057f\r\nreg\0040add\0040\0042HKLM\0134SYSTEM\0134CurrentControlSet\0134Control\0134Terminal\0040Server\0134Wds\0134rdpwd\0134Tds\0134tcp\0042\0040\0057v\0040PortNumber\0040\0057t\0040reg\0137dword\0040\0057d\0040$WinRemote\0040\0057f\r\nreg\0040add\0040\0042HKLM\0134SYSTEM\0134CurrentControlSet\0134Control\0134Terminal\0040Server\0134WinStations\0134RDP\0055Tcp\0042\0040\0057v\0040PortNumber\0040\0057t\0040reg\0137dword\0040\0057d\0040$WinRemote\0040\0057f\r\nreg\0040add\0040\0042HKLM\0134SYSTEM\0134CurrentControlSet\0134Control\0134Terminal\0040Server\0134WinStations\0134RDP\0055Tcp\0042\0040\0057v\0040UserAuthentication\0040\0057t\0040reg\0137dword\0040\0057d\00400\0040\0057f\r\nFOR\0040\0057F\0040\0042tokens\00752\0040delims\0075\0072\0042\0040\0045\0045i\0040in\0040\0050\0047SC\0040QUERYEX\0040TermService\0040\0136\0174FINDSTR\0040\0057I\0040\0042PID\0042\0047\0051\0040do\0040TASKKILL\0040\0057F\0040\0057PID\0040\0045\0045i\r\nFOR\0040\0057F\0040\0042tokens\00752\0040delims\0075\0072\0042\0040\0045\0045i\0040in\0040\0050\0047SC\0040QUERYEX\0040UmRdpService\0040\0136\0174FINDSTR\0040\0057I\0040\0042PID\0042\0047\0051\0040do\0040TASKKILL\0040\0057F\0040\0057PID\0040\0045\0045i\r\nSC\0040START\0040TermService\r\n\r\n" >>'/tmp/boot/net.tmp';
 		}
 		echo -ne "\0100ECHO\0040OFF\r\n\r\ncd\0056\0076\0045WINDIR\0045\0134GetAdmin\r\nif\0040exist\0040\0045WINDIR\0045\0134GetAdmin\0040\0050del\0040\0057f\0040\0057q\0040\0042\0045WINDIR\0045\0134GetAdmin\0042\0051\0040else\0040\0050\r\necho\0040CreateObject\0136\0050\0042Shell\0056Application\0042\0136\0051\0056ShellExecute\0040\0042\0045\0176s0\0042\0054\0040\0042\0045\0052\0042\0054\0040\0042\0042\0054\0040\0042runas\0042\0054\00401\0040\0076\0076\0040\0042\0045temp\0045\0134Admin\0056vbs\0042\r\n\0042\0045temp\0045\0134Admin\0056vbs\0042\r\ndel\0040\0057f\0040\0057q\0040\0042\0045temp\0045\0134Admin\0056vbs\0042\r\nexit\0040\0057b\00402\0051\r\n\r\n" >'/tmp/boot/net.tmp';
