@@ -1,4 +1,7 @@
 #!/bin/bash
+# Description: 1xcore.sh is a shell script for installing and managing 1xcore.
+# Author: OGATA Open-Source
+# Version: 1.001.001
 
 SH="$0"
 X="/usr/local/bin/x"
@@ -93,7 +96,7 @@ Run_ACT() {
 	return=${1:-Menu}
 	count=1
 	for action in "${ACT[@]}"; do
-		[ "$sel" = "$count" ] && { CLEAN; IFS=';' read -ra steps <<< "$action"; for step in "${steps[@]}"; do eval "$step"; done; OC; return 0; }
+		[ "$sel" = "$count" ] && { CLEAN; IFS=';' read -ra steps <<< "$action"; for step in "${steps[@]}"; do eval "$step"; done; return 0; }
 		((count++))
 	done
 	[ $count -gt ${#ACT[@]} ] && case $sel in 0) $return;; *) CLEAN;; esac
@@ -125,24 +128,24 @@ Tools() {
 		"移除指定工具"
 	)
 	ACT=(
-		"ADD curl; CLEAN; curl --help"
-		"ADD wget; CLEAN; wget --help"
-		"ADD socat; CLEAN; socat -help"
-		"ADD htop; CLEAN; htop"
-		"ADD iftop; CLEAN; iftop"
-		"ADD tmux; CLEAN; tmux --help"
-		"ADD ffmpeg; CLEAN; ffmpeg --help"
-		"ADD btop; CLEAN; btop"
-		"ADD ncdu; cd /; CLEAN; ncdu"
-		"ADD ranger; cd /; CLEAN; ranger"
-		"ADD fzf; cd /; CLEAN; fzf"
-		"ADD vim; cd /; CLEAN; vim -h"
-		"ADD nano; cd /; CLEAN; nano -h"
-		"ADD git; cd /; CLEAN; git --help"
-		"ADD curl wget socat htop iftop tmux ffmpeg btop ncdu ranger fzf vim nano git"
-		"DEL curl wget socat htop iftop tmux ffmpeg btop ncdu ranger fzf vim nano git"
-		"Install_Tool"
-		"Remove_Tool"
+		"ADD curl; CLEAN; curl --help; OC"
+		"ADD wget; CLEAN; wget --help; OC"
+		"ADD socat; CLEAN; socat -help; OC"
+		"ADD htop; CLEAN; htop; OC"
+		"ADD iftop; CLEAN; iftop; OC"
+		"ADD tmux; CLEAN; tmux --help; OC"
+		"ADD ffmpeg; CLEAN; ffmpeg --help; OC"
+		"ADD btop; CLEAN; btop; OC"
+		"ADD ncdu; cd /; CLEAN; ncdu; OC"
+		"ADD ranger; cd /; CLEAN; ranger; OC"
+		"ADD fzf; cd /; CLEAN; fzf; OC"
+		"ADD vim; cd /; CLEAN; vim -h; OC"
+		"ADD nano; cd /; CLEAN; nano -h; OC"
+		"ADD git; cd /; CLEAN; git --help; OC"
+		"ADD curl wget socat htop iftop tmux ffmpeg btop ncdu ranger fzf vim nano git; OC"
+		"DEL curl wget socat htop iftop tmux ffmpeg btop ncdu ranger fzf vim nano git; OC"
+		"Install_Tool; OC"
+		"Remove_Tool; OC"
 	)
 	Install_Tool() { INPUT 請輸入欲安裝工具： Tools && ADD $Tools; }
 	Remove_Tool() { INPUT 請輸入欲移除工具： Tools && DEL $Tools; }
@@ -159,7 +162,7 @@ Setting() {
 		"卸載腳本"
 	)
 	ACT=(
-		"Copyright; Sub_Menu 'Setting'"
+		"Copyright"
 		"rm -f $SH; rm -f $X"
 	)
 	Copyright() {
@@ -186,6 +189,7 @@ Setting() {
 		echo -e "${CLR8}$(LINE = "56")${CLR0}"
 		OC
 	}
+	Sub_Menu
 }
 File_Manager() {
 	items_per_page=20
