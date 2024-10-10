@@ -3,7 +3,7 @@
 # Author: OGATA Open-Source
 # Version: 1.001.001
 
-SH="$0"
+SH="1xcore.sh"
 X="/usr/local/bin/x"
 cp -f "$SH" "$X" &>/dev/null
 
