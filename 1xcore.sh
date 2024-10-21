@@ -7,9 +7,7 @@ SH="1xcore.sh"
 X="/usr/local/bin/x"
 cp -f "$SH" "$X" &>/dev/null
 
-FILE="function.sh"
-[ ! -f "$FILE" ] && curl -sSL "https://raw.ogtt.tk/shell/function.sh" -o "$FILE"
-[ -f "$FILE" ] && source "$FILE"
+[ -f ~/function.sh ] && source ~/function.sh || bash <(curl -sL raw.ogtt.tk/shell/update-function.sh)
 
 CHECK_ROOT
 
@@ -192,7 +190,7 @@ Setting() {
 	Sub_Menu
 }
 File_Manager() {
-	items_per_page=20
+	items_per_page=15
 	current_page=0
 	search_term=""
 	current_dir=$(pwd)

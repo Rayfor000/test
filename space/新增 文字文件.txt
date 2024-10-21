@@ -1,0 +1,9 @@
+3209-3211
+echo "$HostName" > /target/etc/hostname; \
+sed -i "s/127.0.1.1.*/127.0.1.1\t$HostName/" /target/etc/hosts; \
+sed -i 's/^#*\s*auto\s*$interface/auto $interface/' /target/etc/network/interfaces; \
+
+3203-3205
+sed -i 's/^\s*#\?\s*PermitRootLogin.*/PermitRootLogin yes/g' /target/etc/ssh/sshd_config; \
+sed -i 's/^\s*#\?\s*PasswordAuthentication.*/PasswordAuthentication yes/g' /target/etc/ssh/sshd_config; \
+rm -rf /target/etc/ssh/sshd_config.d/* /target/etc/ssh/ssh_config.d/*; \

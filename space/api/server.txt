@@ -1,0 +1,8 @@
+[ -f ~/function.sh ] && source ~/function.sh || bash <(curl -sL raw.ogtt.tk/shell/update-function.sh) && source ~/function.sh
+ADD python3 python3-pip python3-venv
+python3 -m venv Record-function
+source Record-function/bin/activate
+cd Record-function
+pip install Flask-Limiter
+pip install Flask
+python app.py
