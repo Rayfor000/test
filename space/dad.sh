@@ -19,9 +19,10 @@
 # Modified By OGATA Open-Source
 # Github: https://github.com/OG-Open-Source
 
-[ -f ~/function.sh ] && source ~/function.sh || bash <(curl -sL raw.ogtt.tk/shell/update-function.sh) && source ~/function.sh
+[ "$(curl -s ipinfo.io/country)" = "CN" ] && cf_proxy="https://proxy.ogtt.tk/" || cf_proxy=""
+[ -f ~/function.sh ] && source ~/function.sh || bash <(curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh) && source ~/function.sh
 
-Version="2024.10.22"
+Version="2024.10.23"
 License="GPL"
 SH="InstallNET.sh"
 
@@ -140,7 +141,7 @@ while [[ $# -ge 1 ]]; do
 		--netbootxyz) shift; setNetbootXyz='1'; shift ;;
 		--reboot) setAutoReboot='1'; shift ;;
 		*)
-			[[ "$1" != 'error' ]] && echo -ne "\nInvaild option: '$1'\n\n"
+			[[ "$1" != 'error' ]] && echo -e "\nInvaild option: '$1'\n"
 			echo -e "${CLR2}Usage:${CLR0}\n\tbash $(basename $0) [OPTIONS]\n"
 			echo -e "${CLR3}Options:${CLR0}"
 			echo -e "\t${CLR8}-debian${CLR0}\t\t[7/8/9/10/11/12]\tSpecify Debian distribution (${CLR2}'12'${CLR0} is the stable version)"
@@ -247,7 +248,7 @@ selectMirror() {
 		Current="$mirror"
 		[ -n "$Current" ] || continue
 		MirrorURL=$(echo "$TEMP" | sed "s#SUB_MIRROR#${Current}#g")
-		wget --no-check-certificate --spider --timeout=3 -o /dev/null "$MirrorURL"
+		curl -ksI --connect-timeout 3 "$MirrorURL" >/dev/null
 		[ $? -eq 0 ] && mirrorStatus=1 && break
 	done
 	[ $mirrorStatus -eq 1 ] && echo "$Current" || exit 1
@@ -619,7 +620,7 @@ raid / --fstype="xfs" --device="root" --level="$1" ${ksRaidVolumes[2]}
 			FormatDisk="${ksRaidConfigs}
 ${ksRaidRecipes}"
 		else
-			echo -ne "\n[${red}Warning${plain}] Raid $1 recipe is not supported by target system!\n"
+			echo -ne "\n${CLR1}[Warning]${CLR0} Raid $1 recipe is not supported by target system!\n"
 			exit 1
 		fi
 	}
@@ -732,7 +733,7 @@ checkAndReplaceEfiGrub() {
 				aarch64EfiGrubMirror="http://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/EFI/BOOT/"
 			fi
 			aarch64EfiGrubUrl="$aarch64EfiGrubMirror""grub.efi"
-			wget --no-check-certificate -qO "$efiGrubDir$efiGrubFile" "$aarch64EfiGrubUrl"
+			curl -ksLo "$efiGrubDir$efiGrubFile" "$aarch64EfiGrubUrl"
 		}
 	fi
 }
@@ -788,12 +789,12 @@ checkMem() {
 			if [[ "$1" == 'rockylinux' || "$1" == 'almalinux' || "$1" == 'centos' ]]; then
 				if [[ "$2" == "8" ]] || [[ "$2" == "9" ]]; then
 					[[ "$TotalMem" -le "2228" ]] && {
-						echo -ne "\n[${red}Warning${plain}] Minimum system memory requirement is 2.2 GB for ${blue}KickStart${plain} native method.\n"
+						echo -ne "\n${CLR1}[Warning]${CLR0} Minimum system memory requirement is 2.2 GB for ${CLR6}KickStart${CLR0} native method.\n"
 						lowMemMode="1"
 						if [[ "$2" == "8" ]]; then
-							echo -ne "\nSwitching to ${yellow}Rocky $2${plain} by ${blue}Cloud Init${plain} Installation... \n"
+							echo -e "\nSwitching to ${CLR3}Rocky $2${CLR0} by ${CLR6}Cloud Init${CLR0} Installation..."
 						elif [[ "$2" == "9" ]]; then
-							echo -ne "\nSwitching to ${blue}Cloud Init${plain} Installation... \n"
+							echo -ne "\nSwitching to ${CLR6}Cloud Init${CLR0} Installation...\n"
 						fi
 					}
 				elif [[ "$2" == "7" ]]; then
@@ -844,8 +845,8 @@ checkVirt() {
 			virtWhat+="$virtItem "
 		done
 		[[ $(echo $virtWhat | grep -i "openvz") || $(echo $virtWhat | grep -i "lxc") ]] && {
-			error "Virtualization of ${yellow}$virtWhat${plain}could not be supported!\n"
-			echo -ne "\nTry to refer to the ${blue}following project${plain}: \n\n${underLine}https://github.com/LloydAsp/OsMutation${plain} \n\nfor learning more and then execute it as the re-installation.\n"
+			error "Virtualization of ${CLR3}$virtWhat${CLR0}could not be supported!\n"
+			echo -ne "\nTry to refer to the ${CLR6}following project${CLR0}: \n\n${underLine}https://github.com/LloydAsp/OsMutation${CLR0} \n\nfor learning more and then execute it as the re-installation.\n"
 			exit 1
 		}
 	}
@@ -858,9 +859,9 @@ checkVirt() {
 checkSys() {
 	aliyundunProcess=$(ps -ef | grep -i 'aegis\|aliyun\|aliyundun\|assist-daemon' | grep -v 'grep\|-i' | awk -F ' ' '{print $NF}')
 	[[ -n "$aliyundunProcess" ]] && {
-		timeout 5s wget --no-check-certificate -qO /root/Fuck_Aliyun.sh 'https://git.io/fpN6E' && chmod a+x /root/Fuck_Aliyun.sh
+		timeout 5s curl -ksLo /root/Fuck_Aliyun.sh 'https://git.io/fpN6E' && chmod a+x /root/Fuck_Aliyun.sh
 		if [[ $? -ne 0 ]]; then
-			wget --no-check-certificate -qO /root/Fuck_Aliyun.sh 'https://gitee.com/mb9e8j2/Fuck_Aliyun/raw/master/Fuck_Aliyun.sh' && sed -i 's/\r//g' /root/Fuck_Aliyun.sh && chmod a+x /root/Fuck_Aliyun.sh
+			curl -ksLo /root/Fuck_Aliyun.sh 'https://gitee.com/mb9e8j2/Fuck_Aliyun/raw/master/Fuck_Aliyun.sh' && sed -i 's/\r//g' /root/Fuck_Aliyun.sh && chmod a+x /root/Fuck_Aliyun.sh
 		fi
 		bash /root/Fuck_Aliyun.sh
 		rm -rf /root/Fuck_Aliyun.sh
@@ -1092,7 +1093,7 @@ checkDIST() {
 		AlpineVer1=$(echo "$DIST" | sed 's/[a-z][A-Z]*//g' | cut -d"." -f 1)
 		AlpineVer2=$(echo "$DIST" | sed 's/[a-z][A-Z]*//g' | cut -d"." -f 2)
 		if [[ "$AlpineVer1" -lt "3" || "$AlpineVer2" -le "15" ]] && [[ "$DIST" != "edge" ]]; then
-			echo -ne "\n[${red}Warning${plain}] $Relese $DIST is not supported!\n"
+			echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DIST is not supported!\n"
 			exit 1
 		fi
 		[[ "$DIST" != "edge" && ! "$DIST" =~ "v" ]] && DIST="v""$DIST"
@@ -1120,14 +1121,14 @@ checkDIST() {
 			[[ "$RedHatSeries" =~ [0-9]{${#1}} ]] && {
 				if [[ "$RedHatSeries" == "6" ]]; then
 					DISTCheck="6.10"
-					echo -ne "\n[${red}Warning${plain}] $Relese $DISTCheck is not supported!\n"
+					echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!\n"
 					exit 1
 				elif [[ "$RedHatSeries" == "7" ]]; then
 					DISTCheck="7.9.2009"
 				elif [[ "$RedHatSeries" -ge "8" ]] && [[ ! "$RedHatSeries" =~ "-stream" ]]; then
 					DISTCheck="$RedHatSeries""-stream"
 				elif [[ "$RedHatSeries" -le "5" ]]; then
-					echo -ne "\n[${red}Warning${plain}] $Relese $DISTCheck is not supported!\n"
+					echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!\n"
 				else
 					error "Invaild $DIST! version!\n"
 				fi
@@ -1138,10 +1139,10 @@ checkDIST() {
 		if [[ "$linux_release" == 'rockylinux' ]] || [[ "$linux_release" == 'almalinux' ]] || [[ "$linux_release" == 'fedora' ]]; then
 			[[ "$RedHatSeries" =~ [0-9]{${#1}} ]] && {
 				if [[ "$linux_release" == 'rockylinux' || "$linux_release" == 'almalinux' ]] && [[ "$RedHatSeries" -le "7" ]]; then
-					echo -ne "\n[${red}Warning${plain}] $Relese $DISTCheck is not supported!\n"
+					echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!\n"
 					exit 1
 				elif [[ "$linux_release" == 'fedora' ]] && [[ "$RedHatSeries" -le "37" ]]; then
-					echo -ne "\n[${red}Warning${plain}] $Relese $DISTCheck is not supported!\n"
+					echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!\n"
 					exit 1
 				fi
 			}
@@ -1149,26 +1150,26 @@ checkDIST() {
 			DIST="$DISTCheck"
 		fi
 		[[ -z "$DIST" ]] && {
-			echo -ne "\nThe dists version not found in this mirror, Please check it! \n\n"
+			echo -e "\nThe dists version not found in this mirror, Please check it!\n"
 			bash $0 error
 			exit 1
 		}
 		if [[ "$linux_release" == 'centos' ]] && [[ "$RedHatSeries" -le "7" ]]; then
-			curl -k -s "$LinuxMirror/$DIST/os/$VER/.treeinfo" | grep -q 'general'
+			curl -ksL "$LinuxMirror/$DIST/os/$VER/.treeinfo" | grep -q 'general'
 			[[ $? != '0' ]] && {
-				echo -ne "\n[${red}Warning${plain}] $Relese $DISTCheck was not found in this mirror, Please change mirror try again!\n"
+				echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck was not found in this mirror, Please change mirror try again!\n"
 				exit 1
 			}
 		elif [[ "$linux_release" == 'centos' && "$RedHatSeries" -ge "8" ]] || [[ "$linux_release" == 'rockylinux' ]] || [[ "$linux_release" == 'almalinux' ]]; then
-			curl -k -s "$LinuxMirror/$DIST/BaseOS/$VER/os/media.repo" | grep -q 'mediaid'
+			curl -ksL "$LinuxMirror/$DIST/BaseOS/$VER/os/media.repo" | grep -q 'mediaid'
 			[[ $? != '0' ]] && {
-				echo -ne "\n[${red}Warning${plain}] $Relese $DISTCheck was not found in this mirror, Please change mirror try again!\n"
+				echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck was not found in this mirror, Please change mirror try again!\n"
 				exit 1
 			}
 		elif [[ "$linux_release" == 'fedora' ]]; then
-			curl -k -s "$LinuxMirror/releases/$DIST/Server/$VER/os/media.repo" | grep -q 'mediaid'
+			curl -ksL "$LinuxMirror/releases/$DIST/Server/$VER/os/media.repo" | grep -q 'mediaid'
 			[[ $? != '0' ]] && {
-				echo -ne "\n[${red}Warning${plain}] $Relese $DISTCheck was not found in this mirror, Please change mirror try again!\n"
+				echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck was not found in this mirror, Please change mirror try again!\n"
 				exit 1
 			}
 		fi
@@ -1782,7 +1783,7 @@ acceptIPv4AndIPv6SubnetValue() {
 			ipMask=$(netmask "$1")
 			actualIp4Subnet=$(netmask "$1")
 		else
-			echo -ne "\n[${red}Warning${plain}] Only accept prefix format of IPv4 address, length from 1 to 32."
+			echo -ne "\n${CLR1}[Warning]${CLR0} Only accept prefix format of IPv4 address, length from 1 to 32."
 			echo -ne "\nIPv4 CIDR Calculator: https://www.vultr.com/resources/subnet-calculator/\n"
 			exit 1
 		fi
@@ -1792,7 +1793,7 @@ acceptIPv4AndIPv6SubnetValue() {
 			actualIp6Prefix="$2"
 			ipv6SubnetCalc "$2"
 		else
-			echo -ne "\n[${red}Warning${plain}] Only accept prefix format of IPv6 address, length from 1 to 128."
+			echo -ne "\n${CLR1}[Warning]${CLR0} Only accept prefix format of IPv6 address, length from 1 to 128."
 			echo -ne "\nIPv6 CIDR Calculator: https://en.rakko.tools/tools/27/\n"
 			exit 1
 		fi
@@ -1935,13 +1936,13 @@ DebianModifiedPreseed() {
 		InstallComponents="$1 apt install apt-transport-https ca-certificates cron curl dnsutils dpkg ${fail2banComponent} file lrzsz lsb-release net-tools sudo vim wget -y;"
 		DisableCertExpiredCheck="$1 sed -i '/^mozilla\/DST_Root_CA_X3/s/^/!/' /etc/ca-certificates.conf; $1 update-ca-certificates -f;"
 		if [[ "$IsCN" == "1" ]]; then
-			ChangeBashrc="$1 rm -rf /root/.bashrc; $1 wget --no-check-certificate -qO /root/.bashrc '${debianConfFileDirCn}/.bashrc';"
-			[[ "$setDns" == "1" ]] && SetDNS="CNResolvHead" DnsChangePermanently="$1 mkdir -p /etc/resolvconf/resolv.conf.d/; $1 wget --no-check-certificate -qO /etc/resolvconf/resolv.conf.d/head '${debianConfFileDirCn}/network/${SetDNS}';" || DnsChangePermanently=""
-			[[ "$setMotd" == "1" ]] && ModifyMOTD="$1 rm -rf /etc/update-motd.d/ /etc/motd /run/motd.dynamic; $1 mkdir -p /etc/update-motd.d/; $1 wget --no-check-certificate -qO /etc/update-motd.d/00-header '${debianConfFileDirCn}/updatemotd/00-header'; $1 wget --no-check-certificate -qO /etc/update-motd.d/10-sysinfo '${debianConfFileDirCn}/updatemotd/10-sysinfo'; $1 wget --no-check-certificate -qO /etc/update-motd.d/90-footer '${debianConfFileDirCn}/updatemotd/90-footer'; $1 chmod +x /etc/update-motd.d/00-header; $1 chmod +x /etc/update-motd.d/10-sysinfo; $1 chmod +x /etc/update-motd.d/90-footer;" || ModifyMOTD=""
+			ChangeBashrc="$1 rm -rf /root/.bashrc; $1 curl -ksLo /root/.bashrc '${debianConfFileDirCn}/.bashrc';"
+			[[ "$setDns" == "1" ]] && SetDNS="CNResolvHead" DnsChangePermanently="$1 mkdir -p /etc/resolvconf/resolv.conf.d/; $1 curl -ksLo /etc/resolvconf/resolv.conf.d/head '${debianConfFileDirCn}/network/${SetDNS}';" || DnsChangePermanently=""
+			[[ "$setMotd" == "1" ]] && ModifyMOTD="$1 rm -rf /etc/update-motd.d/ /etc/motd /run/motd.dynamic; $1 mkdir -p /etc/update-motd.d/; $1 curl -ksLo /etc/update-motd.d/00-header '${debianConfFileDirCn}/updatemotd/00-header'; $1 curl -ksLo /etc/update-motd.d/10-sysinfo '${debianConfFileDirCn}/updatemotd/10-sysinfo'; $1 curl -ksLo /etc/update-motd.d/90-footer '${debianConfFileDirCn}/updatemotd/90-footer'; $1 chmod +x /etc/update-motd.d/00-header; $1 chmod +x /etc/update-motd.d/10-sysinfo; $1 chmod +x /etc/update-motd.d/90-footer;" || ModifyMOTD=""
 		else
-			ChangeBashrc="$1 rm -rf /root/.bashrc; $1 wget --no-check-certificate -qO /root/.bashrc '${debianConfFileDir}/.bashrc';"
-			[[ "$setDns" == "1" ]] && SetDNS="NomalResolvHead" DnsChangePermanently="$1 mkdir -p /etc/resolvconf/resolv.conf.d/; $1 wget --no-check-certificate -qO /etc/resolvconf/resolv.conf.d/head '${debianConfFileDir}/network/${SetDNS}';" || DnsChangePermanently=""
-			[[ "$setMotd" == "1" ]] && ModifyMOTD="$1 rm -rf /etc/update-motd.d/ /etc/motd /run/motd.dynamic; $1 mkdir -p /etc/update-motd.d/; $1 wget --no-check-certificate -qO /etc/update-motd.d/00-header '${debianConfFileDir}/updatemotd/00-header'; $1 wget --no-check-certificate -qO /etc/update-motd.d/10-sysinfo '${debianConfFileDir}/updatemotd/10-sysinfo'; $1 wget --no-check-certificate -qO /etc/update-motd.d/90-footer '${debianConfFileDir}/updatemotd/90-footer'; $1 chmod +x /etc/update-motd.d/00-header; $1 chmod +x /etc/update-motd.d/10-sysinfo; $1 chmod +x /etc/update-motd.d/90-footer;" || ModifyMOTD=""
+			ChangeBashrc="$1 rm -rf /root/.bashrc; $1 curl -ksLo /root/.bashrc '${debianConfFileDir}/.bashrc';"
+			[[ "$setDns" == "1" ]] && SetDNS="NomalResolvHead" DnsChangePermanently="$1 mkdir -p /etc/resolvconf/resolv.conf.d/; $1 curl -ksLo /etc/resolvconf/resolv.conf.d/head '${debianConfFileDir}/network/${SetDNS}';" || DnsChangePermanently=""
+			[[ "$setMotd" == "1" ]] && ModifyMOTD="$1 rm -rf /etc/update-motd.d/ /etc/motd /run/motd.dynamic; $1 mkdir -p /etc/update-motd.d/; $1 curl -ksLo /etc/update-motd.d/00-header '${debianConfFileDir}/updatemotd/00-header'; $1 curl -ksLo /etc/update-motd.d/10-sysinfo '${debianConfFileDir}/updatemotd/10-sysinfo'; $1 curl -ksLo /etc/update-motd.d/90-footer '${debianConfFileDir}/updatemotd/90-footer'; $1 chmod +x /etc/update-motd.d/00-header; $1 chmod +x /etc/update-motd.d/10-sysinfo; $1 chmod +x /etc/update-motd.d/90-footer;" || ModifyMOTD=""
 		fi
 		[[ "$autoPlugAdapter" == "1" ]] && AutoPlugInterfaces="$1 sed -ri \"s/allow-hotplug $interface4/auto $interface4/g\" $2; $1 sed -ri \"s/allow-hotplug $interface6/auto $interface6/g\" $2;" || AutoPlugInterfaces=""
 		SupportIPv6orIPv4=""
@@ -2039,7 +2040,8 @@ $1 systemctl restart systemd-sysctl;"
 		}
 		CreateSoftLinkToGrub2FromGrub1="$1 ln -s /boot/grub/ /boot/grub2;"
 		[[ "$EfiSupport" == "enabled" ]] && SetGrubTimeout="$1 sed -ri 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=3/g' /etc/default/grub; $1 sed -ri 's/set timeout=5/set timeout=3/g' /boot/grub/grub.cfg;" || SetGrubTimeout=""
-		DebianModifiedProcession="${AptUpdating} ${InstallComponents} ${DisableCertExpiredCheck} ${ChangeBashrc} ${VimSupportCopy} ${VimIndentEolStart} ${DnsChangePermanently} ${ModifyMOTD} ${BurnIrregularIpv4Gate} ${BurnIrregularIpv6Gate} ${SupportIPv6orIPv4} ${ReplaceActualIpPrefix} ${AutoPlugInterfaces} ${EnableSSH} ${ReviseMOTD} ${SupportZSH} ${EnableFail2ban} ${EnableBBR} ${CreateSoftLinkToGrub2FromGrub1} ${SetGrubTimeout}"
+		#SetOGOSfunction="curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh -o /target/tmp/update-function.sh; chmod +x /target/tmp/update-function.sh; chroot /target bash /target/tmp/update-function.sh -r;"
+		DebianModifiedProcession="${AptUpdating} ${InstallComponents} ${DisableCertExpiredCheck} ${ChangeBashrc} ${VimSupportCopy} ${VimIndentEolStart} ${DnsChangePermanently} ${ModifyMOTD} ${BurnIrregularIpv4Gate} ${BurnIrregularIpv6Gate} ${SupportIPv6orIPv4} ${ReplaceActualIpPrefix} ${AutoPlugInterfaces} ${EnableSSH} ${ReviseMOTD} ${SupportZSH} ${EnableFail2ban} ${EnableBBR} ${CreateSoftLinkToGrub2FromGrub1} ${SetGrubTimeout} ${SetOGOSfunction}"
 	fi
 }
 
@@ -2251,7 +2253,7 @@ alpineInstallOrDdAdditionalFiles() {
 
 verifyUrlValidationOfDdImages() {
 	echo "$1" | grep -q '^http://\|^ftp://\|^https://'
-	[[ $? -ne '0' ]] && error "Please input a vaild URL, only support http://, ftp:// and https:// ! \n" && exit 1
+	[[ $? -ne '0' ]] && error "Please input a vaild URL, only support http://, ftp:// and https:// !\n" && exit 1
 	tmpURLCheck=$(echo $(curl -s -I -X GET $1) | grep -wi "http/[0-9]*" | awk '{print $2}')
 	[[ -z "$tmpURLCheck" || ! "$tmpURLCheck" =~ ^[0-9]+$ ]] && {
 		error "The mirror of DD images is temporarily unavailable!\n"
@@ -2327,13 +2329,13 @@ clear
 [[ ! -d "/tmp/" ]] && mkdir /tmp
 
 [[ -n "$aliyundunProcess" ]] && {
-	echo -ne "\n[${red}Warning${plain}] ${blue}AliYunDun${plain} is detected on your server, the components will be removed compeletely because they may obstruct the following flow. \n"
+	echo -ne "\n${CLR1}[Warning]${CLR0} ${CLR6}AliYunDun${CLR0} is detected on your server, the components will be removed compeletely because they may obstruct the following flow.\n"
 }
 
 [[ -f /etc/selinux/config ]] && {
 	SELinuxStatus=$(sestatus -v | grep -i "selinux status:" | grep "enabled")
 	[[ "$SELinuxStatus" != "" ]] && {
-		echo -ne "\n${aoiBlue}# Disabling SELinux${plain}\n"
+		echo -ne "\n${CLR8}# Disabling SELinux${CLR0}\n"
 		setenforce 0 2>/dev/null
 		echo -e "\nSuccess"
 	}
@@ -2346,12 +2348,12 @@ clear
 }
 
 [[ -n "$TotalMem" ]] && {
-	echo -ne "\n${aoiBlue}# System Memory${plain}\n"
+	echo -ne "\n${CLR8}# System Memory${CLR0}\n"
 	echo -e "\n${TotalMem} MB"
 }
 
 [[ -n "$showAllVirts" ]] && {
-	echo -ne "\n${aoiBlue}# Virtualization and Manufacturer${plain}\n"
+	echo -ne "\n${CLR8}# Virtualization and Manufacturer${CLR0}\n"
 	echo -e "\n${showAllVirts}"
 }
 
@@ -2359,19 +2361,19 @@ clear
 	detectCloudinit
 	if [[ "$linux_release" == 'rockylinux' || "$linux_release" == 'almalinux' || "$linux_release" == 'centos' ]]; then
 		if [[ "$RedHatSeries" == "7" ]]; then
-			error "There were not suitable Cloud Images for ${yellow}$Relese $RedHatSeries${plain}!\n"
+			error "There were not suitable Cloud Images for ${CLR3}$Relese $RedHatSeries${CLR0}!\n"
 			exit 1
 		fi
 		if [[ "$RedHatSeries" == "8" ]]; then
 			targetRelese='Rocky'
 			[[ "$IPStackType" != "IPv4Stack" || "$internalCloudinitStatus" == "1" ]] && {
 				if [[ "$IPStackType" != "IPv4Stack" ]]; then
-					error "Cloud Image of ${yellow}$targetRelese $RedHatSeries${plain} doesn't support ${blue}$IPStackType${plain} network!\n"
+					error "Cloud Image of ${CLR3}$targetRelese $RedHatSeries${CLR0} doesn't support ${CLR6}$IPStackType${CLR0} network!\n"
 				elif [[ "$internalCloudinitStatus" == "1" ]]; then
-					error "Due to internal Cloud Init configurations existed on ${underLine}$cloudinitCdDrive${plain}, installation of $targetRelese $RedHatSeries will meet a fatal!\n"
+					error "Due to internal Cloud Init configurations existed on ${underLine}$cloudinitCdDrive${CLR0}, installation of $targetRelese $RedHatSeries will meet a fatal!\n"
 				fi
 				RedHatSeries="$(($RedHatSeries + 1))"
-				echo -ne "\nTry to install ${yellow}AlmaLinux $RedHatSeries${plain} or ${yellow}Rocky $RedHatSeries${plain} instead.\n"
+				echo -e "\nTry to install ${CLR3}AlmaLinux $RedHatSeries${CLR0} or ${CLR3}Rocky $RedHatSeries${CLR0} instead."
 				exit 1
 			}
 		fi
@@ -2408,20 +2410,20 @@ clear
 }
 
 [[ -z "$LinuxMirror" ]] && {
-	error "Invaild mirror! \n"
-	[ "$Relese" == 'Debian' ] && echo -ne "${yellow}Please check mirror lists:${plain} https://www.debian.org/mirror/list\n\n"
-	[ "$Relese" == 'Ubuntu' ] && echo -ne "${yellow}Please check mirror lists:${plain} https://launchpad.net/ubuntu/+archivemirrors\n\n"
-	[ "$Relese" == 'Kali' ] && echo -ne "${yellow}Please check mirror lists:${plain} https://http.kali.org/README.mirrorlist\n\n"
-	[ "$Relese" == 'AlpineLinux' ] && echo -ne "${yellow}Please check mirror lists:${plain} https://mirrors.alpinelinux.org/\n\n"
-	[ "$Relese" == 'CentOS' ] && echo -ne "${yellow}Please check mirror lists:${plain} https://www.centos.org/download/mirrors/\n\n"
-	[ "$Relese" == 'RockyLinux' ] && echo -ne "${yellow}Please check mirror lists:${plain} https://mirrors.rockylinux.org/mirrormanager/mirrors\n\n"
-	[ "$Relese" == 'AlmaLinux' ] && echo -ne "${yellow}Please check mirror lists:${plain} https://mirrors.almalinux.org/\n\n"
-	[ "$Relese" == 'Fedora' ] && echo -ne "${yellow}Please check mirror lists:${plain} https://mirrors.fedoraproject.org/\n\n"
+	error "Invaild mirror!\n"
+	[ "$Relese" == 'Debian' ] && echo -e "${CLR3}Please check mirror lists:${CLR0} https://www.debian.org/mirror/list\n"
+	[ "$Relese" == 'Ubuntu' ] && echo -e "${CLR3}Please check mirror lists:${CLR0} https://launchpad.net/ubuntu/+archivemirrors\n"
+	[ "$Relese" == 'Kali' ] && echo -e "${CLR3}Please check mirror lists:${CLR0} https://http.kali.org/README.mirrorlist\n"
+	[ "$Relese" == 'AlpineLinux' ] && echo -e "${CLR3}Please check mirror lists:${CLR0} https://mirrors.alpinelinux.org/\n"
+	[ "$Relese" == 'CentOS' ] && echo -e "${CLR3}Please check mirror lists:${CLR0} https://www.centos.org/download/mirrors/\n"
+	[ "$Relese" == 'RockyLinux' ] && echo -e "${CLR3}Please check mirror lists:${CLR0} https://mirrors.rockylinux.org/mirrormanager/mirrors\n"
+	[ "$Relese" == 'AlmaLinux' ] && echo -e "${CLR3}Please check mirror lists:${CLR0} https://mirrors.almalinux.org/\n"
+	[ "$Relese" == 'Fedora' ] && echo -e "${CLR3}Please check mirror lists:${CLR0} https://mirrors.fedoraproject.org/\n"
 	exit 1
 }
 
-echo -ne "\n${CLR8}## Check Dependence${CLR0}\n"
-printf "${CLR8}$(LINE - "32")${CLR0}\n"
+echo -e "\n${CLR8}## Check Dependence${CLR0}"
+echo -e "${CLR8}$(LINE - "32")${CLR0}"
 dependencies=("awk" "basename" "cat" "cpio" "curl" "cut" "dirname" "file" "find" "grep" "gzip" "iconv" "ip" "lsblk" "openssl" "sed" "wget")
 for dep in "${dependencies[@]}"; do
 	status="${CLR2}[OK]${CLR0}"
@@ -2486,31 +2488,31 @@ if [[ -z "$IPv4" && -z "$MASK" && -z "$GATE" ]] && [[ -z "$ip6Addr" && -z "$ip6M
 	exit 1
 fi
 
-echo -ne "\n${aoiBlue}# Network Details${plain}\n"
-[[ -n "$interfaceSelect" ]] && echo -ne "\n[${yellow}Adapter Name${plain}]  $interfaceSelect" || echo -ne "\n[${yellow}Adapter Name${plain}]  $interface"
-[[ -n "$NetCfgWhole" ]] && echo -ne "\n[${yellow}Network File${plain}]  $NetCfgWhole" || echo -ne "\n[${yellow}Network File${plain}]  N/A"
-echo -ne "\n[${yellow}Server Stack${plain}]  $IPStackType\n"
-[[ "$IPStackType" != "IPv6Stack" ]] && echo -ne "\n[${yellow}IPv4  Method${plain}]  $Network4Config\n" || echo -ne "\n[${yellow}IPv4  Method${plain}]  N/A\n"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "[${yellow}IPv4 Address${plain}]  ""$IPv4" || echo -e "[${yellow}IPv4 Address${plain}]  ""N/A"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "[${yellow}IPv4  Subnet${plain}]  ""$actualIp4Subnet" || echo -e "[${yellow}IPv4  Subnet${plain}]  ""N/A"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "[${yellow}IPv4 Gateway${plain}]  ""$GATE" || echo -e "[${yellow}IPv4 Gateway${plain}]  ""N/A"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "[${yellow}IPv4     DNS${plain}]  ""$ipDNS" || echo -e "[${yellow}IPv4     DNS${plain}]  ""N/A"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "[${yellow}IPv4  Amount${plain}]  ""$iAddrNum" || echo -e "[${yellow}IPv4  Amount${plain}]  ""N/A"
-[[ "$IPStackType" != "IPv4Stack" ]] && echo -ne "\n[${yellow}IPv6  Method${plain}]  $Network6Config\n" || echo -ne "\n[${yellow}IPv6  Method${plain}]  N/A\n"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "[${yellow}IPv6 Address${plain}]  ""$ip6Addr" || echo -e "[${yellow}IPv6 Address${plain}]  ""N/A"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "[${yellow}IPv6  Subnet${plain}]  ""$actualIp6Prefix" || echo -e "[${yellow}IPv6  Subnet${plain}]  ""N/A"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "[${yellow}IPv6 Gateway${plain}]  ""$ip6Gate" || echo -e "[${yellow}IPv6 Gateway${plain}]  ""N/A"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "[${yellow}IPv6     DNS${plain}]  ""$ip6DNS" || echo -e "[${yellow}IPv6     DNS${plain}]  ""N/A"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "[${yellow}IPv6  Amount${plain}]  ""$i6AddrNum" || echo -e "[${yellow}IPv6  Amount${plain}]  ""N/A"
+echo -e "\n${CLR8}# Network Details${CLR0}"
+[[ -n "$interfaceSelect" ]] && echo -ne "\n${CLR3}[Adapter Name]${CLR0}  $interfaceSelect" || echo -ne "\n${CLR3}[Adapter Name]${CLR0}  $interface"
+[[ -n "$NetCfgWhole" ]] && echo -ne "\n${CLR3}[Network File]${CLR0}  $NetCfgWhole" || echo -ne "\n${CLR3}[Network File]${CLR0}  N/A"
+echo -e "\n${CLR3}[Server Stack]${CLR0}  $IPStackType"
+[[ "$IPStackType" != "IPv6Stack" ]] && echo -e "\n${CLR3}[IPv4  Method]${CLR0}  $Network4Config" || echo -e "\n${CLR3}[IPv4  Method]${CLR0}  N/A"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4 Address]${CLR0}  ""$IPv4" || echo -e "${CLR3}[IPv4 Address]${CLR0}  ""N/A"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4  Subnet]${CLR0}  ""$actualIp4Subnet" || echo -e "${CLR3}[IPv4  Subnet]${CLR0}  ""N/A"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4 Gateway]${CLR0}  ""$GATE" || echo -e "${CLR3}[IPv4 Gateway]${CLR0}  ""N/A"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4     DNS]${CLR0}  ""$ipDNS" || echo -e "${CLR3}[IPv4     DNS]${CLR0}  ""N/A"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4  Amount]${CLR0}  ""$iAddrNum" || echo -e "${CLR3}[IPv4  Amount]${CLR0}  ""N/A"
+[[ "$IPStackType" != "IPv4Stack" ]] && echo -e "\n${CLR3}[IPv6  Method]${CLR0}  $Network6Config" || echo -e "\n${CLR3}[IPv6  Method]${CLR0}  N/A"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6 Address]${CLR0}  ""$ip6Addr" || echo -e "${CLR3}[IPv6 Address]${CLR0}  ""N/A"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6  Subnet]${CLR0}  ""$actualIp6Prefix" || echo -e "${CLR3}[IPv6  Subnet]${CLR0}  ""N/A"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6 Gateway]${CLR0}  ""$ip6Gate" || echo -e "${CLR3}[IPv6 Gateway]${CLR0}  ""N/A"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6     DNS]${CLR0}  ""$ip6DNS" || echo -e "${CLR3}[IPv6     DNS]${CLR0}  ""N/A"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6  Amount]${CLR0}  ""$i6AddrNum" || echo -e "${CLR3}[IPv6  Amount]${CLR0}  ""N/A"
 
 getUserTimeZone "/root/timezonelists" "https://api.ip.sb/geoip/" "http://ifconfig.co/json?ip=" "http://ip-api.com/json/" "https://ipapi.co/" "YjNhNjAxNjY5YTFiNDI2MmFmOGYxYjJjZDk3ZjNiN2YK" "MmUxMjBhYmM0Y2Q4NDM1ZDhhMmQ5YzQzYzk4ZTZiZTEK" "NjBiMThjZWJlMWU1NGQ5NDg2YWY0MTgyMWM0ZTZiZDgK"
 [[ -z "$TimeZone" ]] && TimeZone="Asia/Tokyo"
-echo -ne "\n${aoiBlue}# User Timezone${plain}\n\n"
+echo -e "\n${CLR8}# User Timezone${CLR0}\n"
 echo "$TimeZone"
 
 [[ -n "$tmpHostName" ]] && HostName="$tmpHostName" || HostName=$(hostname)
 [[ -z "$HostName" || "$HostName" =~ "localhost" || "$HostName" =~ "localdomain" || "$HostName" == "random" ]] && HostName="instance-$(date "+%Y%m%d")-$(date "+%H%M")"
-echo -ne "\n${aoiBlue}# Hostname${plain}\n\n"
+echo -e "\n${CLR8}# Hostname${CLR0}\n"
 echo "$HostName"
 
 if [[ -z "$tmpWORD" || "$linux_release" == 'alpinelinux' ]]; then
@@ -2521,7 +2523,7 @@ else
 	[[ -z "$myPASSWORD" || "$myPASSWORD" =~ "NULL" ]] && myPASSWORD=$(openssl passwd -1 ''$tmpWORD'')
 fi
 
-echo -ne "\n${aoiBlue}# SSH or RDP Port, Username and Password${plain}\n\n"
+echo -e "\n${CLR8}# SSH or RDP Port, Username and Password${CLR0}\n"
 if [[ "$targetRelese" == 'Windows' && "$tmpURL" == "" || "$tmpURL" =~ "dl.lamp.sh" ]]; then
 	echo "3389"
 	echo "Administrator"
@@ -2538,32 +2540,32 @@ setDisk=$(echo "$setDisk" | sed 's/[A-Z]/\l&/g')
 getDisk "$setDisk" "$linux_release"
 if [[ "$targetRelese" == 'AlmaLinux' ]] || [[ "$targetRelese" == 'Rocky' ]]; then
 	[[ "$diskCapacity" -lt "10737418240" ]] && {
-		error "Minimum system hard drive requirement is 10 GB! \n\n"
+		error "Minimum system hard drive requirement is 10 GB!\n"
 		exit 1
 	}
 elif [[ "$targetRelese" == 'Windows' ]]; then
 	[[ "$diskCapacity" -lt "16106127360" ]] && {
-		error "Minimum system hard drive requirement is 15 GB! \n\n"
+		error "Minimum system hard drive requirement is 15 GB!\n"
 		exit 1
 	}
 fi
-echo -ne "\n${aoiBlue}# Formatting and Installing Drives${plain}\n\n"
+echo -e "\n${CLR8}# Formatting and Installing Drives${CLR0}\n"
 [[ "$setDisk" == "all" || -n "$setRaid" ]] && echo "$AllDisks" || echo "$IncDisk"
 
-echo -ne "\n${aoiBlue}# Motherboard Firmware${plain}\n\n"
+echo -e "\n${CLR8}# Motherboard Firmware${CLR0}\n"
 [[ "$EfiSupport" == "enabled" ]] && echo "UEFI" || echo "BIOS"
 
 [[ "$setNetbootXyz" == "1" ]] && SpikCheckDIST="1"
 if [[ "$SpikCheckDIST" == '0' ]]; then
-	echo -ne "\n${aoiBlue}# Check DIST${plain}\n"
-	[[ "$linux_release" == 'debian' ]] && DistsList="$(curl -k -s "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-\|old\|README\|Debian\|experimental\|stable\|test\|sid\|devel/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
-	[[ "$linux_release" == 'kali' ]] && DistsList="$(curl -k -s "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/debian\|only\|last\|edge/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
-	[[ "$linux_release" == 'alpinelinux' ]] && DistsList="$(curl -k -s "$LinuxMirror/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
+	echo -ne "\n${CLR8}# Check DIST${CLR0}\n"
+	[[ "$linux_release" == 'debian' ]] && DistsList="$(curl -ksL "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-\|old\|README\|Debian\|experimental\|stable\|test\|sid\|devel/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
+	[[ "$linux_release" == 'kali' ]] && DistsList="$(curl -ksL "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/debian\|only\|last\|edge/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
+	[[ "$linux_release" == 'alpinelinux' ]] && DistsList="$(curl -ksL "$LinuxMirror/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
 	for CheckDEB in $(echo "$DistsList" | sed 's/;/\n/g'); do
 		[[ "$CheckDEB" =~ "$DIST" ]] && FindDists='1' && break
 	done
 	[[ "$FindDists" == '0' ]] && {
-		error "The dists version not found, Please check it! \n\n"
+		error "The dists version not found, Please check it!\n"
 		exit 1
 	}
 	echo -e "\nSuccess"
@@ -2579,7 +2581,7 @@ if [[ "$ddMode" == '1' ]]; then
 			ubuntuDigital1=$(echo "$ubuntuDigital" | cut -d'.' -f1)
 			ubuntuDigital2=$(echo "$ubuntuDigital" | cut -d'.' -f2)
 			if [[ "$ubuntuDigital1" -le "19" || "$ubuntuDigital1" -ge "25" || $((${ubuntuDigital1} % 2)) = 1 ]] || [[ "$ubuntuDigital2" != "04" ]]; then
-				error "The dists version not found, Please check it! \n'"
+				error "The dists version not found, Please check it!\n"
 				exit 1
 			fi
 			[[ -n $ubuntuDigital ]] && {
@@ -2666,7 +2668,7 @@ if [[ "$ddMode" == '1' ]]; then
 		verifyUrlValidationOfDdImages "$tmpURL"
 		ReleaseName="Self-Modified OS"
 	else
-		echo -ne "\n[${red}Warning${plain}] Please input a vaild image URL!\n"
+		echo -ne "\n${CLR1}[Warning]${CLR0} Please input a vaild image URL!\n"
 		exit 1
 	fi
 fi
@@ -2705,20 +2707,26 @@ else
 	}
 fi
 
-echo -ne "\n${aoiBlue}# Installation Starting${plain}\n"
-
-[[ "$ddMode" == '1' ]] && echo -ne "\n${blue}Overwriting Packaged Image Mode${plain} Target System [${yellow}$ReleaseName${plain}]\n$DDURL\n"
+echo -e "\n${CLR8}## Installation Starting${CLR0}"
+echo -e "${CLR8}$(LINE - "32")${CLR0}"
+[[ "$ddMode" == '1' ]] && echo -e "${CLR4}Overwriting Packaged Image Mode${CLR0} Target System ${CLR3}[$ReleaseName]${CLR0}\n${CLR2}$DDURL${CLR0}\n"
 
 if [[ "$linux_release" == 'centos' ]]; then
 	if [[ "$DIST" != "$UNVER" ]]; then
 		awk 'BEGIN{print '${UNVER}'-'${DIST}'}' | grep -q '^-'
 		if [ $? != '0' ]; then
 			UNKNOWHW='1'
-			echo -ne "\nThe version lower than ${red}$UNVER${plain} may not support in auto mode!\n"
+			echo -ne "\nThe version lower than ${CLR1}$UNVER${CLR0} may not support in auto mode!\n"
 		fi
 	fi
 fi
-[[ "$setNetbootXyz" == "0" ]] && echo -ne "\n[${yellow}$Relese${plain}] [${yellow}$DIST${plain}] [${yellow}$VER${plain}] Downloading...\n" || echo -ne "\n[${yellow}netboot.xyz${plain}] Downloading...\n"
+if [[ "$setNetbootXyz" == "0" ]]; then
+    echo -e "System:\t\t${CLR2}[$Relese]${CLR0}"
+    echo -e "Version:\t${CLR2}[$DIST]${CLR0}"
+    echo -e "Architecture:\t${CLR2}[$VER]${CLR0}"
+else
+    echo -e "\nFrom:\t${CLR2}[netboot.xyz]${CLR0}"
+fi
 
 if [[ "$setNetbootXyz" == "1" ]]; then
 	[[ "$VER" == "x86_64" || "$VER" == "amd64" ]] && apt install grub-imageboot -y
@@ -2736,9 +2744,9 @@ if [[ "$setNetbootXyz" == "1" ]]; then
 	fi
 	[[ ! -d "/boot/images/" ]] && mkdir /boot/images/
 	rm -rf /boot/images/netboot.xyz.iso
-	echo -ne "[${yellow}Mirror${plain}] $NetbootXyzUrl\n"
-	wget --no-check-certificate -qO '/boot/images/netboot.xyz.iso' "$NetbootXyzUrl"
-	[[ ! -f "/etc/grub.d/60_grub-imageboot" ]] && wget --no-check-certificate -qO '/etc/grub.d/60_grub-imageboot' "$NetbootXyzGrub"
+	echo -e "\n- $NetbootXyzUrl"
+	curl -ksLo '/boot/images/netboot.xyz.iso' "$NetbootXyzUrl"
+	[[ ! -f "/etc/grub.d/60_grub-imageboot" ]] && curl -ksLo '/etc/grub.d/60_grub-imageboot' "$NetbootXyzGrub"
 	chmod 755 /etc/grub.d/60_grub-imageboot
 	[[ ! -z "$GRUBTYPE" && "$GRUBTYPE" == "isGrub2" ]] && {
 		rm -rf /boot/memdisk
@@ -2753,11 +2761,11 @@ elif [[ "$linux_release" == 'debian' ]] || [[ "$linux_release" == 'ubuntu' ]] ||
 		InitrdUrl="${LinuxMirror}/dists/${DIST}/main/installer-${VER}/current/images/netboot/debian-installer/${VER}/initrd.gz"
 		VmLinuzUrl="${LinuxMirror}/dists/${DIST}/main/installer-${VER}/current/images/netboot/debian-installer/${VER}/linux"
 	}
-	echo -ne "[${yellow}Mirror${plain}] $InitrdUrl\n\t $VmLinuzUrl\n"
-	wget --no-check-certificate -qO '/tmp/initrd.img' "$InitrdUrl"
-	[[ $? -ne '0' ]] && error "Download 'initrd.img' for ${yellow}$linux_release${plain} failed! \n" && exit 1
-	wget --no-check-certificate -qO '/tmp/vmlinuz' "$VmLinuzUrl"
-	[[ $? -ne '0' ]] && error "Download 'vmlinuz' for ${yellow}$linux_release${plain} failed! \n" && exit 1
+	echo -e "\n- initrd.gz:\t${CLR2}$InitrdUrl${CLR0}\n- linux:\t${CLR2}$VmLinuzUrl${CLR0}"
+	curl -ksLo '/tmp/initrd.img' "$InitrdUrl"
+	[[ $? -ne '0' ]] && error "Download 'initrd.img' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
+	curl -ksLo '/tmp/vmlinuz' "$VmLinuzUrl"
+	[[ $? -ne '0' ]] && error "Download 'vmlinuz' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
 	MirrorHost="$(echo "$LinuxMirror" | awk -F'://|/' '{print $2}')"
 	MirrorFolder="$(echo "$LinuxMirror" | awk -F''${MirrorHost}'' '{print $2}')/"
 	[ -n "$MirrorFolder" ] || MirrorFolder="/"
@@ -2765,35 +2773,35 @@ elif [[ "$linux_release" == 'alpinelinux' ]]; then
 	InitrdUrl="${LinuxMirror}/${DIST}/releases/${VER}/netboot/${InitrdName}"
 	VmLinuzUrl="${LinuxMirror}/${DIST}/releases/${VER}/netboot/${VmLinuzName}"
 	ModLoopUrl="${LinuxMirror}/${DIST}/releases/${VER}/netboot/${ModLoopName}"
-	echo -ne "[${yellow}Mirror${plain}] $InitrdUrl\n\t $VmLinuzUrl\n"
-	wget --no-check-certificate -qO '/tmp/initrd.img' "$InitrdUrl"
-	[[ $? -ne '0' ]] && error "Download '$InitrdName' for ${yellow}$linux_release${plain} failed! \n" && exit 1
-	wget --no-check-certificate -qO '/tmp/vmlinuz' "$VmLinuzUrl"
-	[[ $? -ne '0' ]] && error "Download '$VmLinuzName' for ${yellow}$linux_release${plain} failed! \n" && exit 1
+	echo -e "\n- initrd.gz:\t${CLR2}$InitrdUrl${CLR0}\n- linux:\t${CLR2}$VmLinuzUrl${CLR0}"
+	curl -ksLo '/tmp/initrd.img' "$InitrdUrl"
+	[[ $? -ne '0' ]] && error "Download '$InitrdName' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
+	curl -ksLo '/tmp/vmlinuz' "$VmLinuzUrl"
+	[[ $? -ne '0' ]] && error "Download '$VmLinuzName' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
 elif [[ "$linux_release" == 'centos' ]] && [[ "$RedHatSeries" -le "7" ]]; then
 	InitrdUrl="${LinuxMirror}/${DIST}/os/${VER}/images/pxeboot/initrd.img"
 	VmLinuzUrl="${LinuxMirror}/${DIST}/os/${VER}/images/pxeboot/vmlinuz"
-	echo -ne "[${yellow}Mirror${plain}] $InitrdUrl\n\t $VmLinuzUrl\n"
-	wget --no-check-certificate -qO '/tmp/initrd.img' "$InitrdUrl"
-	[[ $? -ne '0' ]] && error "Download 'initrd.img' for ${yellow}$linux_release${plain} failed! \n" && exit 1
-	wget --no-check-certificate -qO '/tmp/vmlinuz' "$VmLinuzUrl"
-	[[ $? -ne '0' ]] && error "Download 'vmlinuz' for ${yellow}$linux_release${plain} failed! \n" && exit 1
+	echo -e "\n- initrd.gz:\t${CLR2}$InitrdUrl${CLR0}\n- linux:\t${CLR2}$VmLinuzUrl${CLR0}"
+	curl -ksLo '/tmp/initrd.img' "$InitrdUrl"
+	[[ $? -ne '0' ]] && error "Download 'initrd.img' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
+	curl -ksLo '/tmp/vmlinuz' "$VmLinuzUrl"
+	[[ $? -ne '0' ]] && error "Download 'vmlinuz' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
 elif [[ "$linux_release" == 'centos' && "$RedHatSeries" -ge "8" ]] || [[ "$linux_release" == 'rockylinux' ]] || [[ "$linux_release" == 'almalinux' ]]; then
 	InitrdUrl="${LinuxMirror}/${DIST}/BaseOS/${VER}/os/images/pxeboot/initrd.img"
 	VmLinuzUrl="${LinuxMirror}/${DIST}/BaseOS/${VER}/os/images/pxeboot/vmlinuz"
-	echo -ne "[${yellow}Mirror${plain}] $InitrdUrl\n\t $VmLinuzUrl\n"
-	wget --no-check-certificate -qO '/tmp/initrd.img' "$InitrdUrl"
-	[[ $? -ne '0' ]] && error "Download 'initrd.img' for ${yellow}$linux_release${plain} failed! \n" && exit 1
-	wget --no-check-certificate -qO '/tmp/vmlinuz' "$VmLinuzUrl"
-	[[ $? -ne '0' ]] && error "Download 'vmlinuz' for ${yellow}$linux_release${plain} failed! \n" && exit 1
+	echo -e "\n- initrd.gz:\t${CLR2}$InitrdUrl${CLR0}\n- linux:\t${CLR2}$VmLinuzUrl${CLR0}"
+	curl -ksLo '/tmp/initrd.img' "$InitrdUrl"
+	[[ $? -ne '0' ]] && error "Download 'initrd.img' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
+	curl -ksLo '/tmp/vmlinuz' "$VmLinuzUrl"
+	[[ $? -ne '0' ]] && error "Download 'vmlinuz' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
 elif [[ "$linux_release" == 'fedora' ]]; then
 	InitrdUrl="${LinuxMirror}/releases/${DIST}/Server/${VER}/os/images/pxeboot/initrd.img"
 	VmLinuzUrl="${LinuxMirror}/releases/${DIST}/Server/${VER}/os/images/pxeboot/vmlinuz"
-	echo -ne "[${yellow}Mirror${plain}] $InitrdUrl\n\t $VmLinuzUrl\n"
-	wget --no-check-certificate -qO '/tmp/initrd.img' "$InitrdUrl"
-	[[ $? -ne '0' ]] && error "Download 'initrd.img' for ${yellow}$linux_release${plain} failed! \n" && exit 1
-	wget --no-check-certificate -qO '/tmp/vmlinuz' "$VmLinuzUrl"
-	[[ $? -ne '0' ]] && error "Download 'vmlinuz' for ${yellow}$linux_release${plain} failed! \n" && exit 1
+	echo -e "\n- initrd.gz:\t${CLR2}$InitrdUrl${CLR0}\n- linux:\t${CLR2}$VmLinuzUrl${CLR0}"
+	curl -ksLo '/tmp/initrd.img' "$InitrdUrl"
+	[[ $? -ne '0' ]] && error "Download 'initrd.img' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
+	curl -ksLo '/tmp/vmlinuz' "$VmLinuzUrl"
+	[[ $? -ne '0' ]] && error "Download 'vmlinuz' for ${CLR3}$linux_release${CLR0} failed!\n" && exit 1
 else
 	bash $0 error
 	exit 1
@@ -2802,28 +2810,28 @@ fi
 if [[ "$IncFirmware" == '1' ]]; then
 	if [[ "$linux_release" == 'debian' ]]; then
 		if [[ "$IsCN" == "1" ]]; then
-			wget --no-check-certificate -qO '/tmp/firmware.cpio.gz' "https://mirrors.ustc.edu.cn/debian-cdimage/unofficial/non-free/firmware/${DIST}/current/firmware.cpio.gz"
-			[[ $? -ne '0' ]] && error "Download firmware for ${red}$linux_release${plain} failed! \n" && exit 1
+			curl -ksLo '/tmp/firmware.cpio.gz' "https://mirrors.ustc.edu.cn/debian-cdimage/unofficial/non-free/firmware/${DIST}/current/firmware.cpio.gz"
+			[[ $? -ne '0' ]] && error "Download firmware for ${CLR1}$linux_release${CLR0} failed!\n" && exit 1
 		else
-			wget --no-check-certificate -qO '/tmp/firmware.cpio.gz' "http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/${DIST}/current/firmware.cpio.gz"
-			[[ $? -ne '0' ]] && error "Download firmware for ${red}$linux_release${plain} failed! \n" && exit 1
+			curl -ksLo '/tmp/firmware.cpio.gz' "http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/${DIST}/current/firmware.cpio.gz"
+			[[ $? -ne '0' ]] && error "Download firmware for ${CLR1}$linux_release${CLR0} failed!\n" && exit 1
 		fi
 		if [[ "$ddMode" == '1' ]]; then
-			vKernel_udeb=$(curl -k -s "http://$LinuxMirror/dists/$DIST/main/installer-$VER/current/images/udeb.list" | grep '^acpi-modules' | head -n1 | grep -o '[0-9]\{1,2\}.[0-9]\{1,2\}.[0-9]\{1,2\}-[0-9]\{1,2\}' | head -n1)
+			vKernel_udeb=$(curl -ksL "http://$LinuxMirror/dists/$DIST/main/installer-$VER/current/images/udeb.list" | grep '^acpi-modules' | head -n1 | grep -o '[0-9]\{1,2\}.[0-9]\{1,2\}.[0-9]\{1,2\}-[0-9]\{1,2\}' | head -n1)
 			[[ -z "vKernel_udeb" ]] && vKernel_udeb="6.1.0-11"
 		fi
 	elif [[ "$linux_release" == 'kali' ]]; then
 		if [[ "$IsCN" == "1" ]]; then
-			wget --no-check-certificate -qO /root/kaliFirmwareCheck 'https://mirrors.tuna.tsinghua.edu.cn/kali/pool/non-free/f/firmware-nonfree/?C=S&O=D'
+			curl -ksLo /root/kaliFirmwareCheck 'https://mirrors.tuna.tsinghua.edu.cn/kali/pool/non-free/f/firmware-nonfree/?C=S&O=D'
 			kaliFirmwareName=$(grep "href=\"firmware-nonfree" /root/kaliFirmwareCheck | head -n 1 | awk -F'\">' '/tar.xz/{print $3}' | cut -d'<' -f1 | cut -d'/' -f2)
-			wget --no-check-certificate -qO '/tmp/kali_firmware.tar.xz' "https://mirrors.tuna.tsinghua.edu.cn/kali/pool/non-free/f/firmware-nonfree/$kaliFirmwareName"
-			[[ $? -ne '0' ]] && error "Download firmware for ${red}$linux_release${plain} failed! \n" && exit 1
+			curl -ksLo '/tmp/kali_firmware.tar.xz' "https://mirrors.tuna.tsinghua.edu.cn/kali/pool/non-free/f/firmware-nonfree/$kaliFirmwareName"
+			[[ $? -ne '0' ]] && error "Download firmware for ${CLR1}$linux_release${CLR0} failed!\n" && exit 1
 			rm -rf /root/kaliFirmwareCheck
 		else
-			wget --no-check-certificate -qO /root/kaliFirmwareCheck 'https://mirrors.ocf.berkeley.edu/kali/pool/non-free/f/firmware-nonfree/?C=S&O=D'
+			curl -ksLo /root/kaliFirmwareCheck 'https://mirrors.ocf.berkeley.edu/kali/pool/non-free/f/firmware-nonfree/?C=S&O=D'
 			kaliFirmwareName=$(grep "href=\"firmware-nonfree" /root/kaliFirmwareCheck | head -n 1 | awk -F'\">' '/tar.xz/{print $3}' | cut -d'<' -f1 | cut -d'/' -f2)
-			wget --no-check-certificate -qO '/tmp/kali_firmware.tar.xz' "https://mirrors.ocf.berkeley.edu/kali/pool/non-free/f/firmware-nonfree/$kaliFirmwareName"
-			[[ $? -ne '0' ]] && error "Download firmware for ${red}$linux_release${plain} failed! \n" && exit 1
+			curl -ksLo '/tmp/kali_firmware.tar.xz' "https://mirrors.ocf.berkeley.edu/kali/pool/non-free/f/firmware-nonfree/$kaliFirmwareName"
+			[[ $? -ne '0' ]] && error "Download firmware for ${CLR1}$linux_release${CLR0} failed!\n" && exit 1
 			rm -rf /root/kaliFirmwareCheck
 		fi
 		decompressedKaliFirmwareDir=$(echo $kaliFirmwareName | cut -d'.' -f 1 | sed 's/_/-/g')
@@ -3406,6 +3414,11 @@ rm -rf /root/anaconda-ks.cfg
 rm -rf /root/install.*log
 rm -rf /root/original-ks.cfg
 
+# Set OGOS function.sh
+#curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh -o /tmp/update-function.sh; \
+#chmod +x /tmp/update-function.sh
+#bash /tmp/update-function.sh -r
+
 %end
 
 EOF
@@ -3459,7 +3472,7 @@ if [[ ! -z "$GRUBTYPE" && "$GRUBTYPE" == "isGrub1" ]]; then
 		[[ -n "$(grep 'linux.*/\|kernel.*/' /tmp/grub.new | awk '{print $2}' | tail -n 1 | grep '^/boot/')" ]] && Type='InBoot' || Type='NoBoot'
 
 		LinuxKernel="$(grep 'linux.*/\|kernel.*/' /tmp/grub.new | awk '{print $1}' | head -n 1)"
-		[[ -z "$LinuxKernel" ]] && echo -ne "\n${red}Error${plain} read grub config!\n" && exit 1
+		[[ -z "$LinuxKernel" ]] && echo -ne "\n${CLR1}Error${CLR0} read grub config!\n" && exit 1
 		LinuxIMG="$(grep 'initrd.*/' /tmp/grub.new | awk '{print $1}' | tail -n 1)"
 		[ -z "$LinuxIMG" ] && sed -i "/$LinuxKernel.*\//a\\\tinitrd\ \/" /tmp/grub.new && LinuxIMG='initrd'
 		[[ "$setInterfaceName" == "1" ]] && Add_OPTION="$Add_OPTION net.ifnames=0 biosdevname=0" || Add_OPTION="$Add_OPTION"
@@ -3630,7 +3643,8 @@ else
 fi
 
 [[ "$setAutoConfig" != "0" || "$setNetbootXyz" != "1" || "$loaderMode" == "0" ]] && {
-	echo -ne "\n${aoiBlue}# Directory of Grub and Unattended Disposition File${plain}\n\n"
+	echo -e "\n${CLR8}## Grub and Config Files${CLR0}"
+	echo -e "${CLR8}$(LINE - "32")${CLR0}"
 	echo "$GRUBDIR/$GRUBFILE"
 	if [[ "$linux_release" == 'debian' ]] || [[ "$linux_release" == 'kali' ]]; then
 		echo "/tmp/boot/preseed.cfg"
@@ -3642,8 +3656,11 @@ fi
 }
 
 if [[ "$setAutoReboot" == "1" ]]; then
-	echo -e "\n${CLR3}System will reboot in 5 seconds...${CLR0}"
-	sleep 5
+	echo
+	for i in {5..1}; do
+		echo -ne "\r${CLR3}System will reboot in $i seconds...${CLR0}"
+		sleep 1
+	done
 	reboot || sudo reboot
 else
 	echo
