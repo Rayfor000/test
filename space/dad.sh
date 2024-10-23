@@ -62,6 +62,7 @@ setFail2ban=""
 setFileType=""
 setInterfaceName="0"
 setIPv6="1"
+setKejilion=""
 setMemCheck="1"
 setMirror=""
 setMotd=""
@@ -130,6 +131,7 @@ while [[ $# -ge 1 ]]; do
 		--loader) shift; loaderMode='1'; shift ;;
 		--motd) shift; setMotd='1'; shift ;;
 		--fail2ban) shift; setFail2ban="$1"; shift ;;
+		--kejilion) shift; setKejilion='1'; shift ;;
 		--setdns) shift; setDns='1' ;;
 		--cloudkernel) shift; setCloudKernel="$1"; shift ;;
 		--cloudimage) shift; useCloudImage="1" ;;
@@ -794,7 +796,7 @@ checkMem() {
 						if [[ "$2" == "8" ]]; then
 							echo -e "\nSwitching to ${CLR3}Rocky $2${CLR0} by ${CLR6}Cloud Init${CLR0} Installation..."
 						elif [[ "$2" == "9" ]]; then
-							echo -ne "\nSwitching to ${CLR6}Cloud Init${CLR0} Installation...\n"
+							echo -e "\nSwitching to ${CLR6}Cloud Init${CLR0} Installation..."
 						fi
 					}
 				elif [[ "$2" == "7" ]]; then
@@ -827,15 +829,24 @@ checkMem() {
 				}
 			fi
 		}
-		if [[ "$TotalMem" -le "2028" ]]; then
-			setFail2banStatus="0"
-			[[ "$setFail2ban" == "1" ]] && setFail2banStatus="1"
-		else
-			[[ "$setFail2ban" == "0" ]] && setFail2banStatus="0" || setFail2banStatus="1"
-		fi
 		[[ "$linux_release" == 'debian' && "$DebianDistNum" -le "8" ]] && setFail2banStatus="0"
 	}
 }
+
+updateStatus() {
+	memStatus="$1"
+	configFlag="$2"
+	statusVar="$3"
+	if [[ "$memStatus" -ge "0" ]]; then
+		eval "$statusVar=0"
+		echo -e "$statusVar=0"
+		[[ "$configFlag" == "1" ]] && eval "$statusVar=1" && echo -e "$statusVar=1"
+	else
+		[[ "$configFlag" == "0" ]] && eval "$statusVar=0" && echo -e "$statusVar=0" || eval "$statusVar=1" && echo -e "$statusVar=1"
+		fi
+}
+updateStatus "$TotalMem" "$setFail2ban" "setFail2banStatus"
+updateStatus "$TotalMem" "$setKejilion" "setKejilionStatus"
 
 checkVirt() {
 	virtWhat=""
@@ -846,7 +857,7 @@ checkVirt() {
 		done
 		[[ $(echo $virtWhat | grep -i "openvz") || $(echo $virtWhat | grep -i "lxc") ]] && {
 			error "Virtualization of ${CLR3}$virtWhat${CLR0}could not be supported!\n"
-			echo -ne "\nTry to refer to the ${CLR6}following project${CLR0}: \n\n${underLine}https://github.com/LloydAsp/OsMutation${CLR0} \n\nfor learning more and then execute it as the re-installation.\n"
+			echo -e "\nTry to refer to the ${CLR6}following project${CLR0}: \n\n${underLine}https://github.com/LloydAsp/OsMutation${CLR0} \n\nfor learning more and then execute it as the re-installation."
 			exit 1
 		}
 	}
@@ -1783,7 +1794,7 @@ acceptIPv4AndIPv6SubnetValue() {
 			ipMask=$(netmask "$1")
 			actualIp4Subnet=$(netmask "$1")
 		else
-			echo -ne "\n${CLR1}[Warning]${CLR0} Only accept prefix format of IPv4 address, length from 1 to 32."
+			echo -e "\n${CLR1}[Warning]${CLR0} Only accept prefix format of IPv4 address, length from 1 to 32."
 			echo -e "\nIPv4 CIDR Calculator: https://www.vultr.com/resources/subnet-calculator"
 			exit 1
 		fi
@@ -1932,6 +1943,9 @@ DebianModifiedPreseed() {
 			EnableFail2ban="$1 sed -i '/^\[Definition\]/a allowipv6 = auto' /etc/fail2ban/fail2ban.conf; $1 sed -ri 's/^backend = auto/backend = systemd/g' /etc/fail2ban/jail.conf; $1 update-rc.d fail2ban enable; $1 /etc/init.d/fail2ban restart;"
 			fail2banComponent="fail2ban"
 		}
+		[[ "$setKejilionStatus" == "1" ]] && {
+			EnableKejilion="$1 curl -sL kejilion.sh | bash; $1 chmod +x /usr/local/bin/k;"
+		}
 		AptUpdating="$1 apt update -y;"
 		InstallComponents="$1 apt install apt-transport-https ca-certificates cron curl dnsutils dpkg ${fail2banComponent} file lrzsz lsb-release net-tools sudo vim wget -y;"
 		DisableCertExpiredCheck="$1 sed -i '/^mozilla\/DST_Root_CA_X3/s/^/!/' /etc/ca-certificates.conf; $1 update-ca-certificates -f;"
@@ -2041,7 +2055,8 @@ $1 systemctl restart systemd-sysctl;"
 		CreateSoftLinkToGrub2FromGrub1="$1 ln -s /boot/grub/ /boot/grub2;"
 		[[ "$EfiSupport" == "enabled" ]] && SetGrubTimeout="$1 sed -ri 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=3/g' /etc/default/grub; $1 sed -ri 's/set timeout=5/set timeout=3/g' /boot/grub/grub.cfg;" || SetGrubTimeout=""
 		#SetOGOSfunction="curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh -o /target/tmp/update-function.sh; chmod +x /target/tmp/update-function.sh; chroot /target bash /target/tmp/update-function.sh -r;"
-		DebianModifiedProcession="${AptUpdating} ${InstallComponents} ${DisableCertExpiredCheck} ${ChangeBashrc} ${VimSupportCopy} ${VimIndentEolStart} ${DnsChangePermanently} ${ModifyMOTD} ${BurnIrregularIpv4Gate} ${BurnIrregularIpv6Gate} ${SupportIPv6orIPv4} ${ReplaceActualIpPrefix} ${AutoPlugInterfaces} ${EnableSSH} ${ReviseMOTD} ${SupportZSH} ${EnableFail2ban} ${EnableBBR} ${CreateSoftLinkToGrub2FromGrub1} ${SetGrubTimeout} ${SetOGOSfunction}"
+		SetOGOSfunction="$1 bash -c 'curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash'; $1 rm -f /function.sh"
+		DebianModifiedProcession="${AptUpdating} ${InstallComponents} ${DisableCertExpiredCheck} ${ChangeBashrc} ${VimSupportCopy} ${VimIndentEolStart} ${DnsChangePermanently} ${ModifyMOTD} ${BurnIrregularIpv4Gate} ${BurnIrregularIpv6Gate} ${SupportIPv6orIPv4} ${ReplaceActualIpPrefix} ${AutoPlugInterfaces} ${EnableSSH} ${ReviseMOTD} ${SupportZSH} ${EnableFail2ban} ${EnableKejilion} ${EnableBBR} ${CreateSoftLinkToGrub2FromGrub1} ${SetGrubTimeout} ${SetOGOSfunction}"
 	fi
 }
 
@@ -2335,7 +2350,7 @@ clear
 [[ -f /etc/selinux/config ]] && {
 	SELinuxStatus=$(sestatus -v | grep -i "selinux status:" | grep "enabled")
 	[[ "$SELinuxStatus" != "" ]] && {
-		echo -ne "\n${CLR8}# Disabling SELinux${CLR0}\n"
+		echo -e "\n${CLR8}# Disabling SELinux${CLR0}"
 		setenforce 0 2>/dev/null
 		echo -e "\nSuccess"
 	}
@@ -2348,12 +2363,12 @@ clear
 }
 
 [[ -n "$TotalMem" ]] && {
-	echo -ne "\n${CLR8}# System Memory${CLR0}\n"
+	echo -e "\n${CLR8}# System Memory${CLR0}"
 	echo -e "\n${TotalMem} MB"
 }
 
 [[ -n "$showAllVirts" ]] && {
-	echo -ne "\n${CLR8}# Virtualization and Manufacturer${CLR0}\n"
+	echo -e "\n${CLR8}# Virtualization and Manufacturer${CLR0}"
 	echo -e "\n${showAllVirts}"
 }
 
@@ -2557,7 +2572,7 @@ echo -e "\n${CLR8}# Motherboard Firmware${CLR0}\n"
 
 [[ "$setNetbootXyz" == "1" ]] && SpikCheckDIST="1"
 if [[ "$SpikCheckDIST" == '0' ]]; then
-	echo -ne "\n${CLR8}# Check DIST${CLR0}\n"
+	echo -e "\n${CLR8}# Check DIST${CLR0}"
 	[[ "$linux_release" == 'debian' ]] && DistsList="$(curl -ksL "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-\|old\|README\|Debian\|experimental\|stable\|test\|sid\|devel/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
 	[[ "$linux_release" == 'kali' ]] && DistsList="$(curl -ksL "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/debian\|only\|last\|edge/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
 	[[ "$linux_release" == 'alpinelinux' ]] && DistsList="$(curl -ksL "$LinuxMirror/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
@@ -2716,7 +2731,7 @@ if [[ "$linux_release" == 'centos' ]]; then
 		awk 'BEGIN{print '${UNVER}'-'${DIST}'}' | grep -q '^-'
 		if [ $? != '0' ]; then
 			UNKNOWHW='1'
-			echo -ne "\nThe version lower than ${CLR1}$UNVER${CLR0} may not support in auto mode!\n"
+			echo -e "\nThe version lower than ${CLR1}$UNVER${CLR0} may not support in auto mode!"
 		fi
 	fi
 fi
