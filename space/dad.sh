@@ -22,7 +22,7 @@
 [ "$(curl -s ipinfo.io/country)" = "CN" ] && cf_proxy="https://proxy.ogtt.tk/" || cf_proxy=""
 [ -f ~/function.sh ] && source ~/function.sh || bash <(curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh) && source ~/function.sh
 
-Version="2024.10.23"
+Version="2024.10.24"
 License="GPL"
 SH="InstallNET.sh"
 
@@ -89,20 +89,20 @@ VER=""
 
 while [[ $# -ge 1 ]]; do
 	case $1 in
-		-debian) shift; Relese='Debian'; tmpDIST="$1"; shift ;;
-		-ubuntu) shift; ddMode='1'; finalDIST="$1"; targetRelese='Ubuntu'; shift ;;
-		-kali) shift; Relese='Kali'; tmpDIST="$1"; shift ;;
-		-centos) shift; Relese='CentOS'; tmpDIST="$1"; shift ;;
-		-rocky) shift; Relese='RockyLinux'; tmpDIST="$1"; shift ;;
-		-alma) shift; Relese='AlmaLinux'; tmpDIST="$1"; shift ;;
-		-fedora) shift; Relese='Fedora'; tmpDIST="$1"; shift ;;
-		-alpine) shift; Relese='AlpineLinux'; tmpDIST="$1"; shift ;;
-		-windows) shift; ddMode='1'; finalDIST="$1"; targetRelese='Windows'; shift ;;
+		-debian) shift; Relese="Debian"; tmpDIST="$1"; shift ;;
+		-ubuntu) shift; ddMode="1"; finalDIST="$1"; targetRelese="Ubuntu"; shift ;;
+		-kali) shift; Relese="Kali"; tmpDIST="$1"; shift ;;
+		-centos) shift; Relese="CentOS"; tmpDIST="$1"; shift ;;
+		-rocky) shift; Relese="RockyLinux"; tmpDIST="$1"; shift ;;
+		-alma) shift; Relese="AlmaLinux"; tmpDIST="$1"; shift ;;
+		-fedora) shift; Relese="Fedora"; tmpDIST="$1"; shift ;;
+		-alpine) shift; Relese="AlpineLinux"; tmpDIST="$1"; shift ;;
+		-windows) shift; ddMode="1"; finalDIST="$1"; targetRelese="Windows"; shift ;;
 		-architecture) shift; tmpVER="$1"; shift ;;
 		-lang) shift; targetLang="$1"; shift ;;
-		-dd) shift; ddMode='1'; tmpURL="$1"; shift ;;
-		-mirror) shift; isMirror='1'; tmpMirror="$1"; shift ;;
-		-rdp) shift; setRDP='1'; WinRemote="$1"; shift ;;
+		-dd) shift; ddMode="1"; tmpURL="$1"; shift ;;
+		-mirror) shift; isMirror="1"; tmpMirror="$1"; shift ;;
+		-rdp) shift; setRDP="1"; WinRemote="$1"; shift ;;
 		-raid) shift; setRaid="$1"; shift ;;
 		-setdisk) shift; setDisk="$1"; shift ;;
 		-swap) shift; setSwap="$1"; shift ;;
@@ -126,24 +126,24 @@ while [[ $# -ge 1 ]]; do
 		--ip6-dns) shift; ip6DNS="$1"; shift ;;
 		--network) shift; tmpDHCP="$1"; shift ;;
 		--adapter) shift; interfaceSelect="$1"; shift ;;
-		--netdevice-unite) shift; setInterfaceName='1' ;;
+		--netdevice-unite) shift; setInterfaceName="1" ;;
 		--autoplugadapter) shift; autoPlugAdapter="$1"; shift ;;
-		--loader) shift; loaderMode='1'; shift ;;
-		--motd) shift; setMotd='1'; shift ;;
-		--fail2ban) shift; setFail2ban="$1"; shift ;;
-		--kejilion) shift; setKejilion='1'; shift ;;
-		--setdns) shift; setDns='1' ;;
+		--loader) shift; loaderMode="1"; shift ;;
+		--motd) shift; setMotd="1"; shift ;;
+		--fail2ban) setFail2ban="1"; shift ;;
+		--kejilion) setKejilion="1"; shift ;;
+		--setdns) shift; setDns="1" ;;
 		--cloudkernel) shift; setCloudKernel="$1"; shift ;;
 		--cloudimage) shift; useCloudImage="1" ;;
 		--filetype) shift; setFileType="$1"; shift ;;
 		--setipv6) shift; tmpSetIPv6="$1"; shift ;;
 		--bbr) shift; enableBBR="1"; shift ;;
-		--allbymyself) shift; setAutoConfig='0'; shift ;;
-		--nomemcheck) shift; setMemCheck='0'; shift ;;
-		--netbootxyz) shift; setNetbootXyz='1'; shift ;;
-		--reboot) setAutoReboot='1'; shift ;;
+		--allbymyself) shift; setAutoConfig="0"; shift ;;
+		--nomemcheck) shift; setMemCheck="0"; shift ;;
+		--netbootxyz) shift; setNetbootXyz="1"; shift ;;
+		--reboot) shift; setAutoReboot="1" ;;
 		*)
-			[[ "$1" != 'error' ]] && echo -e "\nInvaild option: '$1'\n"
+			[[ "$1" != "error" ]] && echo -e "\nInvaild option: "$1"\n"
 			echo -e "${CLR2}Usage:${CLR0}\n\tbash $(basename $0) [OPTIONS]\n"
 			echo -e "${CLR3}Options:${CLR0}"
 			echo -e "\t${CLR8}-debian${CLR0}\t\t[7/8/9/10/11/12]\tSpecify Debian distribution (${CLR2}'12'${CLR0} is the stable version)"
@@ -791,7 +791,7 @@ checkMem() {
 			if [[ "$1" == 'rockylinux' || "$1" == 'almalinux' || "$1" == 'centos' ]]; then
 				if [[ "$2" == "8" ]] || [[ "$2" == "9" ]]; then
 					[[ "$TotalMem" -le "2228" ]] && {
-						echo -e "\n${CLR1}[Warning]${CLR0} Minimum system memory requirement is 2.2 GB for ${CLR6}KickStart${CLR0} native method."
+						echo -e "\n${CLR1}[Warning]${CLR0} Minimum system memory requirement is 2.2 GiB for ${CLR6}KickStart${CLR0} native method."
 						lowMemMode="1"
 						if [[ "$2" == "8" ]]; then
 							echo -e "\nSwitching to ${CLR3}Rocky $2${CLR0} by ${CLR6}Cloud Init${CLR0} Installation..."
@@ -801,13 +801,13 @@ checkMem() {
 					}
 				elif [[ "$2" == "7" ]]; then
 					[[ "$TotalMem" -le "1500" ]] && {
-						error "Minimum system memory requirement is 1.5 GB!\n"
+						error "Minimum system memory requirement is 1.5 GiB!\n"
 						exit 1
 					}
 				fi
 			elif [[ "$1" == 'fedora' ]]; then
 				[[ "$TotalMem" -le "1722" ]] && {
-					error "Minimum system memory requirement is 1.7 GB!\n"
+					error "Minimum system memory requirement is 1.7 GiB!\n"
 					exit 1
 				}
 			fi
@@ -834,19 +834,23 @@ checkMem() {
 }
 
 updateStatus() {
-	memStatus="$1"
-	configFlag="$2"
-	statusVar="$3"
-	if [[ "$memStatus" -ge "0" ]]; then
-		eval "$statusVar=0"
-		echo -e "$statusVar=0"
-		[[ "$configFlag" == "1" ]] && eval "$statusVar=1" && echo -e "$statusVar=1"
-	else
-		[[ "$configFlag" == "0" ]] && eval "$statusVar=0" && echo -e "$statusVar=0" || eval "$statusVar=1" && echo -e "$statusVar=1"
-		fi
+    statusVar="$1"
+    configFlag="$2"
+    if [[ "$configFlag" == "1" ]]; then
+        eval "$statusVar=1"
+        echo -e "${CLR2}$statusVar=1${CLR0}"
+    else
+        eval "$statusVar=0"
+        echo -e "${CLR1}$statusVar=0${CLR0}"
+    fi
 }
-updateStatus "$TotalMem" "$setFail2ban" "setFail2banStatus"
-updateStatus "$TotalMem" "$setKejilion" "setKejilionStatus"
+updateStatus "setFail2banStatus" "$setFail2ban"
+updateStatus "setKejilionStatus" "$setKejilion"
+[[ "$setKejilionStatus" == "1" ]] && {
+	DebianEnableKejilion="in-target curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; in-target chmod +x /usr/local/bin/k;"
+	CentosEnableKejilion="curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; chmod +x /usr/local/bin/k;"
+	AlpineEnableKejilion="curl -sS -o \$sysroot/usr/local/bin/k https://kejilion.pro/kejilion.sh; chmod +x \$sysroot/usr/local/bin/k;"
+}
 
 checkVirt() {
 	virtWhat=""
@@ -1943,11 +1947,8 @@ DebianModifiedPreseed() {
 			EnableFail2ban="$1 sed -i '/^\[Definition\]/a allowipv6 = auto' /etc/fail2ban/fail2ban.conf; $1 sed -ri 's/^backend = auto/backend = systemd/g' /etc/fail2ban/jail.conf; $1 update-rc.d fail2ban enable; $1 /etc/init.d/fail2ban restart;"
 			fail2banComponent="fail2ban"
 		}
-		[[ "$setKejilionStatus" == "1" ]] && {
-			EnableKejilion="$1 curl -sL kejilion.sh | bash; $1 chmod +x /usr/local/bin/k;"
-		}
 		AptUpdating="$1 apt update -y;"
-		InstallComponents="$1 apt install apt-transport-https ca-certificates cron curl dnsutils dpkg ${fail2banComponent} file lrzsz lsb-release net-tools sudo vim wget -y;"
+		InstallComponents="$1 apt install apt-transport-https bc ca-certificates cron curl dnsutils dpkg ${fail2banComponent} file jq lrzsz lsb-release nano net-tools sudo vim wget -y;"
 		DisableCertExpiredCheck="$1 sed -i '/^mozilla\/DST_Root_CA_X3/s/^/!/' /etc/ca-certificates.conf; $1 update-ca-certificates -f;"
 		if [[ "$IsCN" == "1" ]]; then
 			ChangeBashrc="$1 rm -rf /root/.bashrc; $1 curl -ksLo /root/.bashrc '${debianConfFileDirCn}/.bashrc';"
@@ -2056,7 +2057,7 @@ $1 systemctl restart systemd-sysctl;"
 		[[ "$EfiSupport" == "enabled" ]] && SetGrubTimeout="$1 sed -ri 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=3/g' /etc/default/grub; $1 sed -ri 's/set timeout=5/set timeout=3/g' /boot/grub/grub.cfg;" || SetGrubTimeout=""
 		#SetOGOSfunction="curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh -o /target/tmp/update-function.sh; chmod +x /target/tmp/update-function.sh; chroot /target bash /target/tmp/update-function.sh -r;"
 		SetOGOSfunction="$1 bash -c 'curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash'; $1 rm -f /function.sh"
-		DebianModifiedProcession="${AptUpdating} ${InstallComponents} ${DisableCertExpiredCheck} ${ChangeBashrc} ${VimSupportCopy} ${VimIndentEolStart} ${DnsChangePermanently} ${ModifyMOTD} ${BurnIrregularIpv4Gate} ${BurnIrregularIpv6Gate} ${SupportIPv6orIPv4} ${ReplaceActualIpPrefix} ${AutoPlugInterfaces} ${EnableSSH} ${ReviseMOTD} ${SupportZSH} ${EnableFail2ban} ${EnableKejilion} ${EnableBBR} ${CreateSoftLinkToGrub2FromGrub1} ${SetGrubTimeout} ${SetOGOSfunction}"
+		DebianModifiedProcession="${AptUpdating} ${InstallComponents} ${DisableCertExpiredCheck} ${ChangeBashrc} ${VimSupportCopy} ${VimIndentEolStart} ${DnsChangePermanently} ${ModifyMOTD} ${BurnIrregularIpv4Gate} ${BurnIrregularIpv6Gate} ${SupportIPv6orIPv4} ${ReplaceActualIpPrefix} ${AutoPlugInterfaces} ${EnableSSH} ${ReviseMOTD} ${SupportZSH} ${EnableFail2ban} ${EnableBBR} ${CreateSoftLinkToGrub2FromGrub1} ${SetGrubTimeout} ${SetOGOSfunction}"
 	fi
 }
 
@@ -2175,18 +2176,18 @@ d-i clock-setup/ntp-server string ntp.nict.jp
 ### Get harddisk name and Windows DD installation set up
 d-i preseed/early_command string ${ddWindowsEarlyCommandsOfAnna}
 d-i partman/early_command string \
-lvremove --select all -ff -y; \
-vgremove --select all -ff -y; \
-pvremove /dev/* -ff -y; \
-[[ -n "\$(blkid -t TYPE='vfat' -o device)" ]] && umount "\$(blkid -t TYPE='vfat' -o device)"; \
-${PartmanEarlyCommand} \
-wget -qO- '$DDURL' | $DEC_CMD | /bin/dd of=\$(list-devices disk | grep ${IncDisk} | head -n 1); \
-/bin/ntfs-3g \$(list-devices partition | grep ${IncDisk} | head -n 1) /mnt; \
-cd '/mnt/ProgramData/Microsoft/Windows/Start Menu/Programs'; \
-cd Start* || cd start*; \
-cp -f '/net.bat' './net.bat'; \
-/sbin/reboot; \
-umount /media || true; \
+	lvremove --select all -ff -y; \
+	vgremove --select all -ff -y; \
+	pvremove /dev/* -ff -y; \
+	[[ -n "\$(blkid -t TYPE='vfat' -o device)" ]] && umount "\$(blkid -t TYPE='vfat' -o device)"; \
+	${PartmanEarlyCommand} \
+	wget -qO- '$DDURL' | $DEC_CMD | /bin/dd of=\$(list-devices disk | grep ${IncDisk} | head -n 1); \
+	/bin/ntfs-3g \$(list-devices partition | grep ${IncDisk} | head -n 1) /mnt; \
+	cd '/mnt/ProgramData/Microsoft/Windows/Start Menu/Programs'; \
+	cd Start* || cd start*; \
+	cp -f '/net.bat' './net.bat'; \
+	/sbin/reboot; \
+	umount /media || true; \
 
 ### Partitioning
 d-i partman-lvm/device_remove_lvm boolean true
@@ -2228,13 +2229,14 @@ d-i debian-installer/exit/reboot boolean true
 
 ### Write preseed
 d-i preseed/late_command string	\
-sed -ri 's/^#?Port.*/Port ${sshPORT}/g' /target/etc/ssh/sshd_config; \
-sed -ri 's/^#?PermitRootLogin.*/PermitRootLogin yes/g' /target/etc/ssh/sshd_config; \
-sed -ri 's/^#?PasswordAuthentication.*/PasswordAuthentication yes/g' /target/etc/ssh/sshd_config; \
-echo '@reboot root cat /etc/run.sh 2>/dev/null |base64 -d >/tmp/run.sh; rm -rf /etc/run.sh; sed -i /^@reboot/d /etc/crontab; bash /tmp/run.sh' >>/target/etc/crontab; \
-echo '' >>/target/etc/crontab; \
-echo '${setCMD}' >/target/etc/run.sh; \
-${DebianModifiedProcession}
+	sed -ri 's/^#?Port.*/Port ${sshPORT}/g' /target/etc/ssh/sshd_config; \
+	sed -ri 's/^#?PermitRootLogin.*/PermitRootLogin yes/g' /target/etc/ssh/sshd_config; \
+	sed -ri 's/^#?PasswordAuthentication.*/PasswordAuthentication yes/g' /target/etc/ssh/sshd_config; \
+	echo '@reboot root cat /etc/run.sh 2>/dev/null |base64 -d >/tmp/run.sh; rm -rf /etc/run.sh; sed -i /^@reboot/d /etc/crontab; bash /tmp/run.sh' >>/target/etc/crontab; \
+	echo '' >>/target/etc/crontab; \
+	echo '${setCMD}' >/target/etc/run.sh; \
+	${DebianModifiedProcession}; \
+	${DebianEnableKejilion}
 EOF
 	fi
 }
@@ -2339,7 +2341,7 @@ if [[ "$loaderMode" == "0" ]]; then
 	checkConsole "$VER"
 fi
 
-clear
+CLEAN
 
 [[ ! -d "/tmp/" ]] && mkdir /tmp
 
@@ -2360,16 +2362,6 @@ clear
 	checkMem "$linux_release" "$RedHatSeries" "$targetRelese"
 	Add_OPTION="$Add_OPTION $lowmemLevel"
 	checkDIST
-}
-
-[[ -n "$TotalMem" ]] && {
-	echo -e "\n${CLR8}# System Memory${CLR0}"
-	echo -e "\n${TotalMem} MB"
-}
-
-[[ -n "$showAllVirts" ]] && {
-	echo -e "\n${CLR8}# Virtualization and Manufacturer${CLR0}"
-	echo -e "\n${showAllVirts}"
 }
 
 [[ "$lowMemMode" == '1' || "$useCloudImage" == "1" ]] && {
@@ -2437,6 +2429,8 @@ clear
 	exit 1
 }
 
+echo -e "\n${CLR3}# System Reinstall${CLR0}"
+
 echo -e "\n${CLR8}## Check Dependence${CLR0}"
 echo -e "${CLR8}$(LINE - "32")${CLR0}"
 dependencies=("awk" "basename" "cat" "cpio" "curl" "cut" "dirname" "file" "find" "grep" "gzip" "iconv" "ip" "lsblk" "openssl" "sed" "wget")
@@ -2445,6 +2439,56 @@ for dep in "${dependencies[@]}"; do
 	command -v $dep &> /dev/null || status="${CLR1}[Missing]${CLR0}"
 	echo -e "$status\t$dep"
 done
+
+echo -e "\n${CLR8}## System Information${CLR0}"
+echo -e "${CLR8}$(LINE - "32")${CLR0}"
+echo -e "Hostname:\t\t${CLR2}$(uname -n)${CLR0}"
+echo -e "Operating System:\t${CLR2}$(CHECK_OS)${CLR0}"
+echo -e "Kernel Version:\t\t${CLR2}$(uname -r)${CLR0}"
+echo -e "System Language:\t${CLR2}$LANG${CLR0}"
+
+echo -e "\nArchitecture:\t\t${CLR2}$(uname -m)${CLR0}"
+echo -e "CPU Model:\t\t${CLR2}$(CPU_MODEL)${CLR0}"
+echo -e "CPU Cores:\t\t${CLR2}$(nproc)${CLR0}"
+setDisk=$(echo "$setDisk" | sed 's/[A-Z]/\l&/g')
+getDisk "$setDisk" "$linux_release"
+if [[ "$targetRelese" == 'AlmaLinux' ]] || [[ "$targetRelese" == 'Rocky' ]]; then
+	[[ "$diskCapacity" -lt "10737418240" ]] && {
+		error "Minimum system hard drive requirement is 10 GiB!\n"
+		exit 1
+	}
+elif [[ "$targetRelese" == 'Windows' ]]; then
+	[[ "$diskCapacity" -lt "16106127360" ]] && {
+		error "Minimum system hard drive requirement is 15 GiB!\n"
+		exit 1
+	}
+fi
+echo -ne "Drives:\t\t\t" && [[ "$setDisk" == "all" || -n "$setRaid" ]] && echo -e "${CLR2}$AllDisks${CLR0}" || echo -e "${CLR2}$IncDisk${CLR0}"
+echo -ne "Firmware:\t\t" && [[ "$EfiSupport" == "enabled" ]] && echo -e "${CLR2}UEFI${CLR0}" || echo -e "${CLR2}BIOS${CLR0}"
+[[ "$setNetbootXyz" == "1" ]] && SpikCheckDIST="1"
+if [[ "$SpikCheckDIST" == '0' ]]; then
+	echo -ne "DIST Status:\t\t"
+	[[ "$linux_release" == 'debian' ]] && DistsList="$(curl -ksL "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-\|old\|README\|Debian\|experimental\|stable\|test\|sid\|devel/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
+	[[ "$linux_release" == 'kali' ]] && DistsList="$(curl -ksL "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/debian\|only\|last\|edge/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
+	[[ "$linux_release" == 'alpinelinux' ]] && DistsList="$(curl -ksL "$LinuxMirror/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
+	for CheckDEB in $(echo "$DistsList" | sed 's/;/\n/g'); do
+		[[ "$CheckDEB" =~ "$DIST" ]] && FindDists='1' && break
+	done
+	[[ "$FindDists" == '0' ]] && {
+		error "The dists version not found, Please check it!\n"
+		exit 1
+	}
+	echo -e "${CLR2}Success${CLR0}"
+fi
+
+
+echo -e "\nMemory Usage:\t\t${CLR2}$(MEM_USAGE)${CLR0}"
+echo -e "Swap Usage:\t\t${CLR2}$(SWAP_USAGE)${CLR0}"
+echo -e "Disk Usage:\t\t${CLR2}$(DISK_USAGE)${CLR0}"
+
+echo -e "\nPackages Installed:\t${CLR2}$(PKG_COUNT)${CLR0}"
+echo -e "Process Count:\t\t${CLR2}$(ps aux | wc -l)${CLR0}"
+echo -e "Virtualization:\t\t${CLR2}$(CHECK_VIRT)${CLR0}"
 
 ipDNS1=$(echo $ipDNS | cut -d ' ' -f 1)
 ipDNS2=$(echo $ipDNS | cut -d ' ' -f 2)
@@ -2503,32 +2547,29 @@ if [[ -z "$IPv4" && -z "$MASK" && -z "$GATE" ]] && [[ -z "$ip6Addr" && -z "$ip6M
 	exit 1
 fi
 
-echo -e "\n${CLR8}# Network Details${CLR0}"
-[[ -n "$interfaceSelect" ]] && echo -ne "\n${CLR3}[Adapter Name]${CLR0}  $interfaceSelect" || echo -ne "\n${CLR3}[Adapter Name]${CLR0}  $interface"
-[[ -n "$NetCfgWhole" ]] && echo -ne "\n${CLR3}[Network File]${CLR0}  $NetCfgWhole" || echo -ne "\n${CLR3}[Network File]${CLR0}  N/A"
-echo -e "\n${CLR3}[Server Stack]${CLR0}  $IPStackType"
-[[ "$IPStackType" != "IPv6Stack" ]] && echo -e "\n${CLR3}[IPv4  Method]${CLR0}  $Network4Config" || echo -e "\n${CLR3}[IPv4  Method]${CLR0}  N/A"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4 Address]${CLR0}  ""$IPv4" || echo -e "${CLR3}[IPv4 Address]${CLR0}  ""N/A"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4  Subnet]${CLR0}  ""$actualIp4Subnet" || echo -e "${CLR3}[IPv4  Subnet]${CLR0}  ""N/A"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4 Gateway]${CLR0}  ""$GATE" || echo -e "${CLR3}[IPv4 Gateway]${CLR0}  ""N/A"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4     DNS]${CLR0}  ""$ipDNS" || echo -e "${CLR3}[IPv4     DNS]${CLR0}  ""N/A"
-[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "${CLR3}[IPv4  Amount]${CLR0}  ""$iAddrNum" || echo -e "${CLR3}[IPv4  Amount]${CLR0}  ""N/A"
-[[ "$IPStackType" != "IPv4Stack" ]] && echo -e "\n${CLR3}[IPv6  Method]${CLR0}  $Network6Config" || echo -e "\n${CLR3}[IPv6  Method]${CLR0}  N/A"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6 Address]${CLR0}  ""$ip6Addr" || echo -e "${CLR3}[IPv6 Address]${CLR0}  ""N/A"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6  Subnet]${CLR0}  ""$actualIp6Prefix" || echo -e "${CLR3}[IPv6  Subnet]${CLR0}  ""N/A"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6 Gateway]${CLR0}  ""$ip6Gate" || echo -e "${CLR3}[IPv6 Gateway]${CLR0}  ""N/A"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6     DNS]${CLR0}  ""$ip6DNS" || echo -e "${CLR3}[IPv6     DNS]${CLR0}  ""N/A"
-[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "${CLR3}[IPv6  Amount]${CLR0}  ""$i6AddrNum" || echo -e "${CLR3}[IPv6  Amount]${CLR0}  ""N/A"
+echo -e "\n${CLR8}## Network Details${CLR0}"
+echo -e "${CLR8}$(LINE - "32")${CLR0}"
+[[ -n "$interfaceSelect" ]] && echo -ne "/nAdapter Name:\t${CLR2}$interfaceSelect${CLR0}" || echo -ne "\nAdapter Name:\t${CLR2}$interface${CLR0}"
+[[ -n "$NetCfgWhole" ]] && echo -ne "\nNetwork File:\t${CLR2}$NetCfgWhole${CLR0}" || echo -ne "\nNetwork File:\t${CLR1}N/A${CLR0}"
+echo -ne "\nServer Stack:\t${CLR2}$IPStackType\n${CLR0}"
+[[ "$IPStackType" != "IPv6Stack" ]] && echo -e "\nIPv4 Method:\t${CLR2}$Network4Config${CLR0}" || echo -e "\nIPv4 Method:\t${CLR1}N/A${CLR0}"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "IPv4 Address:\t${CLR2}$IPv4${CLR0}" || echo -e "IPv4 Address:\t${CLR1}N/A${CLR0}"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "IPv4 Subnet:\t${CLR2}$actualIp4Subnet${CLR0}" || echo -e "IPv4 Subnet:\t${CLR1}N/A${CLR0}"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "IPv4 Gateway:\t${CLR2}$GATE${CLR0}" || echo -e "IPv4 Gateway:\t${CLR1}N/A${CLR0}"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "IPv4 DNS:\t${CLR2}$ipDNS${CLR0}" || echo -e "IPv4 DNS:\t${CLR1}N/A${CLR0}"
+[[ "$IPv4" && "$IPStackType" != "IPv6Stack" ]] && echo -e "IPv4 Amount:\t${CLR2}$iAddrNum${CLR0}" || echo -e "IPv4 Amount:\t${CLR1}N/A${CLR0}"
+[[ "$IPStackType" != "IPv4Stack" ]] && echo -e "\nIPv6 Method:\t${CLR2}$Network6Config${CLR0}" || echo -e "\nIPv6 Method:\t${CLR1}N/A${CLR0}"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "IPv6 Address:\t${CLR2}$ip6Addr${CLR0}" || echo -e "IPv6 Address:\t${CLR1}N/A${CLR0}"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "IPv6 Subnet:\t${CLR2}$actualIp6Prefix${CLR0}" || echo -e "IPv6 Subnet:\t${CLR1}N/A${CLR0}"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "IPv6 Gateway:\t${CLR2}$ip6Gate${CLR0}" || echo -e "IPv6 Gateway:\t${CLR1}N/A${CLR0}"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "IPv6 DNS:\t${CLR2}$ip6DNS${CLR0}" || echo -e "IPv6 DNS:\t${CLR1}N/A${CLR0}"
+[[ "$ip6Addr" && "$IPStackType" != "IPv4Stack" ]] && echo -e "IPv6 Amount:\t${CLR2}$i6AddrNum${CLR0}" || echo -e "IPv6 Amount:\t${CLR1}N/A${CLR0}"
 
 getUserTimeZone "/root/timezonelists" "https://api.ip.sb/geoip/" "http://ifconfig.co/json?ip=" "http://ip-api.com/json/" "https://ipapi.co/" "YjNhNjAxNjY5YTFiNDI2MmFmOGYxYjJjZDk3ZjNiN2YK" "MmUxMjBhYmM0Y2Q4NDM1ZDhhMmQ5YzQzYzk4ZTZiZTEK" "NjBiMThjZWJlMWU1NGQ5NDg2YWY0MTgyMWM0ZTZiZDgK"
 [[ -z "$TimeZone" ]] && TimeZone="Asia/Tokyo"
-echo -e "\n${CLR8}# User Timezone${CLR0}\n"
-echo "$TimeZone"
 
 [[ -n "$tmpHostName" ]] && HostName="$tmpHostName" || HostName=$(hostname)
 [[ -z "$HostName" || "$HostName" =~ "localhost" || "$HostName" =~ "localdomain" || "$HostName" == "random" ]] && HostName="instance-$(date "+%Y%m%d")-$(date "+%H%M")"
-echo -e "\n${CLR8}# Hostname${CLR0}\n"
-echo "$HostName"
 
 if [[ -z "$tmpWORD" || "$linux_release" == 'alpinelinux' ]]; then
 	tmpWORD='OGOSpass'
@@ -2538,52 +2579,23 @@ else
 	[[ -z "$myPASSWORD" || "$myPASSWORD" =~ "NULL" ]] && myPASSWORD=$(openssl passwd -1 ''$tmpWORD'')
 fi
 
-echo -e "\n${CLR8}# SSH or RDP Port, Username and Password${CLR0}\n"
+echo -e "\n${CLR8}## New System Login Information${CLR0}"
+echo -e "${CLR8}$(LINE - "32")${CLR0}"
 if [[ "$targetRelese" == 'Windows' && "$tmpURL" == "" || "$tmpURL" =~ "dl.lamp.sh" ]]; then
-	echo "3389"
-	echo "Administrator"
-	echo "Teddysun.com"
+	echo -e "Hostname:\t${CLR3}$HostName${CLR0}"
+	echo -e "Port:\t\t${CLR3}3389${CLR0}"
+	echo -e "Username:\t${CLR3}Administrator${CLR0}"
+	echo -e "Password:\t${CLR3}Teddysun.com${CLR0}"
 elif [[ -z "$targetRelese" && "$ddMode" == '1' ]]; then
-	echo -e "N/A\nN/A\nN/A"
+	echo -e "Hostname:\t${CLR1}N/A${CLR0}"
+	echo -e "Port:\t\t${CLR1}N/A${CLR0}"
+	echo -e "Username:\t${CLR1}N/A${CLR0}"
+	echo -e "Password:\t${CLR1}N/A${CLR0}"
 else
-	echo "$sshPORT"
-	echo "root"
-	echo "$tmpWORD"
-fi
-
-setDisk=$(echo "$setDisk" | sed 's/[A-Z]/\l&/g')
-getDisk "$setDisk" "$linux_release"
-if [[ "$targetRelese" == 'AlmaLinux' ]] || [[ "$targetRelese" == 'Rocky' ]]; then
-	[[ "$diskCapacity" -lt "10737418240" ]] && {
-		error "Minimum system hard drive requirement is 10 GB!\n"
-		exit 1
-	}
-elif [[ "$targetRelese" == 'Windows' ]]; then
-	[[ "$diskCapacity" -lt "16106127360" ]] && {
-		error "Minimum system hard drive requirement is 15 GB!\n"
-		exit 1
-	}
-fi
-echo -e "\n${CLR8}# Formatting and Installing Drives${CLR0}\n"
-[[ "$setDisk" == "all" || -n "$setRaid" ]] && echo "$AllDisks" || echo "$IncDisk"
-
-echo -e "\n${CLR8}# Motherboard Firmware${CLR0}\n"
-[[ "$EfiSupport" == "enabled" ]] && echo "UEFI" || echo "BIOS"
-
-[[ "$setNetbootXyz" == "1" ]] && SpikCheckDIST="1"
-if [[ "$SpikCheckDIST" == '0' ]]; then
-	echo -e "\n${CLR8}# Check DIST${CLR0}"
-	[[ "$linux_release" == 'debian' ]] && DistsList="$(curl -ksL "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-\|old\|README\|Debian\|experimental\|stable\|test\|sid\|devel/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
-	[[ "$linux_release" == 'kali' ]] && DistsList="$(curl -ksL "$LinuxMirror/dists/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/debian\|only\|last\|edge/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
-	[[ "$linux_release" == 'alpinelinux' ]] && DistsList="$(curl -ksL "$LinuxMirror/" | grep -o 'href=.*/"' | cut -d'"' -f2 | sed '/-/d' | grep '^[^/]' | sed -n '1h;1!H;$g;s/\n//g;s/\//\;/g;$p')"
-	for CheckDEB in $(echo "$DistsList" | sed 's/;/\n/g'); do
-		[[ "$CheckDEB" =~ "$DIST" ]] && FindDists='1' && break
-	done
-	[[ "$FindDists" == '0' ]] && {
-		error "The dists version not found, Please check it!\n"
-		exit 1
-	}
-	echo -e "\nSuccess"
+	echo -e "Hostname:\t${CLR3}$HostName${CLR0}"
+	echo -e "Port:\t\t${CLR3}$sshPORT${CLR0}"
+	echo -e "Username:\t${CLR3}root${CLR0}"
+	echo -e "Password:\t${CLR3}$tmpWORD${CLR0}"
 fi
 
 if [[ "$ddMode" == '1' ]]; then
@@ -3219,6 +3231,8 @@ wget --no-check-certificate -O \$sysroot/etc/local.d/${AlpineInitFileName} ${Alp
 # Set initial program to execute automatically.
 chmod a+x \$sysroot/etc/local.d/${AlpineInitFileName}
 ln -s /etc/init.d/local \$sysroot/etc/runlevels/default/
+
+${AlpineEnableKejilion}
 EOF
 	fi
 elif [[ "$linux_release" == 'centos' ]] || [[ "$linux_release" == 'rockylinux' ]] || [[ "$linux_release" == 'almalinux' ]] || [[ "$linux_release" == 'fedora' ]]; then
@@ -3383,7 +3397,7 @@ ${InstallEpel}
 ${ReplaceEpelToCn}
 ${RestoreRepoCiscoOpenH26x}
 dnf install fail2ban -y
-dnf install bind-utils curl file lrzsz net-tools vim wget xz -y
+dnf install bc bind-utils curl file jq lrzsz nano net-tools vim wget xz -y
 
 # Disable selinux
 sed -ri "/^#?SELINUX=.*/c\SELINUX=disabled" /etc/selinux/config
@@ -3430,9 +3444,10 @@ rm -rf /root/install.*log
 rm -rf /root/original-ks.cfg
 
 # Set OGOS function.sh
-#curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh -o /tmp/update-function.sh; \
-#chmod +x /tmp/update-function.sh
-#bash /tmp/update-function.sh -r
+bash -c 'curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash'
+rm -f /function.sh"
+
+${CentosEnableKejilion}
 
 %end
 
