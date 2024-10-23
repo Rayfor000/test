@@ -620,7 +620,7 @@ raid / --fstype="xfs" --device="root" --level="$1" ${ksRaidVolumes[2]}
 			FormatDisk="${ksRaidConfigs}
 ${ksRaidRecipes}"
 		else
-			echo -ne "\n${CLR1}[Warning]${CLR0} Raid $1 recipe is not supported by target system!\n"
+			echo -e "\n${CLR1}[Warning]${CLR0} Raid $1 recipe is not supported by target system!"
 			exit 1
 		fi
 	}
@@ -789,7 +789,7 @@ checkMem() {
 			if [[ "$1" == 'rockylinux' || "$1" == 'almalinux' || "$1" == 'centos' ]]; then
 				if [[ "$2" == "8" ]] || [[ "$2" == "9" ]]; then
 					[[ "$TotalMem" -le "2228" ]] && {
-						echo -ne "\n${CLR1}[Warning]${CLR0} Minimum system memory requirement is 2.2 GB for ${CLR6}KickStart${CLR0} native method.\n"
+						echo -e "\n${CLR1}[Warning]${CLR0} Minimum system memory requirement is 2.2 GB for ${CLR6}KickStart${CLR0} native method."
 						lowMemMode="1"
 						if [[ "$2" == "8" ]]; then
 							echo -e "\nSwitching to ${CLR3}Rocky $2${CLR0} by ${CLR6}Cloud Init${CLR0} Installation..."
@@ -1093,7 +1093,7 @@ checkDIST() {
 		AlpineVer1=$(echo "$DIST" | sed 's/[a-z][A-Z]*//g' | cut -d"." -f 1)
 		AlpineVer2=$(echo "$DIST" | sed 's/[a-z][A-Z]*//g' | cut -d"." -f 2)
 		if [[ "$AlpineVer1" -lt "3" || "$AlpineVer2" -le "15" ]] && [[ "$DIST" != "edge" ]]; then
-			echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DIST is not supported!\n"
+			echo -e "\n${CLR1}[Warning]${CLR0} $Relese $DIST is not supported!"
 			exit 1
 		fi
 		[[ "$DIST" != "edge" && ! "$DIST" =~ "v" ]] && DIST="v""$DIST"
@@ -1121,14 +1121,14 @@ checkDIST() {
 			[[ "$RedHatSeries" =~ [0-9]{${#1}} ]] && {
 				if [[ "$RedHatSeries" == "6" ]]; then
 					DISTCheck="6.10"
-					echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!\n"
+					echo -e "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!"
 					exit 1
 				elif [[ "$RedHatSeries" == "7" ]]; then
 					DISTCheck="7.9.2009"
 				elif [[ "$RedHatSeries" -ge "8" ]] && [[ ! "$RedHatSeries" =~ "-stream" ]]; then
 					DISTCheck="$RedHatSeries""-stream"
 				elif [[ "$RedHatSeries" -le "5" ]]; then
-					echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!\n"
+					echo -e "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!"
 				else
 					error "Invaild $DIST! version!\n"
 				fi
@@ -1139,10 +1139,10 @@ checkDIST() {
 		if [[ "$linux_release" == 'rockylinux' ]] || [[ "$linux_release" == 'almalinux' ]] || [[ "$linux_release" == 'fedora' ]]; then
 			[[ "$RedHatSeries" =~ [0-9]{${#1}} ]] && {
 				if [[ "$linux_release" == 'rockylinux' || "$linux_release" == 'almalinux' ]] && [[ "$RedHatSeries" -le "7" ]]; then
-					echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!\n"
+					echo -e "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!"
 					exit 1
 				elif [[ "$linux_release" == 'fedora' ]] && [[ "$RedHatSeries" -le "37" ]]; then
-					echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!\n"
+					echo -e "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck is not supported!"
 					exit 1
 				fi
 			}
@@ -1157,19 +1157,19 @@ checkDIST() {
 		if [[ "$linux_release" == 'centos' ]] && [[ "$RedHatSeries" -le "7" ]]; then
 			curl -ksL "$LinuxMirror/$DIST/os/$VER/.treeinfo" | grep -q 'general'
 			[[ $? != '0' ]] && {
-				echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck was not found in this mirror, Please change mirror try again!\n"
+				echo -e "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck was not found in this mirror, Please change mirror try again!"
 				exit 1
 			}
 		elif [[ "$linux_release" == 'centos' && "$RedHatSeries" -ge "8" ]] || [[ "$linux_release" == 'rockylinux' ]] || [[ "$linux_release" == 'almalinux' ]]; then
 			curl -ksL "$LinuxMirror/$DIST/BaseOS/$VER/os/media.repo" | grep -q 'mediaid'
 			[[ $? != '0' ]] && {
-				echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck was not found in this mirror, Please change mirror try again!\n"
+				echo -e "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck was not found in this mirror, Please change mirror try again!"
 				exit 1
 			}
 		elif [[ "$linux_release" == 'fedora' ]]; then
 			curl -ksL "$LinuxMirror/releases/$DIST/Server/$VER/os/media.repo" | grep -q 'mediaid'
 			[[ $? != '0' ]] && {
-				echo -ne "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck was not found in this mirror, Please change mirror try again!\n"
+				echo -e "\n${CLR1}[Warning]${CLR0} $Relese $DISTCheck was not found in this mirror, Please change mirror try again!"
 				exit 1
 			}
 		fi
@@ -1784,7 +1784,7 @@ acceptIPv4AndIPv6SubnetValue() {
 			actualIp4Subnet=$(netmask "$1")
 		else
 			echo -ne "\n${CLR1}[Warning]${CLR0} Only accept prefix format of IPv4 address, length from 1 to 32."
-			echo -ne "\nIPv4 CIDR Calculator: https://www.vultr.com/resources/subnet-calculator/\n"
+			echo -e "\nIPv4 CIDR Calculator: https://www.vultr.com/resources/subnet-calculator"
 			exit 1
 		fi
 	}
@@ -1794,7 +1794,7 @@ acceptIPv4AndIPv6SubnetValue() {
 			ipv6SubnetCalc "$2"
 		else
 			echo -ne "\n${CLR1}[Warning]${CLR0} Only accept prefix format of IPv6 address, length from 1 to 128."
-			echo -ne "\nIPv6 CIDR Calculator: https://en.rakko.tools/tools/27/\n"
+			echo -e "\nIPv6 CIDR Calculator: https://en.rakko.tools/tools/27"
 			exit 1
 		fi
 	}
@@ -2329,7 +2329,7 @@ clear
 [[ ! -d "/tmp/" ]] && mkdir /tmp
 
 [[ -n "$aliyundunProcess" ]] && {
-	echo -ne "\n${CLR1}[Warning]${CLR0} ${CLR6}AliYunDun${CLR0} is detected on your server, the components will be removed compeletely because they may obstruct the following flow.\n"
+	echo -e "\n${CLR1}[Warning]${CLR0} ${CLR6}AliYunDun${CLR0} is detected on your server, the components will be removed compeletely because they may obstruct the following flow."
 }
 
 [[ -f /etc/selinux/config ]] && {
@@ -2668,7 +2668,7 @@ if [[ "$ddMode" == '1' ]]; then
 		verifyUrlValidationOfDdImages "$tmpURL"
 		ReleaseName="Self-Modified OS"
 	else
-		echo -ne "\n${CLR1}[Warning]${CLR0} Please input a vaild image URL!\n"
+		echo -e "\n${CLR1}[Warning]${CLR0} Please input a vaild image URL!"
 		exit 1
 	fi
 fi
