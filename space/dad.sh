@@ -850,6 +850,10 @@ updateStatus "setKejilionStatus" "$setKejilion"
 	DebianEnableKejilion="in-target curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; in-target chmod +x /usr/local/bin/k;"
 	CentosEnableKejilion="curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; chmod +x /usr/local/bin/k;"
 	AlpineEnableKejilion="curl -sS -o \$sysroot/usr/local/bin/k https://kejilion.pro/kejilion.sh; chmod +x \$sysroot/usr/local/bin/k;"
+} || {
+	DebianEnableKejilion=""
+	CentosEnableKejilion=""
+	AlpineEnableKejilion=""
 }
 
 checkVirt() {
@@ -3232,6 +3236,11 @@ wget --no-check-certificate -O \$sysroot/etc/local.d/${AlpineInitFileName} ${Alp
 chmod a+x \$sysroot/etc/local.d/${AlpineInitFileName}
 ln -s /etc/init.d/local \$sysroot/etc/runlevels/default/
 
+# Set OGOS function.sh
+(echo "0 0 * * * curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash") | crontab -
+curl -ksLo /root/function.sh ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/function.sh &>/dev/null && source function.sh
+echo "source ~/function.sh" >> /root/.bashrc
+
 ${AlpineEnableKejilion}
 EOF
 	fi
@@ -3444,8 +3453,10 @@ rm -rf /root/install.*log
 rm -rf /root/original-ks.cfg
 
 # Set OGOS function.sh
-bash -c 'curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash'
-rm -f /function.sh"
+(echo "0 0 * * * curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash") | crontab -
+curl -ksLo /root/function.sh ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/function.sh &>/dev/null && source function.sh
+echo "source ~/function.sh" >> /root/.bashrc
+rm -rf /root/original-ks.cfg
 
 ${CentosEnableKejilion}
 
@@ -3696,5 +3707,7 @@ else
 	echo
 	SYS_REBOOT
 fi
+
+# bash -c "curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash -s - -r"
 
 exit 1
