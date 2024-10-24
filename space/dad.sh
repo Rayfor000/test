@@ -120,10 +120,12 @@ while [[ $# -ge 1 ]]; do
 		--ip-mask) shift; ipMask="$1"; shift ;;
 		--ip-gate) shift; ipGate="$1"; shift ;;
 		--ip-dns) shift; ipDNS="$1"; shift ;;
+		--ip-set) shift; ipAddr="$1"; ipMask="$2"; ipGate="$3"; shift 3 ;;
 		--ip6-addr) shift; ip6Addr="$1"; shift ;;
 		--ip6-mask) shift; ip6Mask="$1"; shift ;;
 		--ip6-gate) shift; ip6Gate="$1"; shift ;;
 		--ip6-dns) shift; ip6DNS="$1"; shift ;;
+		--ip6-set) shift; ip6Addr="$1"; ip6Mask="$2"; ip6Gate="$3"; shift 3 ;;
 		--network) shift; tmpDHCP="$1"; shift ;;
 		--adapter) shift; interfaceSelect="$1"; shift ;;
 		--netdevice-unite) shift; setInterfaceName="1" ;;
@@ -149,27 +151,29 @@ while [[ $# -ge 1 ]]; do
 			echo -e "\t${CLR8}-debian${CLR0}\t\t[7/8/9/10/11/12]\tSpecify Debian distribution (${CLR2}'12'${CLR0} is the stable version)"
 			echo -e "\t${CLR8}-ubuntu${CLR0}\t\t[20.04/22.04/24.04]\tSpecify Ubuntu distribution (${CLR2}'24.04'${CLR0} is the stable version)"
 			echo -e "\t${CLR8}-kali${CLR0}\t\t[rolling/dev]\t\tSpecify Kali Linux distribution (${CLR2}'rolling'${CLR0} is the stable version)"
-			echo -e "\t${CLR8}-alpine${CLR0}\t\t[3.16~3.20/edge]\tSpecify Alpine Linux distribution (${CLR2}'edge'${CLR0} is the stable version)"
 			echo -e "\t${CLR8}-centos${CLR0}\t\t[7/8/9]\t\t\tSpecify CentOS distribution (${CLR2}'9'${CLR0} is the stable version)"
 			echo -e "\t${CLR8}-rocky${CLR0}\t\t[8/9]\t\t\tSpecify Rocky Linux distribution (${CLR2}'9'${CLR0} is the stable version)"
 			echo -e "\t${CLR8}-alma${CLR0}\t\t[8.10/9.4]\t\tSpecify AlmaLinux distribution (${CLR2}'9.4'${CLR0} is the stable version)"
 			echo -e "\t${CLR8}-fedora${CLR0}\t\t[39/40]\t\t\tSpecify Fedora Linux distribution (${CLR2}'40'${CLR0} is the stable version)"
+			echo -e "\t${CLR8}-alpine${CLR0}\t\t[3.16~3.20/edge]\tSpecify Alpine Linux distribution (${CLR2}'edge'${CLR0} is the stable version)"
 			echo -e "\t${CLR8}-windows${CLR0}\t[DIST]\t\t\tSpecify Microsoft Windows distribution"
 			echo -e "\t${CLR8}-architecture${CLR0}\t[32/i386|64/amd64|arm/arm64]"
+			echo -e "\t${CLR8}-mirror${CLR0}\t\t[URL]"
+			echo -e "\t${CLR8}-lang${CLR0}\t\t[LANG]\tNot for Linux, specify language for Windows"
+			echo -e "\t${CLR8}-dd${CLR0}\t[URL]"
+			echo -e "\t${CLR8}-hostname${CLR0}\t[HOSTNAME]"
+			echo -e "\t${CLR8}-pwd${CLR0}\t\t[PASSWORD]"
+			echo -e "\t${CLR8}-port${CLR0}\t\t[SSH-PORT]"
 			echo -e "\t${CLR8}--ip-addr${CLR0}\t[123.456.789.012] / --ip-mask [24-32] / --ip-gate [123.456.789.012]"
 			echo -e "\t${CLR8}--ip-set${CLR0}\t[123.456.789.012] [24-32] [123.456.789.1]"
 			echo -e "\t${CLR8}--ip6-addr${CLR0}\t[1234:5678:90ab:cdef:1234:5678:90ab:cdef] / --ip6-mask [1-128] / --ip6-gate [1234:5678:90ab:cdef:1234:5678:90ab:cdef]"
 			echo -e "\t${CLR8}--ip6-set${CLR0}\t[1234:5678:90ab:cdef:1234:5678:90ab:cdef] [1-128] [1234:5678:90ab:cdef:1234:5678:90ab:cdef]"
+			echo -e "\t${CLR8}--setipv6${CLR0}\tAuto set IPv6 address"
 			echo -e "\t${CLR8}--bbr${CLR0}\t\tEnable BBR congestion control algorithm"
 			echo -e "\t${CLR8}--fail2ban${CLR0}\tInstall and configure fail2ban"
 			echo -e "\t${CLR8}--kejilion${CLR0}\tInstall and configure Kejilion.sh"
-			echo -e "\t${CLR8}-mirror${CLR0}\t\t[URL]"
-			echo -e "\t${CLR8}-lang${CLR0}\t\t[LANG]\tNot for Linux, specify language for Windows"
-			echo -e "\t${CLR8}-dd/--image${CLR0}\t[URL]"
-			echo -e "\t${CLR8}-hostname${CLR0}\t[HOSTNAME]"
-			echo -e "\t${CLR8}-pwd${CLR0}\t\t[PASSWORD]"
-			echo -e "\t${CLR8}-port${CLR0}\t\t[SSH-PORT]"
-			echo -e "\n${CLR6}LAST UPDATE: 2024/10/19${CLR0}"
+			echo -e "\t${CLR8}--reboot${CLR0}\tAuto reboot after preparation"
+			echo -e "\n${CLR6}LAST UPDATE: 2024/10/24${CLR0}"
 			exit 1
 			;;
 	esac
@@ -834,26 +838,24 @@ checkMem() {
 }
 
 updateStatus() {
-    statusVar="$1"
-    configFlag="$2"
-    if [[ "$configFlag" == "1" ]]; then
-        eval "$statusVar=1"
-        echo -e "${CLR2}$statusVar=1${CLR0}"
-    else
-        eval "$statusVar=0"
-        echo -e "${CLR1}$statusVar=0${CLR0}"
-    fi
+	statusVar="$1"
+	configFlag="$2"
+	if [[ "$configFlag" == "1" ]]; then
+		eval "$statusVar=1"
+		echo -e "${CLR2}$statusVar=1${CLR0}"
+	else
+		eval "$statusVar=0"
+		echo -e "${CLR1}$statusVar=0${CLR0}"
+	fi
 }
 updateStatus "setFail2banStatus" "$setFail2ban"
 updateStatus "setKejilionStatus" "$setKejilion"
 [[ "$setKejilionStatus" == "1" ]] && {
 	DebianEnableKejilion="in-target curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; in-target chmod +x /usr/local/bin/k;"
 	CentosEnableKejilion="curl -sS -o /usr/local/bin/k https://kejilion.pro/kejilion.sh; chmod +x /usr/local/bin/k;"
-	AlpineEnableKejilion="curl -sS -o \$sysroot/usr/local/bin/k https://kejilion.pro/kejilion.sh; chmod +x \$sysroot/usr/local/bin/k;"
 } || {
 	DebianEnableKejilion=""
 	CentosEnableKejilion=""
-	AlpineEnableKejilion=""
 }
 
 checkVirt() {
@@ -2752,11 +2754,11 @@ if [[ "$linux_release" == 'centos' ]]; then
 	fi
 fi
 if [[ "$setNetbootXyz" == "0" ]]; then
-    echo -e "System:\t\t${CLR2}[$Relese]${CLR0}"
-    echo -e "Version:\t${CLR2}[$DIST]${CLR0}"
-    echo -e "Architecture:\t${CLR2}[$VER]${CLR0}"
+	echo -e "System:\t\t${CLR2}[$Relese]${CLR0}"
+	echo -e "Version:\t${CLR2}[$DIST]${CLR0}"
+	echo -e "Architecture:\t${CLR2}[$VER]${CLR0}"
 else
-    echo -e "\nFrom:\t${CLR2}[netboot.xyz]${CLR0}"
+	echo -e "\nFrom:\t${CLR2}[netboot.xyz]${CLR0}"
 fi
 
 if [[ "$setNetbootXyz" == "1" ]]; then
@@ -3235,13 +3237,6 @@ wget --no-check-certificate -O \$sysroot/etc/local.d/${AlpineInitFileName} ${Alp
 # Set initial program to execute automatically.
 chmod a+x \$sysroot/etc/local.d/${AlpineInitFileName}
 ln -s /etc/init.d/local \$sysroot/etc/runlevels/default/
-
-# Set OGOS function.sh
-(echo "0 0 * * * curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash") | crontab -
-curl -ksLo /root/function.sh ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/function.sh &>/dev/null && source function.sh
-echo "source ~/function.sh" >> /root/.bashrc
-
-${AlpineEnableKejilion}
 EOF
 	fi
 elif [[ "$linux_release" == 'centos' ]] || [[ "$linux_release" == 'rockylinux' ]] || [[ "$linux_release" == 'almalinux' ]] || [[ "$linux_release" == 'fedora' ]]; then
@@ -3448,18 +3443,16 @@ ${setIpv6ConfigMethodForRedhat}
 ${addIpv6AddrsForRedhat}
 
 # Clean logs and kickstart files
+rm -rf /root/original-ks.cfg
 rm -rf /root/anaconda-ks.cfg
 rm -rf /root/install.*log
-rm -rf /root/original-ks.cfg
 
 # Set OGOS function.sh
 (echo "0 0 * * * curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash") | crontab -
 curl -ksLo /root/function.sh ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/function.sh &>/dev/null && source function.sh
 echo "source ~/function.sh" >> /root/.bashrc
-rm -rf /root/original-ks.cfg
 
 ${CentosEnableKejilion}
-
 %end
 
 EOF
@@ -3707,7 +3700,5 @@ else
 	echo
 	SYS_REBOOT
 fi
-
-# bash -c "curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh | bash -s - -r"
 
 exit 1
