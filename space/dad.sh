@@ -22,7 +22,7 @@
 [ "$(curl -s ipinfo.io/country)" = "CN" ] && cf_proxy="https://proxy.ogtt.tk/" || cf_proxy=""
 [ -f ~/function.sh ] && source ~/function.sh || bash <(curl -sL ${cf_proxy}https://raw.githubusercontent.com/OG-Open-Source/raw/refs/heads/main/shell/update-function.sh) && source ~/function.sh
 
-Version="2024.10.24"
+Version="2024.10.25"
 License="GPL"
 SH="InstallNET.sh"
 
