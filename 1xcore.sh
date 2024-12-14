@@ -189,7 +189,9 @@ Setting() {
 	}
 	Sub_Menu
 }
-File_Manager() {
+linux_file() {
+	root_use
+	send_stats "文件管理器"
 	items_per_page=15
 	current_page=0
 	search_term=""
@@ -199,10 +201,10 @@ File_Manager() {
 		end=$2
 		regex=$3
 		CLEAN
-		echo -e "${CLR8}當前目錄：${CLR3}$current_dir${CLR0}"
-		echo -e "${CLR8}$(LINE - "89")"
-		printf "${CLR2}%-30s %-24s %-20s %-10s %s${CLR0}\n" "名稱" "修改日期" "大小" "種類" "權限"
-		echo -e "${CLR8}$(LINE - "89")"
+		echo -e "${CLR8}当前目录：${CLR3}$current_dir${CLR0}"
+		echo -e "${CLR8}$(LINE - "89")${CLR0}"
+		printf "${CLR2}%-30s %-24s %-20s %-10s %s${CLR0}\n" "名称" "修改日期" "大小" "种类" "权限"
+		echo -e "${CLR8}$(LINE - "89")${CLR0}"
 		find "$current_dir" -maxdepth 1 | tail -n +2 | awk -v start="$start" -v end="$end" -v regex="$regex" '
 		NR > start && NR <= end {
 			cmd = "stat --format=\"%y\" \""$0"\" | cut -d \".\" -f 1 | cut -c1-16"
@@ -217,7 +219,7 @@ File_Manager() {
 			n = $0
 			gsub(/.*\//, "", n)
 			if (regex == "" || tolower(n) ~ tolower(regex)) {
-				t = (p ~ /^d/) ? "目錄" : (p ~ /^l/) ? "連結" : "文件"
+				t = (p ~ /^d/) ? "目录" : (p ~ /^l/) ? "链接" : "文件"
 				tc = (p ~ /^d/) ? "'$CLR4'" : (p ~ /^l/) ? "'$CLR6'" : "'$CLR2'"
 				if (length(n) > 28) n = substr(n, 1, 25) "...";
 				u = (sz >= 1048576) ? "MiB" : (sz >= 1024) ? "KiB" : "Bytes"
@@ -230,9 +232,9 @@ File_Manager() {
 		for (( j=items; j<items_per_page; j++ )); do
 			printf "%-28s %-20s %-14s %-10s %s\n" "" "" "" "" ""
 		done
-		echo -e "${CLR8}$(LINE - "89")"
-		echo -e "${CLR2}頁面：${CLR3}$((current_page + 1))/${total_pages}${CLR0}"
-		echo -e "${CLR8}$(LINE - "89")"
+		echo -e "${CLR8}$(LINE - "89")${CLR0}"
+		echo -e "${CLR2}页面：${CLR3}$((current_page + 1))/${total_pages}${CLR0}"
+		echo -e "${CLR8}$(LINE - "89")${CLR0}"
 	}
 	refresh() {
 		total_items=$(find "$current_dir" -maxdepth 1 | tail -n +2 | wc -l)
@@ -244,47 +246,35 @@ File_Manager() {
 		refresh
 	}
 	refresh
-	OPT=(
-		-2-
-		"上級目錄" "下級目錄"
-		-2-
-		"上一頁" "下一頁"
-		LI
-		-2-
-		"搜尋" "刷新"
-		-3-
-		"創建文件" "創建目錄" "刪除"
-		"重命名" "權限調整" "編輯文件"
-		LI
-		"複製" "移動" "壓縮/解壓縮"
-	)
 	while true; do
-		Dis_OPT
-		echo -e "${CLR2}  0. 返回${CLR0}"
-		IN
+		echo -e "${CLR2}  1.  上级目录     2.  下级目录      3.  上一页             4.  下一页${CLR0}"
+		echo -e "${CLR2}  5.  搜索         6.  刷新          7.  创建文件           8.  创建目录${CLR0}"
+		echo -e "${CLR2}  9.  删除        10.  重命名       11.  权限调整          12.  编辑文件${CLR0}"
+		echo -e "${CLR2} 13.  复制        14.  移动         15.  压缩/解压缩${CLR0}"
+		echo -e "${CLR2}  0.  ${CLR0}返回"
+		echo -e "${CLR8}$(LINE = "89")${CLR0}"
+		INPUT "请输入：" sel
 		case "$sel" in
 			1) run_and_refresh "current_dir=$(dirname "$current_dir")";;
-			2) run_and_refresh "read -e -p '輸入目錄：' sub_dir && [[ -d \"\$current_dir/\$sub_dir\" ]] && current_dir=\$(realpath \"\$current_dir/\$sub_dir\") || { echo '目錄「\$sub_dir」不存在。'; sleep 1; }";;
+			2) run_and_refresh "read -e -p '输入目录：' sub_dir && [[ -d \"\$current_dir/\$sub_dir\" ]] && current_dir=\$(realpath \"\$current_dir/\$sub_dir\") || { echo '目录「\$sub_dir」不存在。'; sleep 1; }";;
 			3) run_and_refresh "((current_page > 0)) && ((current_page--))";;
 			4) run_and_refresh "((current_page < total_pages - 1)) && ((current_page++))";;
-			5) run_and_refresh "read -e -p '輸入搜尋詞：' search_term";;
+			5) run_and_refresh "read -e -p '输入搜索词：' search_term";;
 			6) run_and_refresh "search_term=""";;
-			7) run_and_refresh "read -e -p '輸入新檔案名稱：' new_file && cmds=(\"touch \\\"\$current_dir/\$new_file\\\"\")";;
-			8) run_and_refresh "read -e -p '輸入新資料夾名稱：' new_dir && cmds=(\"mkdir -p \\\"\$current_dir/\$new_dir\\\"\")";;
-			9) run_and_refresh "read -e -p '輸入要刪除的檔案（以逗號分隔，或輸入「/all」刪除所有檔案）：' del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then cmds=(\"rm -rf \\\"\$current_dir\\\"/*\"); else IFS=',' read -ra files <<< \"\$del_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"rm -rf \\\"\$current_dir/\$file\\\"\"); done; fi";;
-			10) run_and_refresh "read -e -p '輸入要重新命名的檔案：' old_name && read -e -p '輸入新名稱：' new_name && cmds=(\"mv \\\"\$current_dir/\$old_name\\\" \\\"\$current_dir/\$new_name\\\"\")";;
-			11) run_and_refresh "read -e -p '輸入要更改權限的檔案（以逗號分隔，或輸入「/all」更改所有檔案）：' perm_files && perm_files=\${perm_files// /} && read -e -p '輸入新權限：' perms && if [[ \"\$perm_files\" == \"/all\" ]]; then cmds=(\"chmod -R \\\"\$perms\\\" \\\"\$current_dir\\\"\"); else IFS=',' read -ra files <<< \"\$perm_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"chmod \\\"\$perms\\\" \\\"\$current_dir/\$file\\\"\"); done; fi";;
-			12) run_and_refresh "read -e -p '輸入要編輯的檔案：' edit_file && nano \"\$current_dir/\$edit_file\"";;
-			13) run_and_refresh "read -e -p '輸入要複製的檔案（以逗號分隔，或輸入「/all」複製所有檔案）：' copy_files && copy_files=\${copy_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cmds=(\"cp -r \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$copy_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"cp -r \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi";;
-			14) run_and_refresh "read -e -p '輸入要移動的檔案（以逗號分隔，或輸入「/all」移動所有檔案）：' move_files && move_files=\${move_files// /} && read -e -p '輸入目標目錄：' dest && if [[ \"\$move_files\" == \"/all\" ]]; then cmds=(\"mv \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$move_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"mv \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi";;
-			15) run_and_refresh "read -e -p '輸入要壓縮／解壓縮的檔案（以逗號分隔，或輸入「/all」壓縮／解壓縮所有檔案）：' tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then cmds=(\"tar -czf \\\"\$current_dir/all_files.tar.gz\\\" -C \\\"\$current_dir\\\" .\"); else IFS=',' read -ra files <<< \"\$tar_files\" && cmds=(); for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then cmds+=(\"tar -xzf \\\"\$current_dir/\$file\\\" -C \\\"\$current_dir\\\"\"); else cmds+=(\"tar -czf \\\"\$current_dir/\$file.tar.gz\\\" -C \\\"\$current_dir\\\" \\\"\$file\\\"\"); fi; done; fi";;
+			7) run_and_refresh "read -e -p '输入新文件名称：' new_file && cmds=(\"touch \\\"\$current_dir/\$new_file\\\"\")";;
+			8) run_and_refresh "read -e -p '输入新文件夹名称：' new_dir && cmds=(\"mkdir -p \\\"\$current_dir/\$new_dir\\\"\")";;
+			9) run_and_refresh "read -e -p '输入要删除的文件（以逗号分隔，或输入「/all」删除所有文件）：' del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then cmds=(\"rm -rf \\\"\$current_dir\\\"/*\"); else IFS=',' read -ra files <<< \"\$del_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"rm -rf \\\"\$current_dir/\$file\\\"\"); done; fi";;
+			10) run_and_refresh "read -e -p '输入要重新命名的文件：' old_name && read -e -p '输入新名称：' new_name && cmds=(\"mv \\\"\$current_dir/\$old_name\\\" \\\"\$current_dir/\$new_name\\\"\")";;
+			11) run_and_refresh "read -e -p '输入要更改权限的文件（以逗号分隔，或输入「/all」更改所有文件）：' perm_files && perm_files=\${perm_files// /} && read -e -p '输入新权限：' perms && if [[ \"\$perm_files\" == \"/all\" ]]; then cmds=(\"chmod -R \\\"\$perms\\\" \\\"\$current_dir\\\"\"); else IFS=',' read -ra files <<< \"\$perm_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"chmod \\\"\$perms\\\" \\\"\$current_dir/\$file\\\"\"); done; fi";;
+			12) run_and_refresh "read -e -p '输入要编辑的文件：' edit_file && nano \"\$current_dir/\$edit_file\"";;
+			13) run_and_refresh "read -e -p '输入要复制的文件（以逗号分隔，或输入「/all」复制所有文件）：' copy_files && copy_files=\${copy_files// /} && read -e -p '输入目标目录：' dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cmds=(\"cp -r \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$copy_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"cp -r \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi";;
+			14) run_and_refresh "read -e -p '输入要移动的文件（以逗号分隔，或输入「/all」移动所有文件）：' move_files && move_files=\${move_files// /} && read -e -p '输入目标目录：' dest && if [[ \"\$move_files\" == \"/all\" ]]; then cmds=(\"mv \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$move_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"mv \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi";;
+			15) run_and_refresh "read -e -p '输入要压缩／解压缩的文件（以逗号分隔，或输入「/all」压缩／解压缩所有文件）：' tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then cmds=(\"tar -czf \\\"\$current_dir/all_files.tar.gz\\\" -C \\\"\$current_dir\\\" .\"); else IFS=',' read -ra files <<< \"\$tar_files\" && cmds=(); for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then cmds+=(\"tar -xzf \\\"\$current_dir/\$file\\\" -C \\\"\$current_dir\\\"\"); else cmds+=(\"tar -czf \\\"\$current_dir/\$file.tar.gz\\\" -C \\\"\$current_dir\\\" \\\"\$file\\\"\"); fi; done; fi";;
 			0) break;;
 			*) run_and_refresh;;
 		esac
-		PROGRESS
 	done
 }
-
 Sub_Menu() {
 	return="$1"
 	while true; do

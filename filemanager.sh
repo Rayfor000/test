@@ -27,17 +27,12 @@ display_files() {
 	echo -e "${CLR4}----------------------------------------------------------------------------------------${CLR0}"
 
 	# List files with details
-	find "$current_dir" -maxdepth 1 | tail -n +2 | awk -v start="$start" -v end="$end" -v regex="$regex" '
+	find "$current_dir" -maxdepth 1 -type f -print0 | xargs -0 stat --format="%y %A %s %n" | awk -v start="$start" -v end="$end" -v regex="$regex" '
 	NR > start && NR <= end {
-		cmd = "stat --format=\"%y\" \""$0"\" | cut -d \".\" -f 1 | cut -c1-16"
-		cmd | getline dt
-		close(cmd)
-		cmd = "stat --format=\"%A %s %n\" \""$0"\""
-		cmd | getline fi
-		close(cmd)
-		split(fi, ia, " ")
-		p = ia[1]
-		sz = ia[2]
+		split($0, ia, " ")
+		p = ia[2]
+		dt = substr(ia[1], 1, 16)
+		sz = ia[3]
 		n = $0
 		gsub(/.*\//, "", n)
 		if (regex == "" || tolower(n) ~ tolower(regex)) {
@@ -52,7 +47,7 @@ display_files() {
 	}'
 
 	# Calculate and display pagination info
-	total_items=$(find "$current_dir" -maxdepth 1 | tail -n +2 | wc -l)
+	total_items=$(find "$current_dir" -maxdepth 1 -type f | wc -l)
 	total_pages=$(( (total_items + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE ))
 	echo -e "${CLR4}----------------------------------------${CLR0}"
 	echo -e "${CLR1}頁面：${CLR2}$((current_page + 1))/${total_pages}${CLR0}"
@@ -93,19 +88,31 @@ while true; do
 		5) read -e -p $'\033[36m輸入搜尋關鍵字：\033[0m' search_term ;;
 		6) search_term="" ;;
 		7) read -e -p $'\033[36m輸入檔案名稱：\033[0m' file_name
-		   touch "$current_dir/$file_name" ;;
+		   if ! touch "$current_dir/$file_name"; then
+			   echo "檔案創建失敗"
+		   fi ;;
 		8) read -e -p $'\033[36m輸入目錄名稱：\033[0m' dir_name
-		   mkdir -p "$current_dir/$dir_name" ;;
+		   if ! mkdir -p "$current_dir/$dir_name"; then
+			   echo "目錄創建失敗"
+		   fi ;;
 		9) read -e -p $'\033[36m輸入要刪除的檔案/目錄名稱：\033[0m' del_name
-		   rm -ri "$current_dir/$del_name" ;;
+		   if ! rm -ri "$current_dir/$del_name"; then
+			   echo "刪除失敗"
+		   fi ;;
 		10) read -e -p $'\033[36m輸入原檔案名稱：\033[0m' old_name
 			read -e -p $'\033[36m輸入新檔案名稱：\033[0m' new_name
-			mv "$current_dir/$old_name" "$current_dir/$new_name" ;;
+			if ! mv "$current_dir/$old_name" "$current_dir/$new_name"; then
+				echo "重命名失敗"
+			fi ;;
 		11) read -e -p $'\033[36m輸入檔案名稱：\033[0m' chmod_file
 			read -e -p $'\033[36m輸入權限數字（如：755）：\033[0m' perms
-			chmod "$perms" "$current_dir/$chmod_file" ;;
+			if ! chmod "$perms" "$current_dir/$chmod_file"; then
+				echo "權限設定失敗"
+			fi ;;
 		12) read -e -p $'\033[36m輸入檔案名稱：\033[0m' edit_file
-			${EDITOR:-nano} "$current_dir/$edit_file" ;;
+			if ! ${EDITOR:-nano} "$current_dir/$edit_file"; then
+				echo "編輯失敗"
+			fi ;;
 		*) echo "無效選項"; sleep 1 ;;
 	esac
 done
