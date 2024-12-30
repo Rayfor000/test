@@ -24,9 +24,19 @@ CLR0="\033[0m"
 
 LI() { echo -e "${CLR8}$(LINE - "24")${CLR0}"; }
 DLI() { echo -e "${CLR8}$(LINE = "24")${CLR0}"; }
-IN() { DLI; INPUT "請輸入：" sel; }
-INC() { DLI; INPUT "確認繼續嗎？(Y/N)：" sel; }
-OC() { echo -e "${CLR2}完成${CLR0}"; read -n 1 -s -r -p "按任意鍵繼續..."; CLEAN; }
+IN() {
+	DLI
+	INPUT "請輸入：" sel
+}
+INC() {
+	DLI
+	INPUT "確認繼續嗎？(Y/N)：" sel
+}
+OC() {
+	echo -e "${CLR2}完成${CLR0}"
+	read -n 1 -s -r -p "按任意鍵繼續..."
+	CLEAN
+}
 
 ADD curl jq sudo tar unzip wget &>/dev/null
 
@@ -34,12 +44,15 @@ Dis_TXT() {
 	CLEAN
 	for i in "${!TXT[@]}"; do
 		case "$i" in
-			0) echo -e "${CLR3}${TXT[$i]}${CLR0}";;
-			1) DLI; echo -e "${CLR8}${TXT[$i]}${CLR0}";;
-			*) case "${TXT[$i]}" in
-				"LI") LI;;
-				*) echo -e "${CLR8}${TXT[$i]}${CLR0}";;
-			esac;;
+		0) echo -e "${CLR3}${TXT[$i]}${CLR0}" ;;
+		1)
+			DLI
+			echo -e "${CLR8}${TXT[$i]}${CLR0}"
+			;;
+		*) case "${TXT[$i]}" in
+			"LI") LI ;;
+			*) echo -e "${CLR8}${TXT[$i]}${CLR0}" ;;
+			esac ;;
 		esac
 	done
 	DLI
@@ -51,13 +64,13 @@ Dis_OPT() {
 	string_width() {
 		str="$1"
 		width=0
-		for (( i=0; i<${#str}; i++ )); do
+		for ((i = 0; i < ${#str}; i++)); do
 			char="${str:$i:1}"
 			if [[ $char =~ [[:print:]] ]]; then
 				if [[ $char =~ [[:ascii:]] ]]; then
 					((width++))
 				else
-					((width+=2))
+					((width += 2))
 				fi
 			fi
 		done
@@ -75,16 +88,22 @@ Dis_OPT() {
 	}
 	for option in "${OPT[@]}"; do
 		case "$option" in
-			"LI") LI; col_options=();;
-			"-"*)
-				max_cols=${option//[-]/}
-				[ ${#col_options[@]} -gt 0 ] && print_row "${col_options[@]}"
+		"LI")
+			LI
+			col_options=()
+			;;
+		"-"*)
+			max_cols=${option//[-]/}
+			[ ${#col_options[@]} -gt 0 ] && print_row "${col_options[@]}"
+			col_options=()
+			;;
+		*)
+			col_options+=("$option")
+			[ ${#col_options[@]} -eq $max_cols ] && {
+				print_row "${col_options[@]}"
 				col_options=()
-				;;
-			*)
-				col_options+=("$option")
-				[ ${#col_options[@]} -eq $max_cols ] && { print_row "${col_options[@]}"; col_options=(); }
-				;;
+			}
+			;;
 		esac
 	done
 	[ ${#col_options[@]} -gt 0 ] && print_row "${col_options[@]}"
@@ -94,10 +113,15 @@ Run_ACT() {
 	return=${1:-Menu}
 	count=1
 	for action in "${ACT[@]}"; do
-		[ "$sel" = "$count" ] && { CLEAN; IFS=';' read -ra steps <<< "$action"; for step in "${steps[@]}"; do eval "$step"; done; return 0; }
+		[ "$sel" = "$count" ] && {
+			CLEAN
+			IFS=';' read -ra steps <<<"$action"
+			for step in "${steps[@]}"; do eval "$step"; done
+			return 0
+		}
 		((count++))
 	done
-	[ $count -gt ${#ACT[@]} ] && case $sel in 0) $return;; *) CLEAN;; esac
+	[ $count -gt ${#ACT[@]} ] && case $sel in 0) $return ;; *) CLEAN ;; esac
 }
 
 Tools() {
@@ -229,7 +253,7 @@ linux_file() {
 			}
 		}'
 		items=$(find "$current_dir" -maxdepth 1 | tail -n +2 | awk -v start="$start" -v end="$end" -v regex="$regex" 'NR > start && NR <= end && (regex == "" || tolower($0) ~ tolower(regex)) {print}' | wc -l)
-		for (( j=items; j<items_per_page; j++ )); do
+		for ((j = items; j < items_per_page; j++)); do
 			printf "%-28s %-20s %-14s %-10s %s\n" "" "" "" "" ""
 		done
 		echo -e "${CLR8}$(LINE - "89")${CLR0}"
@@ -238,8 +262,8 @@ linux_file() {
 	}
 	refresh() {
 		total_items=$(find "$current_dir" -maxdepth 1 | tail -n +2 | wc -l)
-		total_pages=$(( (total_items + items_per_page - 1) / items_per_page ))
-		dis_files $((current_page * items_per_page)) $(( (current_page + 1) * items_per_page )) "$search_term"
+		total_pages=$(((total_items + items_per_page - 1) / items_per_page))
+		dis_files $((current_page * items_per_page)) $(((current_page + 1) * items_per_page)) "$search_term"
 	}
 	run_and_refresh() {
 		eval "$@"
@@ -255,23 +279,23 @@ linux_file() {
 		echo -e "${CLR8}$(LINE = "89")${CLR0}"
 		INPUT "请输入：" sel
 		case "$sel" in
-			1) run_and_refresh "current_dir=$(dirname "$current_dir")";;
-			2) run_and_refresh "read -e -p '输入目录：' sub_dir && [[ -d \"\$current_dir/\$sub_dir\" ]] && current_dir=\$(realpath \"\$current_dir/\$sub_dir\") || { echo '目录「\$sub_dir」不存在。'; sleep 1; }";;
-			3) run_and_refresh "((current_page > 0)) && ((current_page--))";;
-			4) run_and_refresh "((current_page < total_pages - 1)) && ((current_page++))";;
-			5) run_and_refresh "read -e -p '输入搜索词：' search_term";;
-			6) run_and_refresh "search_term=""";;
-			7) run_and_refresh "read -e -p '输入新文件名称：' new_file && cmds=(\"touch \\\"\$current_dir/\$new_file\\\"\")";;
-			8) run_and_refresh "read -e -p '输入新文件夹名称：' new_dir && cmds=(\"mkdir -p \\\"\$current_dir/\$new_dir\\\"\")";;
-			9) run_and_refresh "read -e -p '输入要删除的文件（以逗号分隔，或输入「/all」删除所有文件）：' del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then cmds=(\"rm -rf \\\"\$current_dir\\\"/*\"); else IFS=',' read -ra files <<< \"\$del_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"rm -rf \\\"\$current_dir/\$file\\\"\"); done; fi";;
-			10) run_and_refresh "read -e -p '输入要重新命名的文件：' old_name && read -e -p '输入新名称：' new_name && cmds=(\"mv \\\"\$current_dir/\$old_name\\\" \\\"\$current_dir/\$new_name\\\"\")";;
-			11) run_and_refresh "read -e -p '输入要更改权限的文件（以逗号分隔，或输入「/all」更改所有文件）：' perm_files && perm_files=\${perm_files// /} && read -e -p '输入新权限：' perms && if [[ \"\$perm_files\" == \"/all\" ]]; then cmds=(\"chmod -R \\\"\$perms\\\" \\\"\$current_dir\\\"\"); else IFS=',' read -ra files <<< \"\$perm_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"chmod \\\"\$perms\\\" \\\"\$current_dir/\$file\\\"\"); done; fi";;
-			12) run_and_refresh "read -e -p '输入要编辑的文件：' edit_file && nano \"\$current_dir/\$edit_file\"";;
-			13) run_and_refresh "read -e -p '输入要复制的文件（以逗号分隔，或输入「/all」复制所有文件）：' copy_files && copy_files=\${copy_files// /} && read -e -p '输入目标目录：' dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cmds=(\"cp -r \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$copy_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"cp -r \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi";;
-			14) run_and_refresh "read -e -p '输入要移动的文件（以逗号分隔，或输入「/all」移动所有文件）：' move_files && move_files=\${move_files// /} && read -e -p '输入目标目录：' dest && if [[ \"\$move_files\" == \"/all\" ]]; then cmds=(\"mv \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$move_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"mv \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi";;
-			15) run_and_refresh "read -e -p '输入要压缩／解压缩的文件（以逗号分隔，或输入「/all」压缩／解压缩所有文件）：' tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then cmds=(\"tar -czf \\\"\$current_dir/all_files.tar.gz\\\" -C \\\"\$current_dir\\\" .\"); else IFS=',' read -ra files <<< \"\$tar_files\" && cmds=(); for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then cmds+=(\"tar -xzf \\\"\$current_dir/\$file\\\" -C \\\"\$current_dir\\\"\"); else cmds+=(\"tar -czf \\\"\$current_dir/\$file.tar.gz\\\" -C \\\"\$current_dir\\\" \\\"\$file\\\"\"); fi; done; fi";;
-			0) break;;
-			*) run_and_refresh;;
+		1) run_and_refresh "current_dir=$(dirname "$current_dir")" ;;
+		2) run_and_refresh "read -e -p '输入目录：' sub_dir && [[ -d \"\$current_dir/\$sub_dir\" ]] && current_dir=\$(realpath \"\$current_dir/\$sub_dir\") || { echo '目录「\$sub_dir」不存在。'; sleep 1; }" ;;
+		3) run_and_refresh "((current_page > 0)) && ((current_page--))" ;;
+		4) run_and_refresh "((current_page < total_pages - 1)) && ((current_page++))" ;;
+		5) run_and_refresh "read -e -p '输入搜索词：' search_term" ;;
+		6) run_and_refresh "search_term=""" ;;
+		7) run_and_refresh "read -e -p '输入新文件名称：' new_file && cmds=(\"touch \\\"\$current_dir/\$new_file\\\"\")" ;;
+		8) run_and_refresh "read -e -p '输入新文件夹名称：' new_dir && cmds=(\"mkdir -p \\\"\$current_dir/\$new_dir\\\"\")" ;;
+		9) run_and_refresh "read -e -p '输入要删除的文件（以逗号分隔，或输入「/all」删除所有文件）：' del_files && del_files=\${del_files// /} && if [[ \"\$del_files\" == \"/all\" ]]; then cmds=(\"rm -rf \\\"\$current_dir\\\"/*\"); else IFS=',' read -ra files <<< \"\$del_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"rm -rf \\\"\$current_dir/\$file\\\"\"); done; fi" ;;
+		10) run_and_refresh "read -e -p '输入要重新命名的文件：' old_name && read -e -p '输入新名称：' new_name && cmds=(\"mv \\\"\$current_dir/\$old_name\\\" \\\"\$current_dir/\$new_name\\\"\")" ;;
+		11) run_and_refresh "read -e -p '输入要更改权限的文件（以逗号分隔，或输入「/all」更改所有文件）：' perm_files && perm_files=\${perm_files// /} && read -e -p '输入新权限：' perms && if [[ \"\$perm_files\" == \"/all\" ]]; then cmds=(\"chmod -R \\\"\$perms\\\" \\\"\$current_dir\\\"\"); else IFS=',' read -ra files <<< \"\$perm_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"chmod \\\"\$perms\\\" \\\"\$current_dir/\$file\\\"\"); done; fi" ;;
+		12) run_and_refresh "read -e -p '输入要编辑的文件：' edit_file && nano \"\$current_dir/\$edit_file\"" ;;
+		13) run_and_refresh "read -e -p '输入要复制的文件（以逗号分隔，或输入「/all」复制所有文件）：' copy_files && copy_files=\${copy_files// /} && read -e -p '输入目标目录：' dest && if [[ \"\$copy_files\" == \"/all\" ]]; then cmds=(\"cp -r \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$copy_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"cp -r \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi" ;;
+		14) run_and_refresh "read -e -p '输入要移动的文件（以逗号分隔，或输入「/all」移动所有文件）：' move_files && move_files=\${move_files// /} && read -e -p '输入目标目录：' dest && if [[ \"\$move_files\" == \"/all\" ]]; then cmds=(\"mv \\\"\$current_dir\\\"/* \\\"\$dest\\\"\"); else IFS=',' read -ra files <<< \"\$move_files\" && cmds=(); for file in \"\${files[@]}\"; do cmds+=(\"mv \\\"\$current_dir/\$file\\\" \\\"\$dest\\\"\"); done; fi" ;;
+		15) run_and_refresh "read -e -p '输入要压缩／解压缩的文件（以逗号分隔，或输入「/all」压缩／解压缩所有文件）：' tar_files && tar_files=\${tar_files// /} && if [[ \"\$tar_files\" == \"/all\" ]]; then cmds=(\"tar -czf \\\"\$current_dir/all_files.tar.gz\\\" -C \\\"\$current_dir\\\" .\"); else IFS=',' read -ra files <<< \"\$tar_files\" && cmds=(); for file in \"\${files[@]}\"; do if [[ \$file == *.tar.gz ]]; then cmds+=(\"tar -xzf \\\"\$current_dir/\$file\\\" -C \\\"\$current_dir\\\"\"); else cmds+=(\"tar -czf \\\"\$current_dir/\$file.tar.gz\\\" -C \\\"\$current_dir\\\" \\\"\$file\\\"\"); fi; done; fi" ;;
+		0) break ;;
+		*) run_and_refresh ;;
 		esac
 	done
 }
@@ -313,14 +337,38 @@ Menu() {
 		echo -e "${CLR2}  0. 退出${CLR0}"
 		IN
 		case $sel in
-			1) CLEAN; SYS_INFO; OC; Menu;;
-			2) CLEAN; SYS_UPDATE; OC; Menu;;
-			3) CLEAN; SYS_CLEAN; OC; Menu;;
-			4) Tools; Sub_Menu;;
-			5) File_Manager;;
-			6) Setting; Sub_Menu;;
-			0) CLEAN; exit;;
-			*) CLEAN;;
+		1)
+			CLEAN
+			SYS_INFO
+			OC
+			Menu
+			;;
+		2)
+			CLEAN
+			SYS_UPDATE
+			OC
+			Menu
+			;;
+		3)
+			CLEAN
+			SYS_CLEAN
+			OC
+			Menu
+			;;
+		4)
+			Tools
+			Sub_Menu
+			;;
+		5) File_Manager ;;
+		6)
+			Setting
+			Sub_Menu
+			;;
+		0)
+			CLEAN
+			exit
+			;;
+		*) CLEAN ;;
 		esac
 	done
 }

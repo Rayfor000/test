@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Color definitions
-CLR0="\033[0m"      # Reset
-CLR1="\033[32m"     # Green
-CLR2="\033[33m"     # Yellow
-CLR3="\033[34m"     # Blue
-CLR4="\033[36m"     # Cyan
-CLR5="\033[97m"     # White
+CLR0="\033[0m"  # Reset
+CLR1="\033[32m" # Green
+CLR2="\033[33m" # Yellow
+CLR3="\033[34m" # Blue
+CLR4="\033[36m" # Cyan
+CLR5="\033[97m" # White
 
 # Initialize variables
 ITEMS_PER_PAGE=15
@@ -48,7 +48,7 @@ display_files() {
 
 	# Calculate and display pagination info
 	total_items=$(find "$current_dir" -maxdepth 1 -type f | wc -l)
-	total_pages=$(( (total_items + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE ))
+	total_pages=$(((total_items + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE))
 	echo -e "${CLR4}----------------------------------------${CLR0}"
 	echo -e "${CLR1}頁面：${CLR2}$((current_page + 1))/${total_pages}${CLR0}"
 	echo -e "${CLR4}----------------------------------------${CLR0}"
@@ -70,49 +70,70 @@ show_menu() {
 
 # Main loop
 while true; do
-	display_files $((current_page * ITEMS_PER_PAGE)) $(( (current_page + 1) * ITEMS_PER_PAGE )) "$search_term"
+	display_files $((current_page * ITEMS_PER_PAGE)) $(((current_page + 1) * ITEMS_PER_PAGE)) "$search_term"
 	show_menu
 	read -r choice
 
 	case "$choice" in
-		0) clear; exit ;;
-		1) current_dir=$(dirname "$current_dir") ;;
-		2) read -e -p $'\033[36m輸入目錄名稱：\033[0m' dir_name
-		   if [[ -d "$current_dir/$dir_name" ]]; then
-			   current_dir="$current_dir/$dir_name"
-		   else
-			   echo "目錄不存在"; sleep 1
-		   fi ;;
-		3) ((current_page > 0)) && ((current_page--)) ;;
-		4) ((current_page < total_pages - 1)) && ((current_page++)) ;;
-		5) read -e -p $'\033[36m輸入搜尋關鍵字：\033[0m' search_term ;;
-		6) search_term="" ;;
-		7) read -e -p $'\033[36m輸入檔案名稱：\033[0m' file_name
-		   if ! touch "$current_dir/$file_name"; then
-			   echo "檔案創建失敗"
-		   fi ;;
-		8) read -e -p $'\033[36m輸入目錄名稱：\033[0m' dir_name
-		   if ! mkdir -p "$current_dir/$dir_name"; then
-			   echo "目錄創建失敗"
-		   fi ;;
-		9) read -e -p $'\033[36m輸入要刪除的檔案/目錄名稱：\033[0m' del_name
-		   if ! rm -ri "$current_dir/$del_name"; then
-			   echo "刪除失敗"
-		   fi ;;
-		10) read -e -p $'\033[36m輸入原檔案名稱：\033[0m' old_name
-			read -e -p $'\033[36m輸入新檔案名稱：\033[0m' new_name
-			if ! mv "$current_dir/$old_name" "$current_dir/$new_name"; then
-				echo "重命名失敗"
-			fi ;;
-		11) read -e -p $'\033[36m輸入檔案名稱：\033[0m' chmod_file
-			read -e -p $'\033[36m輸入權限數字（如：755）：\033[0m' perms
-			if ! chmod "$perms" "$current_dir/$chmod_file"; then
-				echo "權限設定失敗"
-			fi ;;
-		12) read -e -p $'\033[36m輸入檔案名稱：\033[0m' edit_file
-			if ! ${EDITOR:-nano} "$current_dir/$edit_file"; then
-				echo "編輯失敗"
-			fi ;;
-		*) echo "無效選項"; sleep 1 ;;
+	0)
+		clear
+		exit
+		;;
+	1) current_dir=$(dirname "$current_dir") ;;
+	2)
+		read -e -p $'\033[36m輸入目錄名稱：\033[0m' dir_name
+		if [[ -d "$current_dir/$dir_name" ]]; then
+			current_dir="$current_dir/$dir_name"
+		else
+			echo "目錄不存在"
+			sleep 1
+		fi
+		;;
+	3) ((current_page > 0)) && ((current_page--)) ;;
+	4) ((current_page < total_pages - 1)) && ((current_page++)) ;;
+	5) read -e -p $'\033[36m輸入搜尋關鍵字：\033[0m' search_term ;;
+	6) search_term="" ;;
+	7)
+		read -e -p $'\033[36m輸入檔案名稱：\033[0m' file_name
+		if ! touch "$current_dir/$file_name"; then
+			echo "檔案創建失敗"
+		fi
+		;;
+	8)
+		read -e -p $'\033[36m輸入目錄名稱：\033[0m' dir_name
+		if ! mkdir -p "$current_dir/$dir_name"; then
+			echo "目錄創建失敗"
+		fi
+		;;
+	9)
+		read -e -p $'\033[36m輸入要刪除的檔案/目錄名稱：\033[0m' del_name
+		if ! rm -ri "$current_dir/$del_name"; then
+			echo "刪除失敗"
+		fi
+		;;
+	10)
+		read -e -p $'\033[36m輸入原檔案名稱：\033[0m' old_name
+		read -e -p $'\033[36m輸入新檔案名稱：\033[0m' new_name
+		if ! mv "$current_dir/$old_name" "$current_dir/$new_name"; then
+			echo "重命名失敗"
+		fi
+		;;
+	11)
+		read -e -p $'\033[36m輸入檔案名稱：\033[0m' chmod_file
+		read -e -p $'\033[36m輸入權限數字（如：755）：\033[0m' perms
+		if ! chmod "$perms" "$current_dir/$chmod_file"; then
+			echo "權限設定失敗"
+		fi
+		;;
+	12)
+		read -e -p $'\033[36m輸入檔案名稱：\033[0m' edit_file
+		if ! ${EDITOR:-nano} "$current_dir/$edit_file"; then
+			echo "編輯失敗"
+		fi
+		;;
+	*)
+		echo "無效選項"
+		sleep 1
+		;;
 	esac
 done
