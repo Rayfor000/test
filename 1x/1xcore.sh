@@ -1,13 +1,19 @@
 #!/bin/bash
-# Description: 1xcore.sh is a shell script for installing and managing 1xcore.
-# Author: OGATA Open-Source
-# Version: 1.001.001
+# @command: 1x
+# @pkg_managers: apk, apt, opkg, pacman, yum, zypper, dnf
+# @dependencies: null
+# @authors: OG-Open-Source
+# @version: 1.0.0
+# @decommandion: Execute command
+# @source_link: https://github.com/OG-Open-Source/1x
+# @execute_dir: /
+# @allow_users: admin
 
 SH="1xcore.sh"
 X="/usr/local/bin/x"
 cp -f "$SH" "$X" &>/dev/null
 
-[ -f ~/function.sh ] && source ~/function.sh || bash <(curl -sL raw.ogtt.tk/shell/update-function.sh)
+[ -f ~/utilkit.sh ] && source ~/utilkit.sh || bash <(curl -sL utilkit.ogtt.tk) z1 && source ~/utilkit.sh
 
 CHECK_ROOT
 
@@ -38,15 +44,18 @@ OC() {
 	CLEAN
 }
 
-ADD curl jq sudo tar unzip wget &>/dev/null
+deps=(curl jq sudo tar unzip wget)
+CHECK_DEPS -a
 
 Dis_TXT() {
 	CLEAN
 	for i in "${!TXT[@]}"; do
 		case "$i" in
-		0) echo -e "${CLR3}${TXT[$i]}${CLR0}" ;;
-		1)
+		0)
+			echo -e "${CLR3}${TXT[$i]}${CLR0}"
 			DLI
+			;;
+		1)
 			echo -e "${CLR8}${TXT[$i]}${CLR0}"
 			;;
 		*) case "${TXT[$i]}" in
@@ -76,16 +85,44 @@ Dis_OPT() {
 		done
 		echo $width
 	}
+
 	print_row() {
 		max_width=20
+		local col_count=0
+		local options_count=${#@}
+
 		for option in "$@"; do
 			option_width=$(string_width "$option")
 			padding=$((max_width - option_width))
-			printf "$(echo -e "${CLR8}%3d.${CLR0}") %s%*s" "$count" "$option" $padding " "
+
+			# 调整序号格式，确保对齐
+			if [ $count -lt 10 ]; then
+				# 单数字序号，前面加空格
+				printf "$(echo -e "${CLR8} %d.${CLR0}") %s" "$count" "$option"
+			else
+				# 双数字序号
+				printf "$(echo -e "${CLR8}%2d.${CLR0}") %s" "$count" "$option"
+			fi
+
+			# 添加填充，但最后一列不需要
+			((col_count++))
+			if [ $col_count -lt $max_cols ] && [ $col_count -lt $options_count ]; then
+				printf "%*s" $padding " "
+			fi
+
 			((count++))
+
+			# 如果达到最大列数，换行
+			if [ $col_count -eq $max_cols ]; then
+				echo
+				col_count=0
+			fi
 		done
-		echo
+
+		# 如果最后一行不完整，添加换行
+		[ $col_count -ne 0 ] && echo
 	}
+
 	for option in "${OPT[@]}"; do
 		case "$option" in
 		"LI")
@@ -106,6 +143,7 @@ Dis_OPT() {
 			;;
 		esac
 	done
+
 	[ ${#col_options[@]} -gt 0 ] && print_row "${col_options[@]}"
 	DLI
 }
