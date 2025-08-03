@@ -21,24 +21,31 @@ jobs:
         with:
           fetch-depth: 0 # Required to fetch all history for git log
 
-      - name: Generate Changelog
+      - name: Generate Changelog and Release Body
         id: generate_changelog
         run: |
           # Get the previous tag. If there's no previous tag, this will be empty.
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 `git rev-list --tags --skip=1 --max-count=1` || echo "")
 
+          # Generate the list of commit summaries
           if [ -z "$PREVIOUS_TAG" ]; then
             echo "No previous tag found. Creating changelog from the first commit."
             CHANGELOG=$(git log ${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
+            # Generate the Full Changelog URL for the first release
+            FULL_CHANGELOG_URL="https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}"
           else
             echo "Generating changelog from $PREVIOUS_TAG to ${{ github.ref_name }}"
             CHANGELOG=$(git log $PREVIOUS_TAG..${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
+            # Generate the Full Changelog URL for subsequent releases
+            FULL_CHANGELOG_URL="https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG..${{ github.ref_name }}"
           fi
 
-          # Use a HEREDOC to pass the multiline changelog to the output file
+          # Combine all parts into the final release body file
           cat <<EOF > changelog.md
           ### What's Changed
           ${CHANGELOG}
+
+          **Full Changelog**: ${FULL_CHANGELOG_URL}
           EOF
 
           echo "changelog_path=changelog.md" >> $GITHUB_OUTPUT
@@ -59,7 +66,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: GlocalText ${{ github.ref_name }}
+          release_name: ${{ github.event.repository.name }} ${{ github.ref_name }}
           body_path: ${{ steps.generate_changelog.outputs.changelog_path }}
           draft: false
           prerelease: false
