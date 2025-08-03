@@ -20,9 +20,6 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install dependencies
-        run: pip install -e nob
-
       - name: Install build dependencies
         run: python -m pip install build
 
@@ -31,15 +28,17 @@ jobs:
 
       - name: Build distributions
         run: python -m build
+        working-directory: ./nob
 
       - name: Archive release assets
         # This creates a zip file containing the contents of the dist/ directory
         run: |
           zip -r release-assets.zip dist/
+        working-directory: ./nob
 
       - name: Upload release assets artifact
         # This artifact can be downloaded by the main release workflow
         uses: actions/upload-artifact@v4
         with:
           name: release-assets
-          path: release-assets.zip
+          path: nob/release-assets.zip
