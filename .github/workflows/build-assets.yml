@@ -26,6 +26,9 @@ jobs:
       - name: Install build dependencies
         run: python -m pip install build
 
+      - name: List files in workspace for debugging
+        run: ls -R
+
       - name: Build distributions
         run: python -m build
 
