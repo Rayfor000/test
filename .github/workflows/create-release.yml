@@ -35,9 +35,9 @@ jobs:
             FULL_CHANGELOG_URL="https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}"
           else
             echo "Generating changelog from $PREVIOUS_TAG to ${{ github.ref_name }}"
-            CHANGELOG=$(git log $PREVIOUS_TAG..${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
+            CHANGELOG=$(git log $PREVIOUS_TAG...${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
             # Generate the Full Changelog URL for subsequent releases
-            FULL_CHANGELOG_URL="https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG..${{ github.ref_name }}"
+            FULL_CHANGELOG_URL="https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...${{ github.ref_name }}"
           fi
 
           # Combine all parts into the final release body file
