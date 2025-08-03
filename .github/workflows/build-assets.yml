@@ -30,15 +30,9 @@ jobs:
         run: python -m build
         working-directory: ./nob
 
-      - name: Archive release assets
-        # This creates a zip file containing the contents of the dist/ directory
-        run: |
-          zip -r release-assets.zip dist/
-        working-directory: ./nob
-
       - name: Upload release assets artifact
         # This artifact can be downloaded by the main release workflow
         uses: actions/upload-artifact@v4
         with:
           name: release-assets
-          path: nob/release-assets.zip
+          path: nob/dist/
