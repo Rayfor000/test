@@ -1,0 +1,79 @@
+# This workflow creates a new GitHub Release when a tag is pushed.
+# It automatically generates a changelog and can optionally attach assets built by the `build-assets.yml` workflow.
+
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - "v*" # Trigger on tags like v1.0, v1.2.3
+
+permissions:
+  contents: write # Needed to create releases and upload assets
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to fetch all history for git log
+
+      - name: Generate Changelog
+        id: generate_changelog
+        run: |
+          # Get the previous tag. If there's no previous tag, this will be empty.
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 `git rev-list --tags --skip=1 --max-count=1` || echo "")
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found. Creating changelog from the first commit."
+            CHANGELOG=$(git log ${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
+          else
+            echo "Generating changelog from $PREVIOUS_TAG to ${{ github.ref_name }}"
+            CHANGELOG=$(git log $PREVIOUS_TAG..${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
+          fi
+
+          # Use a HEREDOC to pass the multiline changelog to the output file
+          cat <<EOF > changelog.md
+          ### What's Changed
+          ${CHANGELOG}
+          EOF
+
+          echo "changelog_path=changelog.md" >> $GITHUB_OUTPUT
+
+      - name: Download build assets (if they exist)
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          # Download from the 'Build Release Assets' workflow
+          workflow: build-assets.yml
+          # The name of the artifact to download
+          name: release-assets
+          # Fail silently if the artifact is not found
+          if_no_artifact_found: ignore
+          # Look for the artifact from the latest successful run on the main branch
+          branch: main
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: GlocalText ${{ github.ref_name }}
+          body_path: ${{ steps.generate_changelog.outputs.changelog_path }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        if: success() && steps.download_assets.outputs.is_artifact_found == 'true'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release-assets.zip
+          asset_name: release-assets.zip
+          asset_content_type: application/zip
