@@ -21,7 +21,7 @@ jobs:
           python-version: "3.x"
 
       - name: Change Directory
-        run: ls
+        run: cd GlocalText && cd src
 
       - name: Install dependencies
         run: pip install -e .
