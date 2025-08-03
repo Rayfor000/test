@@ -44,15 +44,12 @@ jobs:
           echo "changelog_path=changelog.md" >> $GITHUB_OUTPUT
 
       - name: Download build assets (if they exist)
-        uses: dawidd6/action-download-artifact@v6
+        id: download_assets
+        uses: dawidd6/action-download-artifact@v3
+        continue-on-error: true # If artifact is not found, continue without failing
         with:
-          # Download from the 'Build Release Assets' workflow
           workflow: build-assets.yml
-          # The name of the artifact to download
           name: release-assets
-          # Fail silently if the artifact is not found
-          if_no_artifact_found: ignore
-          # Look for the artifact from the latest successful run on the main branch
           branch: main
 
       - name: Create GitHub Release
@@ -68,7 +65,8 @@ jobs:
           prerelease: false
 
       - name: Upload Release Asset
-        if: success() && steps.download_assets.outputs.is_artifact_found == 'true'
+        # This step will only run if the download step was successful
+        if: steps.download_assets.outcome == 'success'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
