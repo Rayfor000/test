@@ -1,0 +1,7 @@
+pydantic
+pyyaml
+xxhash
+google-genai
+deep-translator
+openai
+requests
