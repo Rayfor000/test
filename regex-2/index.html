@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regex 捕捉籠建構器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Regex 捕捉籠建構器</h1>
+
+        <div class="editor-area">
+            <div class="input-section">
+                <h2>範例文字</h2>
+                <div id="text-input" contenteditable="true" class="text-box">請在此貼上您的範例文字...</div>
+            </div>
+
+            <div class="regex-section">
+                <h2>Regex 模式</h2>
+                <input type="text" id="regex-input" class="regex-box" placeholder="您的 Regex 會顯示在這裡">
+                <div id="regex-error" class="error-message"></div>
+            </div>
+        </div>
+
+        <div class="output-section">
+            <h2>即時匹配結果</h2>
+            <div id="highlight-output" class="text-box"></div>
+        </div>
+    </div>
+
+    <!-- Popup button for creating capture group -->
+    <div id="popup-button" class="popup" style="display: none;">
+        <button>建立捕捉籠</button>
+    </div>
+
+    <!-- Settings Modal for Capture Group -->
+    <div id="modal-container" class="modal-container" style="display: none;">
+        <div class="modal-content">
+            <h2>設定捕捉籠內容</h2>
+            <p>請選擇您想要在捕捉籠內匹配的字元類型。</p>
+
+            <div class="char-sets">
+                <label><input type="checkbox" data-char-set="a-z"> 小寫字母 (a-z)</label>
+                <label><input type="checkbox" data-char-set="A-Z"> 大寫字母 (A-Z)</label>
+                <label><input type="checkbox" data-char-set="0-9"> 數字 (0-9)</label>
+                <label><input type="checkbox" data-char-set="\s"> 空白字元 (空格, tab)</label>
+                <label><input type="checkbox" data-char-set="\u4e00-\u9fa5"> 中文字元</label>
+            </div>
+
+            <div class="custom-set">
+                <label for="custom-chars">手動加入字元或範圍:</label>
+                <input type="text" id="custom-chars" placeholder="例如: _\-$">
+            </div>
+
+            <div class="modal-actions">
+                <button id="modal-confirm">確定</button>
+                <button id="modal-cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
