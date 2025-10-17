@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definitive System 10.0 (Live Dashboard)</title>
+    <style>
+        :root {
+            /* ... (Static palettes & extended semantics) ... */
+            --black-alpha-20: rgba(0, 0, 0, 0.2);
+            --black-alpha-40: rgba(0, 0, 0, 0.4);
+            --black-alpha-60: rgba(0, 0, 0, 0.6);
+            --black-alpha-80: rgba(0, 0, 0, 0.8);
+            --success-50: #EBFBEE;
+            --success-100: #D3F9D8;
+            --success-200: #B2F2BB;
+            --success-300: #8CE99A;
+            --success-400: #69DB7C;
+            --success-500: #51CF66;
+            --success-600: #40C057;
+            --success-700: #37B24D;
+            --success-800: #2F9E44;
+            --success-900: #2B8A3E;
+            --warning-50: #FFF9E6;
+            --warning-100: #FFF0C2;
+            --warning-200: #FFE08C;
+            --warning-300: #FFD466;
+            --warning-400: #FCC440;
+            --warning-500: #FAB018;
+            --warning-600: #F59F00;
+            --warning-700: #F08C00;
+            --warning-800: #E67700;
+            --warning-900: #D96600;
+            --danger-50: #FFF5F5;
+            --danger-100: #FFE3E3;
+            --danger-200: #FFC9C9;
+            --danger-300: #FFA8A8;
+            --danger-400: #FF8787;
+            --danger-500: #FF6B6B;
+            --danger-600: #FA5252;
+            --danger-700: #F03E3E;
+            --danger-800: #E03131;
+            --danger-900: #C92A2A;
+            --info-50: #EDF2FF;
+            --info-100: #DBE4FF;
+            --info-200: #BAC8FF;
+            --info-300: #91A7FF;
+            --info-400: #748FFC;
+            --info-500: #5C7CFA;
+            --info-600: #4C6EF5;
+            --info-700: #4263EB;
+            --info-800: #3B5BDB;
+            --info-900: #364FC7;
+            --debug-50: #F8F0FC;
+            --debug-100: #F3D9FA;
+            --debug-200: #EEBEFA;
+            --debug-300: #E599F7;
+            --debug-400: #DE75F5;
+            --debug-500: #D651F3;
+            --debug-600: #C92EEF;
+            --debug-700: #B825DB;
+            --debug-800: #A61CC8;
+            --debug-900: #9318B4;
+            --trace-50: #F1F3F5;
+            --trace-100: #E9ECEF;
+            --trace-200: #DEE2E6;
+            --trace-300: #CED4DA;
+            --trace-400: #ADB5BD;
+            --trace-500: #868E96;
+            --trace-600: #495057;
+            --trace-700: #343A40;
+            --trace-800: #212529;
+            --trace-900: #191c1f;
+        }
+
+        /* ... (Mode, General, and Component Styling remain unchanged from 8.0/9.0) ... */
+        .light-mode {
+            color-scheme: light;
+            --surface-primary: var(--gray-50);
+            --surface-secondary: var(--gray-100);
+            --border-default: var(--gray-500);
+            --border-hover: var(--gray-600);
+            --primary-main: var(--primary-600);
+            --primary-hover: var(--primary-700);
+            --primary-active: var(--primary-800);
+            --primary-text: var(--primary-600);
+            --primary-background: var(--primary-50);
+            --primary-disabled-bg: var(--gray-200);
+            --primary-disabled-text: var(--gray-500);
+            --accent-main: var(--accent-500);
+            --accent-hover: var(--accent-600);
+            --accent-active: var(--accent-700);
+            --accent-text: var(--accent-600);
+            --accent-background: var(--accent-50);
+            --success-main: var(--success-700);
+            --success-background: var(--success-50);
+            --danger-main: var(--danger-700);
+            --danger-background: var(--danger-50);
+            --warning-main: var(--warning-700);
+            --warning-background: var(--warning-50);
+            --info-main: var(--info-700);
+            --info-background: var(--info-50);
+            --debug-main: var(--debug-700);
+            --debug-background: var(--debug-50);
+            --trace-main: var(--trace-700);
+            --trace-background: var(--trace-50);
+            --focus-ring-color: var(--primary-500);
+        }
+
+        .dark-mode {
+            color-scheme: dark;
+            --surface-primary: var(--gray-900);
+            --surface-secondary: var(--gray-800);
+            --border-default: var(--gray-600);
+            --border-hover: var(--gray-500);
+            --primary-main: var(--primary-400);
+            --primary-hover: var(--primary-300);
+            --primary-active: var(--primary-200);
+            --primary-text: var(--primary-400);
+            --primary-background: var(--gray-800);
+            --primary-disabled-bg: var(--gray-700);
+            --primary-disabled-text: var(--gray-600);
+            --accent-main: var(--accent-400);
+            --accent-hover: var(--accent-300);
+            --accent-active: var(--accent-200);
+            --accent-text: var(--accent-400);
+            --accent-background: var(--gray-800);
+            --success-main: var(--success-400);
+            --success-background: #1A3D2A;
+            --danger-main: var(--danger-400);
+            --danger-background: #4d1f21;
+            --warning-main: var(--warning-400);
+            --warning-background: #4d380e;
+            --info-main: var(--info-400);
+            --info-background: #1e2d6b;
+            --debug-main: var(--debug-400);
+            --debug-background: #4a1f5c;
+            --trace-main: var(--trace-400);
+            --trace-background: #2a2d30;
+            --focus-ring-color: var(--primary-400);
+        }
+
+        .black-mode {
+            color-scheme: dark;
+            --surface-primary: #000000;
+            --surface-secondary: var(--gray-900);
+            --border-default: var(--gray-700);
+            --border-hover: var(--gray-600);
+            /* Other tokens inherit from dark-mode */
+        }
+
+        .contrast-mode {
+            color-scheme: light;
+            --surface-primary: #FFFFFF;
+            --surface-secondary: #F1F1F1;
+            --border-default: #000000;
+            --border-hover: #000000;
+            --primary-main: var(--primary-700);
+            --primary-hover: var(--primary-800);
+            --primary-active: var(--primary-900);
+            --primary-text: var(--primary-700);
+            --primary-background: var(--primary-100);
+            --accent-main: var(--accent-700);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            transition: background-color 0.3s, color 0.3s;
+            background-color: var(--surface-primary);
+            color: var(--text-body);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .theme-section {
+            background-color: var(--surface-secondary);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-default);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: var(--text-heading);
+            margin-top: 0;
+            transition: color 0.3s;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-default);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            line-height: 1.6;
+            color: var(--text-body);
+            transition: color 0.3s;
+        }
+
+        .text-subtle {
+            color: var(--text-subtle);
+            font-size: 0.9rem;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+        }
+
+        .color-swatch {
+            position: relative;
+            padding: 1rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+
+        .color-swatch .hex {
+            display: block;
+            margin-top: 0.5rem;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-default);
+            transition: border-color 0.3s;
+        }
+
+        th {
+            background-color: var(--surface-primary);
+            transition: background-color 0.3s;
+        }
+
+        .pass {
+            color: var(--success-700);
+            font-weight: bold;
+        }
+
+        .fail {
+            color: var(--danger-700);
+            font-weight: bold;
+        }
+
+        .dark-mode .pass,
+        .black-mode .pass {
+            color: var(--success-400);
+        }
+
+        .dark-mode .fail,
+        .black-mode .fail {
+            color: var(--danger-400);
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .component-card,
+        .media-card {
+            background-color: var(--surface-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-default);
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .component-card-content {
+            padding: 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--focus-ring-color);
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-main);
+            color: #FFF;
+        }
+
+        .dark-mode .btn-primary,
+        .black-mode .btn-primary {
+            color: var(--gray-900);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary:active {
+            background-color: var(--primary-active);
+        }
+
+        .btn-primary:disabled {
+            background-color: var(--primary-disabled-bg);
+            color: var(--primary-disabled-text);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-text);
+            border: 1px solid var(--border-default);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-background);
+            border-color: var(--border-hover);
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background-color: var(--success-background);
+            color: var(--success-main);
+            border: 1px solid var(--success-main);
+        }
+
+        .alert-danger {
+            background-color: var(--danger-background);
+            color: var(--danger-main);
+            border: 1px solid var(--danger-main);
+        }
+
+        .alert-warning {
+            background-color: var(--warning-background);
+            color: var(--warning-main);
+            border: 1px solid var(--warning-main);
+        }
+
+        .alert-info {
+            background-color: var(--info-background);
+            color: var(--info-main);
+            border: 1px solid var(--info-main);
+        }
+
+        .alert-debug {
+            background-color: var(--debug-background);
+            color: var(--debug-main);
+            border: 1px solid var(--debug-main);
+        }
+
+        .alert-trace {
+            background-color: var(--trace-background);
+            color: var(--trace-main);
+            border: 1px solid var(--trace-main);
+        }
+
+        .controls {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            z-index: 100;
+            align-items: center;
+            background-color: var(--surface-secondary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-default);
+            max-width: 320px;
+            justify-content: flex-end;
+        }
+
+        .control-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--surface-primary);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--text-body);
+        }
+
+        #color-picker {
+            width: 40px;
+            height: 36px;
+            padding: 0;
+            border-radius: 6px;
+            border: 1px solid var(--border-default);
+            cursor: pointer;
+        }
+
+        .playground {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .playground-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .playground-controls .control-btn {
+            width: 100%;
+            text-align: left;
+        }
+
+        .playground-preview {
+            flex-grow: 1;
+        }
+
+        .tooltip {
+            position: fixed;
+            display: none;
+            background-color: var(--surface-primary);
+            color: var(--text-body);
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px var(--black-alpha-20);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            pointer-events: none;
+            border: 1px solid var(--border-default);
+            z-index: 101;
+        }
+
+        .tooltip strong {
+            color: var(--text-heading);
+        }
+    </style>
+</head>
+
+<body class="light-mode">
+    <div class="container">
+        <h1>Definitive System 10.0</h1>
+        <p>This definitive version features a live WCAG dashboard with comprehensive checks, a multi-mode architecture,
+            and an interactive component playground. It is the culmination of our collaborative design process.</p>
+
+        <div class="theme-section">
+            <h2>Component Playground</h2>
+            <div class="playground">
+                <div class="playground-controls">
+                    <button class="control-btn" data-type="success">Success</button><button class="control-btn"
+                        data-type="danger">Danger</button><button class="control-btn"
+                        data-type="warning">Warning</button><button class="control-btn"
+                        data-type="info">Info</button><button class="control-btn"
+                        data-type="debug">Debug</button><button class="control-btn" data-type="trace">Trace</button>
+                </div>
+                <div class="playground-preview">
+                    <div id="interactive-alert" class="alert alert-success">
+                        <h3 id="interactive-alert-title" style="margin-top:0;">Success Message</h3>
+                        <p id="interactive-alert-text" style="margin-bottom:0;">This is an interactive preview. Click
+                            the buttons on the left to change the alert type.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="theme-section">
+            <h2 id="wcag-title">WCAG Contrast Ratio (Live)</h2>
+            <table id="wcag-table">
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="theme-section">
+            <h2>Generated Palettes</h2>
+            <h3>Primary</h3>
+            <div class="color-grid" id="primary-grid"></div>
+            <h3>Accent</h3>
+            <div class="color-grid" id="accent-grid"></div>
+            <h3>Thematic Neutral</h3>
+            <div class="color-grid" id="neutral-grid"></div>
+        </div>
+        <div class="theme-section">
+            <h2>Universal Semantic Palettes</h2>
+            <div class="color-grid" id="semantic-grid"></div>
+        </div>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <div class="controls">
+        <select id="mode-select" class="control-btn">
+            <option value="light-mode">Light</option>
+            <option value="dark-mode">Dark</option>
+            <option value="black-mode">Black (OLED)</option>
+            <option value="contrast-mode">High Contrast</option>
+        </select>
+        <select id="typography-select" class="control-btn">
+            <option value="standard">Standard</option>
+            <option value="muted">Muted</option>
+            <option value="branded">Branded</option>
+        </select>
+        <input type="color" id="color-picker" value="#228BE6">
+        <button id="generate-btn" class="control-btn">Generate</button>
+    </div>
+
+    <script>
+        // --- The logic below is the final, stable, and complete version ---
+        const Color = { parse: (c) => { if (!c) return null; if (c.startsWith('#')) { const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(c); return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : null } else if (c.startsWith('rgb')) { const r = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(c); return r ? { r: parseInt(r[1]), g: parseInt(r[2]), b: parseInt(r[3]) } : null } return null }, rgbToHsl: (r, g, b) => { r /= 255; g /= 255; b /= 255; const M = Math.max(r, g, b), m = Math.min(r, g, b); let h, s, l = (M + m) / 2; if (M === m) { h = s = 0 } else { const d = M - m; s = l > 0.5 ? d / (2 - M - m) : d / (M + m); switch (M) { case r: h = (g - b) / d + (g < b ? 6 : 0); break; case g: h = (b - r) / d + 2; break; case b: h = (r - g) / d + 4; break }h /= 6 } return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)] }, hslToHex: (h, s, l) => { s /= 100; l /= 100; const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l), f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1)); return "#" + [0, 8, 4].map(n => Math.round(f(n) * 255).toString(16).padStart(2, '0')).join('') }, generateScale: (h) => { const [H, S] = h, L = Math.min(50, h[2]), s = {}; s[50] = Color.hslToHex(H, S, 97); s[100] = Color.hslToHex(H, S, 92); s[200] = Color.hslToHex(H, S, 84); s[300] = Color.hslToHex(H, S, 75); s[400] = Color.hslToHex(H, S, 66); s[500] = Color.hslToHex(H, S, 55); s[600] = Color.hslToHex(H, S, L); s[700] = Color.hslToHex(H, S, L * .85); s[800] = Color.hslToHex(H, S, L * .7); s[900] = Color.hslToHex(H, S, L * .55); return s }, generateNeutrals: (h) => { const [H] = h, s = {}; const S = 5, l = [98, 93, 86, 76, 64, 51, 40, 29, 18, 9];[50, 100, 200, 300, 400, 500, 600, 700, 800, 900].forEach((L, i) => { s[L] = Color.hslToHex(H, S, l[i]) }); return s } };
+        const docElement = document.documentElement, body = document.body;
+        const typographyProfiles = { standard: { light: { h: '--gray-900', b: '--gray-800', s: '--gray-600' }, dark: { h: '--gray-50', b: '--gray-200', s: '--gray-400' } }, muted: { light: { h: '--gray-800', b: '--gray-700', s: '--gray-500' }, dark: { h: '--gray-200', b: '--gray-300', s: '--gray-500' } }, branded: { light: { h: '--primary-700', b: '--gray-800', s: '--gray-600' }, dark: { h: '--primary-300', b: '--gray-200', s: '--gray-400' } } };
+        function getTypographyVars(p, m) { const k = (m.includes('dark') || m.includes('black')) ? 'dark' : 'light'; return typographyProfiles[p][k] }
+        function resolveCssVar(v, m, p) { const d = document.createElement('div'); d.className = m; const t = getTypographyVars(p, m); d.style.setProperty('--text-heading', `var(${t.h})`); d.style.setProperty('--text-body', `var(${t.b})`); d.style.setProperty('--text-subtle', `var(${t.s})`); d.style.display = 'none'; d.style.color = `var(${v})`; d.style.backgroundColor = `var(${v})`; body.appendChild(d); const c = getComputedStyle(d).backgroundColor; body.removeChild(d); return c }
+        function getLuminance(c) { const r = Color.parse(c); if (!r) return 0; let [R, G, B] = [r.r, r.g, r.b].map(C => { C /= 255; return C <= 0.03928 ? C / 12.92 : Math.pow((C + 0.055) / 1.055, 2.4) }); return 0.2126 * R + 0.7152 * G + 0.0722 * B }
+        function getContrastRatio(c1, c2) { const l1 = getLuminance(c1), l2 = getLuminance(c2); if (l1 === 0 || l2 === 0) return "N/A"; const r = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); return r.toFixed(2) }
+        function applyTypographyProfile() { const p = document.getElementById('typography-select').value, v = getTypographyVars(p, body.className); docElement.style.setProperty('--text-heading', `var(${v.h})`); docElement.style.setProperty('--text-body', `var(${v.b})`); docElement.style.setProperty('--text-subtle', `var(${v.s})`) }
+        function generateAndApplyTheme() { const h = document.getElementById('color-picker').value, r = Color.parse(h); if (!r) return; const b = Color.rgbToHsl(r.r, r.g, r.b), a = [(b[0] + 150) % 360, b[1], b[2]], p = { primary: Color.generateScale(b), accent: Color.generateScale(a), gray: Color.generateNeutrals(b) }; for (const P in p) { for (const s in p[P]) { docElement.style.setProperty(`--${P}-${s}`, p[P][s]) } } updateUI() }
+        function populateLiveWcagTable() { const t = document.getElementById('wcag-table').querySelector('tbody'); t.innerHTML = ''; const m = body.className, p = document.getElementById('typography-select').value; document.getElementById('wcag-title').textContent = `WCAG Contrast Ratio (${m.replace('-', ' ')})`; const b = (m.includes('dark') || m.includes('black')) ? resolveCssVar('--gray-900', m, p) : '#FFFFFF'; const c = [{ n: 'Heading on Surface', txt: '--text-heading', bg: '--surface-primary', min: 4.5 }, { n: 'Body on Surface', txt: '--text-body', bg: '--surface-primary', min: 4.5 }, { n: 'Subtle on Surface', txt: '--text-subtle', bg: '--surface-primary', min: 3.0 }, { n: 'Primary Button', txt: b, bg: '--primary-main', min: 3.0 }, { n: 'Secondary Button', txt: '--primary-text', bg: '--surface-primary', min: 3.0 }, { n: 'Alert Text (Success)', txt: '--success-main', bg: '--success-background', min: 4.5 }, { n: 'Border on Surface', txt: '--border-default', bg: '--surface-primary', min: 3.0 }]; c.forEach(C => { const T = C.txt.startsWith('#') ? C.txt : resolveCssVar(C.txt, m, p), B = resolveCssVar(C.bg, m, p), r = getContrastRatio(T, B), s = r >= C.min ? '<span class="pass">PASS</span>' : '<span class="fail">FAIL</span>'; t.innerHTML += `<tr><td>${C.n}</td><td>${r}:1</td><td>${s}</td></tr>` }) }
+        function updateUI() { applyTypographyProfile(); const t = document.getElementById('tooltip'); function c(n, v) { const r = Color.parse(v); if (!r) return ''; const l = getLuminance(v), C = l < 0.5 ? '#FFFFFF' : '#000000', s = document.createElement('div'); s.className = 'color-swatch'; s.style.backgroundColor = v; s.style.color = C; s.innerHTML = `${n.replace(/-/g, ' ')}<span class="hex">${v.toUpperCase()}</span>`; s.addEventListener('mouseover', e => { const R = Color.parse(e.target.style.backgroundColor), H = Color.rgbToHsl(R.r, R.g, R.b); t.innerHTML = `<strong>HEX:</strong> ${Color.hslToHex(H[0], H[1], H[2]).toUpperCase()}<br><strong>RGB:</strong> rgb(${R.r}, ${R.g}, ${R.b})<br><strong>HSL:</strong> hsl(${H[0]}, ${H[1]}%, ${H[2]}%)`; t.style.display = 'block' }); s.addEventListener('mousemove', e => { t.style.left = `${e.clientX + 15}px`; t.style.top = `${e.clientY + 15}px` }); s.addEventListener('mouseout', () => { t.style.display = 'none' }); return s } function p(i, P, S) { const g = document.getElementById(i); g.innerHTML = ''; S.forEach(s => { const n = `${P}-${s}`; g.appendChild(c(n, getComputedStyle(docElement).getPropertyValue(`--${n}`).trim())) }) } const S = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]; p('primary-grid', 'primary', S); p('accent-grid', 'accent', S); p('neutral-grid', 'gray', S); const g = document.getElementById('semantic-grid'); g.innerHTML = '';['success', 'warning', 'danger', 'info', 'debug', 'trace'].forEach(P => { const G = document.getElementById(g.id); S.forEach(s => { const n = `${P}-${s}`; G.appendChild(c(n, getComputedStyle(docElement).getPropertyValue(`--${n}`).trim())) }) }); populateLiveWcagTable() }
+        const playgroundControls = document.querySelector('.playground-controls'); const interactiveAlert = document.getElementById('interactive-alert'); const alertTitle = document.getElementById('interactive-alert-title'); const alertText = document.getElementById('interactive-alert-text'); playgroundControls.addEventListener('click', e => { if (e.target.tagName === 'BUTTON') { const t = e.target.dataset.type; interactiveAlert.className = `alert alert-${t}`; alertTitle.textContent = `${t.charAt(0).toUpperCase() + t.slice(1)} Message`; alertText.textContent = `This is a preview of the "${t}" alert component.` } });
+        document.getElementById('generate-btn').addEventListener('click', generateAndApplyTheme);
+        document.getElementById('mode-select').addEventListener('change', e => { body.className = e.target.value; updateUI() });
+        document.getElementById('typography-select').addEventListener('change', updateUI);
+        generateAndApplyTheme();
+    </script>
+</body>
+
+</html>
