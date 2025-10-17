@@ -1,5 +1,3 @@
-LICENSE
-README.md
 pyproject.toml
 src/GlocalText.egg-info/PKG-INFO
 src/GlocalText.egg-info/SOURCES.txt

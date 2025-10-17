@@ -4,7 +4,6 @@ Version: 1.2.1
 Summary: A CLI tool for automated i18n and l10n of software projects.
 Author: OG-Open-Source
 Requires-Python: >=3.9
-License-File: LICENSE
 Requires-Dist: pydantic
 Requires-Dist: pyyaml
 Requires-Dist: xxhash
@@ -12,4 +11,3 @@ Requires-Dist: google-genai
 Requires-Dist: deep-translator
 Requires-Dist: openai
 Requires-Dist: requests
-Dynamic: license-file
