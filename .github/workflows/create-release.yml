@@ -44,9 +44,19 @@ jobs:
                     if [[ "$step_name" == *.sh ]]; then
                       bash "$step_path"
                     elif [[ "$step_name" == *.yml || "$step_name" == *.yaml ]]; then
-                      COMMAND_TO_RUN=$(python -c "import yaml; f=open('$step_path'); d=yaml.safe_load(f); print(d['run']); f.close()")
-                      echo "Executing from YAML: $COMMAND_TO_RUN"
-                      eval "$COMMAND_TO_RUN"
+                      # Check for simple 'run' key first
+                      if python -c "import yaml; f=open('$step_path'); d=yaml.safe_load(f); exit(0 if 'run' in d else 1)"; then
+                        COMMAND_TO_RUN=$(python -c "import yaml; f=open('$step_path'); d=yaml.safe_load(f); print(d['run']); f.close()")
+                        echo "Executing from simple YAML: $COMMAND_TO_RUN"
+                        eval "$COMMAND_TO_RUN"
+                      # Check for complex job structure
+                      elif python -c "import yaml; f=open('$step_path'); d=yaml.safe_load(f); exit(0 if 'jobs' in d and 'build' in d['jobs'] and 'steps' in d['jobs']['build'] else 1)"; then
+                        echo "Executing steps from complex YAML workflow..."
+                        python -c "import yaml; import os; f=open('$step_path'); d=yaml.safe_load(f); [os.system(step['run']) for step in d['jobs']['build']['steps'] if 'run' in step]; f.close()"
+                      else
+                        echo "Unsupported YAML structure in $step_name" >&2
+                        exit 1
+                      fi
                     else
                       echo "Unsupported step type: $step_name" >&2
                       exit 1
@@ -118,7 +128,7 @@ jobs:
                     fi
                     echo "--- Finished $step_name ---"
                   }
-                  
+
                   echo "--- Running Final Validation: $FINAL_VALIDATION_STEP ---"
                   run_step "$FINAL_VALIDATION_STEP"
                   echo "--- Finished Final Validation ---"
