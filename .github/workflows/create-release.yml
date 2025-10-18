@@ -45,7 +45,7 @@ jobs:
         name: Build and Release
         runs-on: ubuntu-latest
         needs: validate
-        
+
         steps:
             - name: Check out repository
               uses: actions/checkout@v4
@@ -63,8 +63,8 @@ jobs:
             - name: Check Manual Approval
               id: check_approval
               run: |
-                APPROVAL=$(python -c "import toml; print(str(toml.load('.github/release.toml')['workflow']['manual_approval']).lower())")
-                echo "manual_approval=$APPROVAL" >> $GITHUB_OUTPUT
+                  APPROVAL=$(python -c "import toml; print(str(toml.load('.github/release.toml')['workflow']['manual_approval']).lower())")
+                  echo "manual_approval=$APPROVAL" >> $GITHUB_OUTPUT
 
             - name: Execute final validation and build scripts
               if: steps.check_approval.outputs.manual_approval == 'false' || github.event_name == 'workflow_dispatch'
@@ -73,7 +73,7 @@ jobs:
                   FINAL_VALIDATION_STEP=$(python -c "import toml; print(toml.load('.github/release.toml')['build']['final_validation_step'])")
                   BUILD_STEPS=$(python -c "import toml; print('\n'.join(toml.load('.github/release.toml')['build']['steps']))")
                   ASSET_DIR=$(python -c "import toml; print(toml.load('.github/release.toml')['assets']['source_directory'])")
-                  
+
                   echo "--- Running Final Validation: $FINAL_VALIDATION_STEP ---"
                   bash ".github/release.d/$FINAL_VALIDATION_STEP"
                   echo "--- Finished Final Validation ---"
@@ -93,7 +93,7 @@ jobs:
               run: |
                   CHANGELOG_TEMPLATE=$(python -c "import toml; print(toml.load('.github/release.toml')['changelog']['template'])")
                   PREVIOUS_TAG=$(git describe --tags --abbrev=0 `git rev-list --tags --skip=1 --max-count=1` || echo "")
-                  
+
                   if [ -z "$PREVIOUS_TAG" ]; then
                     COMMITS=$(git log ${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
                     URL="https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}"
@@ -128,3 +128,4 @@ jobs:
                     gh release create ${{ github.ref_name }} \
                       --title "${{ github.event.repository.name }} ${{ github.ref_name }}" \
                       --notes-file ${{ steps.generate_changelog.outputs.changelog_path }}
+                  fi
