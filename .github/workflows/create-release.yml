@@ -32,12 +32,12 @@ jobs:
 
             - name: Execute validation scripts
               run: |
-                  STEPS=$(python -c "import toml; print('\n'.join(toml.load('.github copy/release.toml')['validate']['steps']))")
+                  STEPS=$(python -c "import toml; print('\n'.join(toml.load('.github/release.toml')['validate']['steps']))")
                   echo "Executing validation steps:"
                   echo "$STEPS"
                   for step in $STEPS; do
                     echo "--- Running $step ---"
-                    bash ".github copy/release.d/$step"
+                    bash ".github/release.d/$step"
                     echo "--- Finished $step ---"
                   done
 
@@ -45,7 +45,7 @@ jobs:
         name: Build and Release
         runs-on: ubuntu-latest
         needs: validate
-        environment: release
+        
         steps:
             - name: Check out repository
               uses: actions/checkout@v4
@@ -63,26 +63,26 @@ jobs:
             - name: Check Manual Approval
               id: check_approval
               run: |
-                APPROVAL=$(python -c "import toml; print(str(toml.load('.github copy/release.toml')['workflow']['manual_approval']).lower())")
+                APPROVAL=$(python -c "import toml; print(str(toml.load('.github/release.toml')['workflow']['manual_approval']).lower())")
                 echo "manual_approval=$APPROVAL" >> $GITHUB_OUTPUT
 
             - name: Execute final validation and build scripts
               if: steps.check_approval.outputs.manual_approval == 'false' || github.event_name == 'workflow_dispatch'
               id: run_scripts
               run: |
-                  FINAL_VALIDATION_STEP=$(python -c "import toml; print(toml.load('.github copy/release.toml')['build']['final_validation_step'])")
-                  BUILD_STEPS=$(python -c "import toml; print('\n'.join(toml.load('.github copy/release.toml')['build']['steps']))")
-                  ASSET_DIR=$(python -c "import toml; print(toml.load('.github copy/release.toml')['assets']['source_directory'])")
+                  FINAL_VALIDATION_STEP=$(python -c "import toml; print(toml.load('.github/release.toml')['build']['final_validation_step'])")
+                  BUILD_STEPS=$(python -c "import toml; print('\n'.join(toml.load('.github/release.toml')['build']['steps']))")
+                  ASSET_DIR=$(python -c "import toml; print(toml.load('.github/release.toml')['assets']['source_directory'])")
                   
                   echo "--- Running Final Validation: $FINAL_VALIDATION_STEP ---"
-                  bash ".github copy/release.d/$FINAL_VALIDATION_STEP"
+                  bash ".github/release.d/$FINAL_VALIDATION_STEP"
                   echo "--- Finished Final Validation ---"
 
                   echo "Executing build steps:"
                   echo "$BUILD_STEPS"
                   for step in $BUILD_STEPS; do
                     echo "--- Running $step ---"
-                    bash ".github copy/release.d/$step"
+                    bash ".github/release.d/$step"
                     echo "--- Finished $step ---"
                   done
 
@@ -91,7 +91,7 @@ jobs:
             - name: Generate Changelog
               id: generate_changelog
               run: |
-                  CHANGELOG_TEMPLATE=$(python -c "import toml; print(toml.load('.github copy/release.toml')['changelog']['template'])")
+                  CHANGELOG_TEMPLATE=$(python -c "import toml; print(toml.load('.github/release.toml')['changelog']['template'])")
                   PREVIOUS_TAG=$(git describe --tags --abbrev=0 `git rev-list --tags --skip=1 --max-count=1` || echo "")
                   
                   if [ -z "$PREVIOUS_TAG" ]; then
