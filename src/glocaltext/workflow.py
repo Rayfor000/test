@@ -26,8 +26,7 @@ def calculate_checksum(text: str) -> str:
 
 
 def get_cache_path(task_output: Output) -> Path:
-    """
-    Returns the correct path for the .glocaltext_cache.json file.
+    """Returns the correct path for the .glocaltext_cache.json file.
     - If a path is specified, the cache is in that directory.
     - If in_place, the cache is in the current working directory as a fallback.
     """
@@ -81,13 +80,8 @@ def update_cache(cache_path: Path, task_name: str, all_matches: List[TextMatch])
         logging.error(f"Could not write to cache file at {cache_path}: {e}")
 
 
-def create_token_based_batches(
-    matches: List[TextMatch],
-    model: GenerativeModel,
-    batch_options: BatchOptions,
-) -> List[List[TextMatch]]:
-    """
-    Creates batches of text matches based on token count to not exceed the provider's limit.
+def create_token_based_batches(matches: List[TextMatch], model: GenerativeModel, batch_options: BatchOptions) -> List[List[TextMatch]]:
+    """Creates batches of text matches based on token count to not exceed the provider's limit.
 
     Args:
         matches: A list of all text matches to be translated.
@@ -96,6 +90,7 @@ def create_token_based_batches(
 
     Returns:
         A list of batches, where each batch is a list of TextMatch objects.
+
     """
     if not batch_options.enabled:
         return [matches] if matches else []
@@ -191,8 +186,7 @@ def _detect_newline(file_path: Path) -> str | None:
 
 
 def capture_text_matches(task: TranslationTask, config: GlocalConfig) -> List[TextMatch]:
-    """
-    Phase 1: Capture
+    """Phase 1: Capture
     Finds all text fragments to be translated based on the task's rules.
     """
     all_matches = []
@@ -240,8 +234,7 @@ def _get_output_path(file_path: Path, task_output: Output) -> Path | None:
 
 
 def _write_modified_content(output_path: Path, content: str, newline: str | None):
-    """
-    Writes the modified content to the specified output path.
+    """Writes the modified content to the specified output path.
     This function is robust against cases where the parent directory path might
     exist as a file, a situation that can occur from previous failed runs.
     """
@@ -256,8 +249,7 @@ def _write_modified_content(output_path: Path, content: str, newline: str | None
 
 
 def precise_write_back(matches: List[TextMatch], task_output: Output):
-    """
-    Phase 5: Write-back
+    """Phase 5: Write-back
     Writes translated text back to files with precision.
     """
     if not matches:
@@ -295,13 +287,8 @@ def precise_write_back(matches: List[TextMatch], task_output: Output):
             logging.error(f"An unexpected error occurred during write-back for {file_path}: {e}")
 
 
-def run_task(
-    task: TranslationTask,
-    translators: Dict[str, BaseTranslator],
-    config: GlocalConfig,
-) -> List[TextMatch]:
-    """
-    Runs a single translation task from start to finish.
+def run_task(task: TranslationTask, translators: Dict[str, BaseTranslator], config: GlocalConfig) -> List[TextMatch]:
+    """Runs a single translation task from start to finish.
     Supports both full and incremental translation modes.
     """
     # Phase 1: Capture all text matches from source files.

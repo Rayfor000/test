@@ -8,8 +8,7 @@ from .base import BaseTranslator
 
 
 class GoogleTranslator(BaseTranslator):
-    """
-    Translator using the Google Translate API via the 'deep-translator' library.
+    """Translator using the Google Translate API via the 'deep-translator' library.
     This does not require an API key for basic usage.
     """
 
@@ -26,8 +25,7 @@ class GoogleTranslator(BaseTranslator):
         debug: bool = False,
         prompts: Dict[str, str] | None = None,
     ) -> List[TranslationResult]:
-        """
-        Translate a list of texts using deep-translator.
+        """Translate a list of texts using deep-translator.
 
         Args:
             texts: A list of strings to translate.
@@ -38,6 +36,7 @@ class GoogleTranslator(BaseTranslator):
 
         Returns:
             A list of TranslationResult objects.
+
         """
         # These arguments are part of the base class interface but are not used by this provider.
         _ = prompts

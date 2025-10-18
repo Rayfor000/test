@@ -4,7 +4,7 @@
 manual_approval = true
 
 [validate]
-steps = ["validate-python.sh"]
+steps = ["validate-python.sh", "python-package.yml"]
 
 [build]
 steps = ["build-python.sh"]
@@ -23,3 +23,6 @@ ${COMMITS}
 
 **Full Changelog**: ${URL}
 """
+
+[github]
+repository_url = "https://github.com/OG-Open-Source/GlocalText"

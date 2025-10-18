@@ -5,8 +5,7 @@ from pathlib import Path
 
 @dataclass
 class TextMatch:
-    """
-    Represents a piece of text extracted from a source file that is a candidate for translation.
+    """Represents a piece of text extracted from a source file that is a candidate for translation.
 
     Attributes:
         original_text: The exact text captured by the extraction rule.
@@ -17,6 +16,7 @@ class TextMatch:
         translated_text: The translated text. None if not yet translated.
         provider: The translation provider used (e.g., 'gemini', 'google', 'manual').
         tokens_used: The number of tokens consumed for the translation by an AI provider.
+
     """
 
     original_text: str

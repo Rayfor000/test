@@ -17,6 +17,10 @@ dependencies = ["deep-translator", "google-genai", "PyYAML", "regex"]
 [project.scripts]
 glocaltext = "glocaltext.__main__:main"
 
+[project.urls]
+"Homepage" = "https://github.com/OG-Open-Source/GlocalText"
+"Repository" = "https://github.com/OG-Open-Source/GlocalText"
+
 [tool.setuptools.packages.find]
 # This tells setuptools that the packages are under the 'src' directory
 where = ["src"]
@@ -30,7 +34,9 @@ ignore_missing_imports = true
 line-length = 320
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+select = ["E", "W", "F", "I", "N", "UP", "S"]
 
 [tool.ruff.format]
 quote-style = "double"
+indent-style = "space"
+line-ending = "lf"

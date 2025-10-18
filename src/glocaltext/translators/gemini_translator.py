@@ -43,8 +43,7 @@ class GeminiTranslator(BaseTranslator):
     """Translator using the official Google GenAI SDK."""
 
     def __init__(self, api_key: Optional[str], model_name: str = "gemini-1.0-pro"):
-        """
-        Initializes the Gemini Translator.
+        """Initializes the Gemini Translator.
 
         It follows a specific priority for API key resolution:
         1. Use the api_key explicitly provided in the configuration.
@@ -57,6 +56,7 @@ class GeminiTranslator(BaseTranslator):
         Raises:
             ValueError: If no API key is found in the config or environment variables.
             ConnectionError: If the client fails to initialize.
+
         """
         final_api_key = api_key or os.getenv("GEMINI_API_KEY")
 
@@ -77,8 +77,7 @@ class GeminiTranslator(BaseTranslator):
         debug: bool = False,
         prompts: Dict[str, str] | None = None,
     ) -> List[TranslationResult]:
-        """
-        Translate a list of texts using the GenAI SDK's generative model.
+        """Translate a list of texts using the GenAI SDK's generative model.
         This method orchestrates the translation process by building a prompt,
         calling the API, and processing the response.
         """
@@ -174,9 +173,7 @@ class GeminiTranslator(BaseTranslator):
         return results
 
     def _parse_and_validate_response(self, response_text: str, expected_count: int) -> List[str]:
-        """
-        Parses the JSON response from Gemini and validates its structure.
-        """
+        """Parses the JSON response from Gemini and validates its structure."""
         try:
             cleaned_text = response_text.strip().removeprefix("```json").removesuffix("```").strip()
 

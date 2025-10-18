@@ -87,8 +87,7 @@ def _handle_rule_action(text: str, matches: List[TextMatch], rule: Rule) -> Tupl
 
 
 def _apply_translation_rules(unique_texts: Dict[str, List[TextMatch]], task: TranslationTask) -> Tuple[Dict[str, List[TextMatch]], int]:
-    """
-    Applies translation rules with a "firewall" logic.
+    """Applies translation rules with a "firewall" logic.
     It iterates through rules for each text and stops at the first handling action.
     """
     skipped_count = 0
@@ -213,9 +212,7 @@ def process_matches(
     task: TranslationTask,
     config: GlocalConfig,
 ) -> int:
-    """
-    Processes all text matches for a given task, from bucketing to translation.
-    """
+    """Processes all text matches for a given task, from bucketing to translation."""
     if not matches:
         return 0
 
@@ -239,13 +236,6 @@ def process_matches(
 
     batches = _create_batches(list(texts_to_translate_api.keys()), batch_options)
 
-    _translate_and_update_matches(
-        translator,
-        batches,
-        texts_to_translate_api,
-        task,
-        config,
-        provider_name,
-    )
+    _translate_and_update_matches(translator, batches, texts_to_translate_api, task, config, provider_name)
 
     return skipped_count

@@ -17,8 +17,7 @@ class BaseTranslator(ABC):
         debug: bool = False,
         prompts: Dict[str, str] | None = None,
     ) -> List[TranslationResult]:
-        """
-        Translates a list of texts.
+        """Translates a list of texts.
 
         Args:
             texts: A list of strings to be translated.
@@ -29,5 +28,6 @@ class BaseTranslator(ABC):
 
         Returns:
             A list of TranslationResult objects.
+
         """
         raise NotImplementedError
