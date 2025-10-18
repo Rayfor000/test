@@ -4,14 +4,10 @@
 manual_approval = true
 
 [validate]
-steps = [
-    "validate-python.sh"
-]
+steps = ["validate-python.sh"]
 
 [build]
-steps = [
-    "build-python.sh"
-]
+steps = ["build-python.sh"]
 final_validation_step = "validate-python.sh"
 
 [assets]
