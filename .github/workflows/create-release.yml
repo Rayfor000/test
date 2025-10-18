@@ -1,3 +1,4 @@
+# Workflow Version: 2.1 (Robust Changelog)
 # This workflow creates a new GitHub Release when a tag is pushed.
 # It is a generic, configuration-driven, three-stage workflow.
 # Stage 1: 'validate' - Runs validation scripts.
@@ -113,13 +114,18 @@ jobs:
                     URL="https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...${{ github.ref_name }}"
                   fi
 
-                  # Create a temp file for the template and perform substitution
-                  echo "$CHANGELOG_TEMPLATE" > .changelog_template.md
-                  sed -e "s|\${COMMITS}|$COMMITS|g" \
-                      -e "s|\${URL}|$URL|g" \
-                      -e "s|\${REPO_NAME}|${{ github.event.repository.name }}|g" \
-                      -e "s|\${TAG}|${{ github.ref_name }}|g" \
-                      .changelog_template.md > changelog.md
+                  # Robustly build the changelog instead of using a single sed substitution
+                  CHANGELOG_HEADER=$(echo "$CHANGELOG_TEMPLATE" | sed -n '/\${COMMITS}/q;p')
+                  CHANGELOG_FOOTER=$(echo "$CHANGELOG_TEMPLATE" | sed '1,/\${COMMITS}/d')
+
+                  # Substitute variables in header and footer
+                  CHANGELOG_HEADER=$(echo "$CHANGELOG_HEADER" | sed -e "s|\${REPO_NAME}|${{ github.event.repository.name }}|g" -e "s|\${TAG}|${{ github.ref_name }}|g")
+                  CHANGELOG_FOOTER=$(echo "$CHANGELOG_FOOTER" | sed -e "s|\${URL}|$URL|g")
+
+                  # Build the final changelog file
+                  echo "$CHANGELOG_HEADER" > changelog.md
+                  echo "$COMMITS" >> changelog.md
+                  echo "$CHANGELOG_FOOTER" >> changelog.md
 
                   echo "changelog_path=changelog.md" >> $GITHUB_OUTPUT
 
