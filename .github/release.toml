@@ -1,7 +1,7 @@
 # .github/release.toml
 
 [workflow]
-manual_approval = true
+manual_approval = false
 
 [validate]
 steps = [
