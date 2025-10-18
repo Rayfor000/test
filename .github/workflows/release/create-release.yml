@@ -1,0 +1,130 @@
+# This workflow creates a new GitHub Release when a tag is pushed.
+# It is a generic, configuration-driven, two-stage workflow.
+# Stage 1: 'validate' - Runs validation scripts.
+# Stage 2: 'build' - Waits for manual approval (optional), runs final validation,
+#          builds the project, and creates the GitHub Release.
+
+name: Create GitHub Release
+
+on:
+    push:
+        tags:
+            - "v*" # Trigger on tags like v1.0, v1.2.3
+
+permissions:
+    contents: write
+
+jobs:
+    validate:
+        name: Validate Release
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+
+            - name: Set up Python for TOML parsing
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.x"
+
+            - name: Install TOML parser
+              run: python -m pip install toml
+
+            - name: Execute validation scripts
+              run: |
+                  STEPS=$(python -c "import toml; print('\n'.join(toml.load('.github copy/release.toml')['validate']['steps']))")
+                  echo "Executing validation steps:"
+                  echo "$STEPS"
+                  for step in $STEPS; do
+                    echo "--- Running $step ---"
+                    bash ".github copy/release.d/$step"
+                    echo "--- Finished $step ---"
+                  done
+
+    build:
+        name: Build and Release
+        runs-on: ubuntu-latest
+        needs: validate
+        environment: release
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.x"
+
+            - name: Install TOML parser
+              run: python -m pip install toml
+
+            - name: Check Manual Approval
+              id: check_approval
+              run: |
+                APPROVAL=$(python -c "import toml; print(str(toml.load('.github copy/release.toml')['workflow']['manual_approval']).lower())")
+                echo "manual_approval=$APPROVAL" >> $GITHUB_OUTPUT
+
+            - name: Execute final validation and build scripts
+              if: steps.check_approval.outputs.manual_approval == 'false' || github.event_name == 'workflow_dispatch'
+              id: run_scripts
+              run: |
+                  FINAL_VALIDATION_STEP=$(python -c "import toml; print(toml.load('.github copy/release.toml')['build']['final_validation_step'])")
+                  BUILD_STEPS=$(python -c "import toml; print('\n'.join(toml.load('.github copy/release.toml')['build']['steps']))")
+                  ASSET_DIR=$(python -c "import toml; print(toml.load('.github copy/release.toml')['assets']['source_directory'])")
+                  
+                  echo "--- Running Final Validation: $FINAL_VALIDATION_STEP ---"
+                  bash ".github copy/release.d/$FINAL_VALIDATION_STEP"
+                  echo "--- Finished Final Validation ---"
+
+                  echo "Executing build steps:"
+                  echo "$BUILD_STEPS"
+                  for step in $BUILD_STEPS; do
+                    echo "--- Running $step ---"
+                    bash ".github copy/release.d/$step"
+                    echo "--- Finished $step ---"
+                  done
+
+                  echo "asset_dir=$ASSET_DIR" >> $GITHUB_OUTPUT
+
+            - name: Generate Changelog
+              id: generate_changelog
+              run: |
+                  CHANGELOG_TEMPLATE=$(python -c "import toml; print(toml.load('.github copy/release.toml')['changelog']['template'])")
+                  PREVIOUS_TAG=$(git describe --tags --abbrev=0 `git rev-list --tags --skip=1 --max-count=1` || echo "")
+                  
+                  if [ -z "$PREVIOUS_TAG" ]; then
+                    COMMITS=$(git log ${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
+                    URL="https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}"
+                  else
+                    COMMITS=$(git log $PREVIOUS_TAG...${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
+                    URL="https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...${{ github.ref_name }}"
+                  fi
+
+                  # Create a temp file for the template and perform substitution
+                  echo "$CHANGELOG_TEMPLATE" > .changelog_template.md
+                  sed -e "s|\${COMMITS}|$COMMITS|g" \
+                      -e "s|\${URL}|$URL|g" \
+                      -e "s|\${REPO_NAME}|${{ github.event.repository.name }}|g" \
+                      -e "s|\${TAG}|${{ github.ref_name }}|g" \
+                      .changelog_template.md > changelog.md
+
+                  echo "changelog_path=changelog.md" >> $GITHUB_OUTPUT
+
+            - name: Create GitHub Release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  ASSET_DIR="${{ steps.run_scripts.outputs.asset_dir }}"
+                  if [ -d "$ASSET_DIR" ] && [ "$(ls -A $ASSET_DIR)" ]; then
+                    echo "Assets found in $ASSET_DIR. Creating release and uploading assets."
+                    gh release create ${{ github.ref_name }} \
+                      --title "${{ github.event.repository.name }} ${{ github.ref_name }}" \
+                      --notes-file ${{ steps.generate_changelog.outputs.changelog_path }} \
+                      "$ASSET_DIR"/*
+                  else
+                    echo "No assets found in $ASSET_DIR. Creating release without assets."
+                    gh release create ${{ github.ref_name }} \
+                      --title "${{ github.event.repository.name }} ${{ github.ref_name }}" \
+                      --notes-file ${{ steps.generate_changelog.outputs.changelog_path }}

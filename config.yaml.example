@@ -1,0 +1,102 @@
+# GlocalText Configuration File
+#
+# This file provides a complete example of the "Firewall-Style" rules system.
+# For a detailed explanation of each parameter, please refer to the README.md file.
+
+# ===================================================================
+# 1. Provider Settings
+# ===================================================================
+# Define API keys and default parameters for translation providers.
+providers:
+  gemini:
+    # API key will be read from here first.
+    # If not provided, it will fall back to the GEMINI_API_KEY environment variable.
+    # api_key: your_gemini_api_key_here
+    model: "gemini-1.0-pro"
+
+# ===================================================================
+# 2. Translation Tasks
+# ===================================================================
+# Define a list of translation jobs. Each job is a self-contained task.
+tasks:
+- name: "Translate Markdown Docs to Traditional Chinese"
+  enabled: true
+  source_lang: "en"
+  target_lang: "zh-TW"
+
+  # -----------------------------------------------------------------
+  # Custom Prompts (Optional)
+  # -----------------------------------------------------------------
+  # Override the default system and user prompts for this task.
+  # The `{text}` placeholder will be replaced with the content to translate.
+  prompts:
+    system: "You are a professional technical translator who translates English into Traditional Chinese. Your goal is to produce translations that are accurate, fluent, and adhere to the established terminology of the target context. You will be given a markdown file to translate. Preserve the original markdown formatting, including line breaks, code blocks, and other structural elements. Only translate the text content."
+    user: "Translate the following markdown text: {text}"
+
+  # -----------------------------------------------------------------
+  # Incremental Translation (Optional)
+  # -----------------------------------------------------------------
+  # Enable this to translate only new or changed content, saving time
+  # and cost. A cache file (.glocaltext_cache.json) will be created
+  # in the output directory. Set to `true` to enable.
+  incremental: false
+
+  # -----------------------------------------------------------------
+  # File Selection
+  # -----------------------------------------------------------------
+  source:
+    include:
+    - "docs/**/*.md"
+    # exclude:
+    #   - "docs/internal/**"
+
+    # -----------------------------------------------------------------
+    # Text Extraction
+    # -----------------------------------------------------------------
+  extraction_rules:
+  - "(?<=## ).+" # Translate all H2 headers
+  - "(?<=### ).+" # Translate all H3 headers
+  - "^[A-Za-z].*" # Translate paragraphs that start with a letter
+
+  # -----------------------------------------------------------------
+  # Output Configuration
+  # -----------------------------------------------------------------
+  output:
+    in_place: false
+    path: "docs/zh-TW/"
+    # filename_suffix: "_zh-TW"
+
+    # -----------------------------------------------------------------
+    # Firewall Rules
+    # -----------------------------------------------------------------
+  rules:
+  # Rule 1: Protect brand names using an `exact` match.
+  # This rule skips translation if the text is exactly "GlocalText" or "Gemini".
+  - match:
+      exact: [ "GlocalText", "Gemini" ]
+    action:
+      action: "skip"
+
+  # Rule 2: Skip technical notes using a `contains` match.
+  # This rule skips translation if the text contains "NOTE:", preventing
+  # technical annotations from being translated.
+  - match:
+      contains: "NOTE:"
+    action:
+      action: "skip"
+
+  # Rule 3: Provide an authoritative translation using an `exact` match.
+  - match:
+      exact: "firewall-style `rules` system"
+    action:
+      action: "replace"
+      value: "防火牆風格的 `rules` 系統"
+
+  # Rule 4: Pre-process text with `modify` before translation.
+  # This rule finds a complex shell command and simplifies it. The modified
+  # text is then passed to the next rule or the translator.
+  - match:
+      contains: "uptime -p | sed -E 's/^up //; s/ years?/y/g; s/ months?/mo/g; s/ weeks?/w/g; s/ days?/d/g; s/ hours?/h/g; s/ minutes?/m/g; s/ seconds?/s/g; s/ +/ /g'"
+    action:
+      action: "modify"
+      value: "uptime -p | sed 's/up //'"
