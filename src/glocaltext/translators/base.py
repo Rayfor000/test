@@ -1,6 +1,7 @@
 # Defines the base class for all translators
 from abc import ABC, abstractmethod
 from typing import Dict, List
+
 from ..models import TranslationResult
 
 

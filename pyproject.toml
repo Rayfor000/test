@@ -20,3 +20,17 @@ glocaltext = "glocaltext.__main__:main"
 [tool.setuptools.packages.find]
 # This tells setuptools that the packages are under the 'src' directory
 where = ["src"]
+
+[tool.mypy]
+[[tool.mypy.overrides]]
+module = ["deep_translator", "yaml"]
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 320
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"

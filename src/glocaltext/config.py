@@ -1,7 +1,8 @@
-import yaml
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Union
+
+import yaml
 
 
 @dataclass
@@ -60,13 +61,9 @@ class Output:
 
         # Original validation logic
         if self.in_place and self.path is not None:
-            raise ValueError(
-                "The 'path' attribute cannot be used when 'in_place' is True."
-            )
+            raise ValueError("The 'path' attribute cannot be used when 'in_place' is True.")
         if not self.in_place and self.path is None:
-            raise ValueError(
-                "The 'path' attribute is required when 'in_place' is False."
-            )
+            raise ValueError("The 'path' attribute is required when 'in_place' is False.")
 
 
 @dataclass
@@ -79,13 +76,9 @@ class MatchRule:
     def __post_init__(self):
         """Validates that either 'exact' or 'contains' is provided, but not both."""
         if self.exact is None and self.contains is None:
-            raise ValueError(
-                "Either 'exact' or 'contains' must be provided for a match rule."
-            )
+            raise ValueError("Either 'exact' or 'contains' must be provided for a match rule.")
         if self.exact is not None and self.contains is not None:
-            raise ValueError(
-                "'exact' and 'contains' cannot be used simultaneously in a match rule."
-            )
+            raise ValueError("'exact' and 'contains' cannot be used simultaneously in a match rule.")
 
 
 @dataclass
@@ -110,9 +103,7 @@ class ActionRule:
     def __post_init__(self):
         """Validates that 'value' is provided for actions that require it."""
         if self.action in ["replace", "modify"] and self.value is None:
-            raise ValueError(
-                f"The 'value' must be provided for the '{self.action}' action."
-            )
+            raise ValueError(f"The 'value' must be provided for the '{self.action}' action.")
 
 
 @dataclass
@@ -272,7 +263,7 @@ def load_config(config_path: str) -> GlocalConfig:
         raise FileNotFoundError(f"Configuration file not found at: {config_path}")
 
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
 
         if not isinstance(data, dict):

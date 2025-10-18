@@ -1,6 +1,6 @@
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-import uuid
 
 
 @dataclass
@@ -28,9 +28,7 @@ class TextMatch:
     tokens_used: int | None = None
     # A unique ID is generated for each match instance to distinguish it from others,
     # even if they have the same text and location (e.g., from different tasks).
-    match_id: str = field(
-        default_factory=lambda: str(uuid.uuid4()), init=False, repr=False
-    )
+    match_id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False, repr=False)
 
     def __hash__(self):
         # Hash based on the unique identifier of the match instance.

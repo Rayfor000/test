@@ -1,4 +1,3 @@
-# Workflow Version: 2.1 (Robust Changelog)
 # This workflow creates a new GitHub Release when a tag is pushed.
 # It is a generic, configuration-driven, three-stage workflow.
 # Stage 1: 'validate' - Runs validation scripts.

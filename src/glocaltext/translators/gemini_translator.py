@@ -1,13 +1,15 @@
 # Implementation for the Gemini AI API using the latest google-genai SDK
 import json
+import logging
 import os
 import time
 from typing import Dict, List, Optional
-from .base import BaseTranslator
-from ..models import TranslationResult
+
 from google import genai
 from google.genai import types
-import logging
+
+from ..models import TranslationResult
+from .base import BaseTranslator
 
 # --- Constants ---
 PROMPT_TEMPLATE = """
@@ -59,9 +61,7 @@ class GeminiTranslator(BaseTranslator):
         final_api_key = api_key or os.getenv("GEMINI_API_KEY")
 
         if not final_api_key:
-            raise ValueError(
-                "Gemini API key not found. Please provide it in config.yaml or set the GEMINI_API_KEY environment variable."
-            )
+            raise ValueError("Gemini API key not found. Please provide it in config.yaml or set the GEMINI_API_KEY environment variable.")
 
         try:
             self.client = genai.Client(api_key=final_api_key)
@@ -79,96 +79,44 @@ class GeminiTranslator(BaseTranslator):
     ) -> List[TranslationResult]:
         """
         Translate a list of texts using the GenAI SDK's generative model.
-        This method is designed for batch translation and uses a structured prompt
-        to ensure JSON output and respect provided manual translations.
+        This method orchestrates the translation process by building a prompt,
+        calling the API, and processing the response.
         """
         if not texts:
             return []
 
         prompt = ""
         try:
-            # Build the prompt, allowing for overrides
-            manual_translations_json = "{}"  # This is deprecated, handled by rules now
-            texts_json_array = json.dumps(texts, ensure_ascii=False)
+            # 1. Build the prompt and get system instructions
+            prompt, system_instruction = self._build_prompt(texts, target_language, source_language, prompts)
 
-            # Allow for user-defined prompts, falling back to the default.
-            user_prompt_template = (
-                prompts.get("user", PROMPT_TEMPLATE) if prompts else PROMPT_TEMPLATE
-            )
-
-            prompt = user_prompt_template.format(
-                source_lang=source_language or "the original language",
-                target_lang=target_language,
-                manual_translations_json=manual_translations_json,
-                texts_json_array=texts_json_array,
-                text=texts_json_array,  # For prompts that use '{text}'
-            )
-
-            # Prepare the request payload
-            system_instruction = prompts.get("system") if prompts else None
-
-            # 2. Calculate prompt tokens
-            prompt_tokens_response = self.client.models.count_tokens(
-                model=self.model_name, contents=prompt
-            )
-            prompt_tokens = prompt_tokens_response.total_tokens or 0
-
+            # 2. Calculate prompt tokens and log if debugging
+            prompt_tokens = self._count_tokens(prompt)
             if debug:
-                logging.info(
-                    f"[DEBUG] Gemini Request:\n- Model: {self.model_name}\n- Prompt Tokens: {prompt_tokens}\n- Prompt Body (first 200 chars): {prompt[:200]}..."
-                )
+                logging.info(f"[DEBUG] Gemini Request:\n- Model: {self.model_name}\n- Prompt Tokens: {prompt_tokens}\n- Prompt Body (first 200 chars): {prompt[:200]}...")
 
             # 3. Call the Gemini API
             start_time = time.time()
-            
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
-                system_instruction=system_instruction
+                system_instruction=system_instruction,
             )
-
-            response = self.client.models.generate_content(
-                model=self.model_name, contents=prompt, config=config
-            )
+            response = self.client.models.generate_content(model=self.model_name, contents=prompt, config=config)
             duration = time.time() - start_time
-            
-            # 4. Calculate response tokens (and handle potential None)
-            response_text = response.text or ""
-            response_tokens = 0
-            if response_text and response.candidates and response.candidates[0].content:
-                response_tokens_response = self.client.models.count_tokens(
-                    model=self.model_name, contents=response.candidates[0].content
-                )
-                response_tokens = response_tokens_response.total_tokens or 0
 
+            # 4. Calculate response tokens and log
+            response_text = response.text or ""
+            response_tokens = self._count_tokens(response.candidates[0].content) if response.candidates and response.candidates[0].content else 0
             total_tokens = prompt_tokens + response_tokens
 
             if debug:
-                logging.info(
-                    f"[DEBUG] Gemini Response:\n- Duration: {duration:.2f}s\n- Completion Tokens: {response_tokens}\n- Total Tokens: {total_tokens}\n- Response Text (first 200 chars): {response_text[:200]}..."
-                )
+                logging.info(f"[DEBUG] Gemini Response:\n- Duration: {duration:.2f}s\n- Completion Tokens: {response_tokens}\n- Total Tokens: {total_tokens}\n- Response Text (first 200 chars): {response_text[:200]}...")
 
-            # 5. Parse and validate the response
-            translated_texts = self._parse_and_validate_response(
-                response_text, len(texts)
-            )
+            # 5. Parse and validate the structured response
+            translated_texts = self._parse_and_validate_response(response_text, len(texts))
 
-            # 6. Create TranslationResult objects
-            tokens_per_text = total_tokens // len(texts) if texts else 0
-
-            results = []
-            for translated_text in translated_texts:
-                results.append(
-                    TranslationResult(
-                        translated_text=translated_text,
-                        tokens_used=tokens_per_text,
-                    )
-                )
-
-            if results:
-                remainder = total_tokens % len(texts) if texts else 0
-                results[-1].tokens_used += remainder
-
-            return results
+            # 6. Package results into TranslationResult objects
+            return self._package_results(translated_texts, total_tokens)
 
         except Exception as e:
             logging.error(f"Gemini API request failed: {e}. Returning original texts.")
@@ -176,36 +124,74 @@ class GeminiTranslator(BaseTranslator):
                 logging.debug(f"Failed prompt for Gemini: \n{prompt}")
             return [TranslationResult(translated_text=text) for text in texts]
 
-    def _parse_and_validate_response(
-        self, response_text: str, expected_count: int
-    ) -> List[str]:
+    def _build_prompt(
+        self,
+        texts: List[str],
+        target_language: str,
+        source_language: Optional[str],
+        prompts: Optional[Dict[str, str]],
+    ) -> tuple[str, Optional[str]]:
+        """Builds the prompt and extracts the system instruction."""
+        manual_translations_json = "{}"  # Deprecated
+        texts_json_array = json.dumps(texts, ensure_ascii=False)
+
+        user_prompt_template = prompts.get("user", PROMPT_TEMPLATE) if prompts else PROMPT_TEMPLATE
+
+        prompt = user_prompt_template.format(
+            source_lang=source_language or "the original language",
+            target_lang=target_language,
+            manual_translations_json=manual_translations_json,
+            texts_json_array=texts_json_array,
+            text=texts_json_array,
+        )
+        system_instruction = prompts.get("system") if prompts else None
+        return prompt, system_instruction
+
+    def _count_tokens(self, content: str | types.ContentDict | types.Content) -> int:
+        """Counts the tokens for the given content, handling potential errors."""
+        if not content:
+            return 0
+        try:
+            response = self.client.models.count_tokens(model=self.model_name, contents=content)
+            return response.total_tokens or 0
+        except Exception as e:
+            logging.warning(f"Token counting failed: {e}. Returning 0.")
+            return 0
+
+    def _package_results(self, translated_texts: List[str], total_tokens: int) -> List[TranslationResult]:
+        """Packages the translated texts into TranslationResult objects."""
+        num_texts = len(translated_texts)
+        if not num_texts:
+            return []
+
+        tokens_per_text = total_tokens // num_texts
+        results = [TranslationResult(translated_text=text, tokens_used=tokens_per_text or 0) for text in translated_texts]
+
+        remainder = total_tokens % num_texts
+        if results and results[-1].tokens_used is not None:
+            results[-1].tokens_used += remainder
+
+        return results
+
+    def _parse_and_validate_response(self, response_text: str, expected_count: int) -> List[str]:
         """
         Parses the JSON response from Gemini and validates its structure.
         """
         try:
-            cleaned_text = (
-                response_text.strip()
-                .removeprefix("```json")
-                .removesuffix("```")
-                .strip()
-            )
+            cleaned_text = response_text.strip().removeprefix("```json").removesuffix("```").strip()
 
             data = json.loads(cleaned_text)
             if not isinstance(data, list):
                 raise ValueError("Response is not a JSON list.")
 
             if len(data) != expected_count:
-                raise ValueError(
-                    f"Response list length ({len(data)}) does not match expected length ({expected_count})."
-                )
+                raise ValueError(f"Response list length ({len(data)}) does not match expected length ({expected_count}).")
 
             return [str(item) for item in data]
 
-        except (ValueError, json.JSONDecodeError) as e:
+        except ValueError as e:
             if isinstance(e, json.JSONDecodeError):
-                logging.warning(
-                    "Failed to parse Gemini response as JSON. Assuming plain text response for the whole batch."
-                )
+                logging.warning("Failed to parse Gemini response as JSON. Assuming plain text response for the whole batch.")
                 return [response_text.strip()] * expected_count
 
             logging.error(f"Failed to parse or validate Gemini response: {e}")

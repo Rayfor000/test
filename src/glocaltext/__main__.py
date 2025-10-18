@@ -1,10 +1,11 @@
 import argparse
 import logging
 import time
+
 from .config import load_config
-from .workflow import run_task
-from .translate import initialize_translators
 from .reporting import generate_summary_report
+from .translate import initialize_translators
+from .workflow import run_task
 
 
 def main():
@@ -32,9 +33,7 @@ def main():
     )
     args = parser.parse_args()
 
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
     try:
         config = load_config(args.config)
