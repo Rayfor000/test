@@ -66,6 +66,9 @@ jobs:
               with:
                   python-version: ${{ matrix.python-version }}
 
+            - name: Make check script executable
+              run: chmod +x ${{ needs.parse_manifest.outputs.check_run_script }}
+
             - name: Run Check Script
               shell: bash
               env:
@@ -103,6 +106,9 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+
+            - name: Make build script executable
+              run: chmod +x ${{ needs.parse_manifest.outputs.build_run_script }}
 
             - name: Run Build Script
               shell: bash
