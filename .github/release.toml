@@ -4,7 +4,12 @@
 manual_approval = true
 
 [validate]
-steps = ["validate-python.sh", "python-package.yml"]
+steps = ["validate-python.sh"]
+
+[[validate.matrix_steps]]
+workflow = "python-package.yml"
+parameter_name = "python-version"
+matrix = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
 [build]
 steps = ["build-python.sh"]

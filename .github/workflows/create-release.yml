@@ -32,46 +32,42 @@ jobs:
             - name: Install parsers
               run: python -m pip install toml PyYAML
 
-            - name: Read Config and Run Validation
+            - name: Run Validation Steps
               id: check_approval
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   CONFIG_DATA=$(python -c "import toml; import json; print(json.dumps(toml.load('.github/release.toml')))")
 
-                  run_step() {
-                    local step_name=$1
-                    local step_path=".github/release.d/$step_name"
-                    echo "--- Running $step_name ---"
-                    if [[ "$step_name" == *.sh ]]; then
-                      bash "$step_path"
-                    elif [[ "$step_name" == *.yml || "$step_name" == *.yaml ]]; then
-                      # Check for simple 'run' key first
-                      if python -c "import yaml; f=open('$step_path'); d=yaml.safe_load(f); exit(0 if 'run' in d else 1)"; then
-                        COMMAND_TO_RUN=$(python -c "import yaml; f=open('$step_path'); d=yaml.safe_load(f); print(d['run']); f.close()")
-                        echo "Executing from simple YAML: $COMMAND_TO_RUN"
-                        eval "$COMMAND_TO_RUN"
-                      # Check for complex job structure
-                      elif python -c "import yaml; f=open('$step_path'); d=yaml.safe_load(f); exit(0 if 'jobs' in d and 'build' in d['jobs'] and 'steps' in d['jobs']['build'] else 1)"; then
-                        echo "Executing steps from complex YAML workflow..."
-                        python -c "import yaml; import os; f=open('$step_path'); d=yaml.safe_load(f); [os.system(step['run']) for step in d['jobs']['build']['steps'] if 'run' in step]; f.close()"
-                      else
-                        echo "Unsupported YAML structure in $step_name" >&2
-                        exit 1
-                      fi
-                    else
-                      echo "Unsupported step type: $step_name" >&2
-                      exit 1
-                    fi
-                    echo "--- Finished $step_name ---"
-                  }
+                  # Run simple steps
+                  STEPS=$(echo "$CONFIG_DATA" | python -c "import sys, json; data=json.load(sys.stdin); print('\n'.join(data.get('validate', {}).get('steps', [])))")
+                  if [ -n "$STEPS" ]; then
+                    echo "Executing validation steps:"
+                    echo "$STEPS"
+                    for step in $STEPS; do
+                      echo "--- Running $step ---"
+                      bash ".github/release.d/$step"
+                      echo "--- Finished $step ---"
+                    done
+                  fi
 
-                  STEPS=$(echo "$CONFIG_DATA" | python -c "import sys, json; print('\n'.join(json.load(sys.stdin)['validate']['steps']))")
-                  echo "Executing validation steps:"
-                  echo "$STEPS"
-                  for step in $STEPS; do
-                    run_step "$step"
+                  # Run matrix steps
+                  MATRIX_STEPS_JSON=$(echo "$CONFIG_DATA" | python -c "import sys, json; data=json.load(sys.stdin); print(json.dumps(data.get('validate', {}).get('matrix_steps', [])))")
+                  MATRIX_LENGTH=$(echo "$MATRIX_STEPS_JSON" | python -c "import sys, json; print(len(json.load(sys.stdin)))")
+
+                  for i in $(seq 0 $(($MATRIX_LENGTH - 1))); do
+                    WORKFLOW=$(echo "$MATRIX_STEPS_JSON" | python -c "import sys, json; print(json.load(sys.stdin)[$i]['workflow'])")
+                    PARAM_NAME=$(echo "$MATRIX_STEPS_JSON" | python -c "import sys, json; print(json.load(sys.stdin)[$i]['parameter_name'])")
+                    MATRIX_VALUES=$(echo "$MATRIX_STEPS_JSON" | python -c "import sys, json; print('\n'.join(json.load(sys.stdin)[$i]['matrix']))")
+                    
+                    echo "Triggering matrix workflow: $WORKFLOW"
+                    for value in $MATRIX_VALUES; do
+                      echo "  with $PARAM_NAME = $value"
+                      gh workflow run "$WORKFLOW" --ref "${{ github.ref }}" -f "$PARAM_NAME=$value"
+                    done
                   done
 
-                  APPROVAL=$(echo "$CONFIG_DATA" | python -c "import sys, json; print(str(json.load(sys.stdin)['workflow']['manual_approval']).lower())")
+                  APPROVAL=$(echo "$CONFIG_DATA" | python -c "import sys, json; data=json.load(sys.stdin); print(str(data.get('workflow', {}).get('manual_approval', False)).lower())")
                   echo "manual_approval=$APPROVAL" >> $GITHUB_OUTPUT
 
     approve:
@@ -106,37 +102,20 @@ jobs:
             - name: Execute final validation and build scripts
               id: run_scripts
               run: |
-                  CONFIG_DATA=$(python -c "import toml; import json; print(json.dumps(toml.load('.github/release.toml')))")
-
-                  FINAL_VALIDATION_STEP=$(echo "$CONFIG_DATA" | python -c "import sys, json; print(json.load(sys.stdin)['build']['final_validation_step'])")
-                  BUILD_STEPS=$(echo "$CONFIG_DATA" | python -c "import sys, json; print('\n'.join(json.load(sys.stdin)['build']['steps']))")
-                  ASSET_DIR=$(echo "$CONFIG_DATA" | python -c "import sys, json; print(json.load(sys.stdin)['assets']['source_directory'])")
-
-                  run_step() {
-                    local step_name=$1
-                    local step_path=".github/release.d/$step_name"
-                    echo "--- Running $step_name ---"
-                    if [[ "$step_name" == *.sh ]]; then
-                      bash "$step_path"
-                    elif [[ "$step_name" == *.yml || "$step_name" == *.yaml ]]; then
-                      COMMAND_TO_RUN=$(python -c "import yaml; f=open('$step_path'); d=yaml.safe_load(f); print(d['run']); f.close()")
-                      echo "Executing from YAML: $COMMAND_TO_RUN"
-                      eval "$COMMAND_TO_RUN"
-                    else
-                      echo "Unsupported step type: $step_name" >&2
-                      exit 1
-                    fi
-                    echo "--- Finished $step_name ---"
-                  }
+                  FINAL_VALIDATION_STEP=$(python -c "import toml; print(toml.load('.github/release.toml')['build']['final_validation_step'])")
+                  BUILD_STEPS=$(python -c "import toml; print('\n'.join(toml.load('.github/release.toml')['build']['steps']))")
+                  ASSET_DIR=$(python -c "import toml; print(toml.load('.github/release.toml')['assets']['source_directory'])")
 
                   echo "--- Running Final Validation: $FINAL_VALIDATION_STEP ---"
-                  run_step "$FINAL_VALIDATION_STEP"
+                  bash ".github/release.d/$FINAL_VALIDATION_STEP"
                   echo "--- Finished Final Validation ---"
 
                   echo "Executing build steps:"
                   echo "$BUILD_STEPS"
                   for step in $BUILD_STEPS; do
-                    run_step "$step"
+                    echo "--- Running $step ---"
+                    bash ".github/release.d/$step"
+                    echo "--- Finished $step ---"
                   done
 
                   echo "asset_dir=$ASSET_DIR" >> $GITHUB_OUTPUT
@@ -144,30 +123,29 @@ jobs:
             - name: Generate Changelog
               id: generate_changelog
               run: |
-                  CONFIG_DATA=$(python -c "import toml; import json; print(json.dumps(toml.load('.github/release.toml')))")
-                  CHANGELOG_TEMPLATE=$(echo "$CONFIG_DATA" | python -c "import sys, json; print(json.load(sys.stdin)['changelog']['template'])")
-                  REPO_URL=$(echo "$CONFIG_DATA" | python -c "import sys, json; print(json.load(sys.stdin)['github']['repository_url'])")
+                  CHANGELOG_TEMPLATE=$(python -c "import toml; print(toml.load('.github/release.toml')['changelog']['template'])")
                   PREVIOUS_TAG=$(git describe --tags --abbrev=0 `git rev-list --tags --skip=1 --max-count=1` || echo "")
 
                   if [ -z "$PREVIOUS_TAG" ]; then
                     COMMITS=$(git log ${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
-                    URL="$REPO_URL/commits/${{ github.ref_name }}"
+                    URL="https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}"
                   else
                     COMMITS=$(git log $PREVIOUS_TAG...${{ github.ref_name }} --pretty=format:'* %s (`%h`)')
-                    URL="$REPO_URL/compare/$PREVIOUS_TAG...${{ github.ref_name }}"
+                    URL="https://github.com/${{ github.repository }}/compare/$PREVIOUS_TAG...${{ github.ref_name }}"
                   fi
 
+                  # Robustly build the changelog instead of using a single sed substitution
+                  CHANGELOG_HEADER=$(echo "$CHANGELOG_TEMPLATE" | sed -n '/\${COMMITS}/q;p')
+                  CHANGELOG_FOOTER=$(echo "$CHANGELOG_TEMPLATE" | sed '1,/\${COMMITS}/d')
+
+                  # Substitute variables in header and footer
+                  CHANGELOG_HEADER=$(echo "$CHANGELOG_HEADER" | sed -e "s|\${REPO_NAME}|${{ github.event.repository.name }}|g" -e "s|\${TAG}|${{ github.ref_name }}|g")
+                  CHANGELOG_FOOTER=$(echo "$CHANGELOG_FOOTER" | sed -e "s|\${URL}|$URL|g")
+
                   # Build the final changelog file
-                  CHANGELOG_CONTENT=$(echo "$CHANGELOG_TEMPLATE" | sed "s|\${REPO_NAME}|${{ github.event.repository.name }}|g")
-                  CHANGELOG_CONTENT=$(echo "$CHANGELOG_CONTENT" | sed "s|\${TAG}|${{ github.ref_name }}|g")
-                  CHANGELOG_CONTENT=$(echo "$CHANGELOG_CONTENT" | sed "s|\${URL}|$URL|g")
-
-                  # Use a temporary file to handle the multiline commits
-                  echo "$COMMITS" > commits.tmp
-                  CHANGELOG_CONTENT=$(sed -e "/\${COMMITS}/r commits.tmp" -e "/\${COMMITS}/d" <<< "$CHANGELOG_CONTENT")
-                  rm commits.tmp
-
-                  echo "$CHANGELOG_CONTENT" > changelog.md
+                  echo "$CHANGELOG_HEADER" > changelog.md
+                  echo "$COMMITS" >> changelog.md
+                  echo "$CHANGELOG_FOOTER" >> changelog.md
 
                   echo "changelog_path=changelog.md" >> $GITHUB_OUTPUT
 

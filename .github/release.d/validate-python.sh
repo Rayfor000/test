@@ -3,7 +3,7 @@
 set -e
 
 echo "--- Checking Python Version ---"
-MIN_PYTHON_VERSION="3.6"
+MIN_PYTHON_VERSION="3.8"
 # Get the current Python version in a format like "3.9"
 CURRENT_PYTHON_VERSION=$(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
 
