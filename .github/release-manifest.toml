@@ -51,20 +51,19 @@ assets_links = "release_notes.md" # Link content of release_notes.md
 
 # Job for pre-build checks and tests.
 [check]
+# Script to run for each matrix combination.
+run_script = ".github/release.d/python-check.sh"
 # Define the matrix for running check jobs.
 [check.matrix]
 os = ["ubuntu-latest", "windows-latest"]
 python-version = ["3.9", "3.10"]
-# Script to run for each matrix combination.
-# Variables like ${{ matrix.os }} will be available.
-run_script = ".github/release.d/python-check.sh"
 
 # Job for building the final release artifacts.
 [build]
+# Script to run for building.
+run_script = ".github/release.d/build-python.sh"
 # Define the matrix for running build jobs.
 [build.matrix]
 # Example: Build for different targets
 os = ["ubuntu-latest"]
 target = ["x86_64", "arm64"]
-# Script to run for building.
-run_script = ".github/release.d/build-python.sh"

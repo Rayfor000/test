@@ -23,9 +23,9 @@ jobs:
         outputs:
             skip_approval: ${{ fromJSON(steps.toml.outputs.json).release.skip_approval }}
             check_matrix: ${{ toJSON(fromJSON(steps.toml.outputs.json).check.matrix) }}
-            check_script: ${{ fromJSON(steps.toml.outputs.json).check.run_script }}
+            check_run_script: ${{ fromJSON(steps.toml.outputs.json).check.run_script }}
             build_matrix: ${{ toJSON(fromJSON(steps.toml.outputs.json).build.matrix) }}
-            build_script: ${{ fromJSON(steps.toml.outputs.json).build.run_script }}
+            build_run_script: ${{ fromJSON(steps.toml.outputs.json).build.run_script }}
             manifest_json: ${{ steps.toml.outputs.json }}
         steps:
             - name: Checkout repository
@@ -54,7 +54,7 @@ jobs:
         needs: parse_manifest
         strategy:
             fail-fast: false
-            matrix: ${{ fromJSON(needs.parse_manifest.outputs.check_matrix) }}
+            matrix: ${{ fromJson(needs.parse_manifest.outputs.check_matrix) }}
         runs-on: ${{ matrix.os }}
         steps:
             - name: Checkout repository
@@ -66,12 +66,13 @@ jobs:
               with:
                   python-version: ${{ matrix.python-version }}
 
-            - name: Run check script
+            - name: Run Check Script
+              shell: bash
               env:
                   # Pass matrix variables to the script environment
                   PYTHON_VERSION: ${{ matrix.python-version }}
                   RUNNER_OS: ${{ matrix.os }}
-              run: bash ${{ needs.parse_manifest.outputs.check_script }}
+              run: ${{ needs.parse_manifest.outputs.check_run_script }}
 
     # =====================================================================================
     #  3. APPROVAL
@@ -97,18 +98,19 @@ jobs:
         if: always() && (needs.parse_manifest.outputs.skip_approval == 'true' || needs.approval.result == 'success')
         strategy:
             fail-fast: false
-            matrix: ${{ fromJSON(needs.parse_manifest.outputs.build_matrix) }}
+            matrix: ${{ fromJson(needs.parse_manifest.outputs.build_matrix) }}
         runs-on: ${{ matrix.os }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Run build script
+            - name: Run Build Script
+              shell: bash
               env:
                   # Pass matrix variables to the script environment
                   TARGET: ${{ matrix.target }}
                   RUNNER_OS: ${{ matrix.os }}
-              run: bash ${{ needs.parse_manifest.outputs.build_script }}
+              run: ${{ needs.parse_manifest.outputs.build_run_script }}
 
             - name: Upload build artifacts
               uses: actions/upload-artifact@v4
