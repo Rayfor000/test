@@ -39,7 +39,7 @@ def get_git_changelog(config: dict, current_tag: str) -> str:
 
     try:
         # Get all tags sorted by version descending
-        tags_result = subprocess.run([git_executable, "tag", "--sort=-v:refname"], capture_output=True, text=True, check=True, encoding="utf-8") # noqa: S603
+        tags_result = subprocess.run([git_executable, "tag", "--sort=-v:refname"], capture_output=True, text=True, check=True, encoding="utf-8")  # noqa: S603
         tags = tags_result.stdout.strip().split("\n")
 
         previous_tag = None

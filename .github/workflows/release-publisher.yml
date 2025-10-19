@@ -1,12 +1,12 @@
 # This GitHub Actions workflow orchestrates the entire release process.
 # It is dynamically configured by the .github/release-manifest.toml file.
-name: Release Pipeline
+name: Release Publisher
 
 on:
     workflow_dispatch:
     push:
         tags:
-            - "v*.*.*" # Triggers on semantic versioning tags (e.g., v1.2.3)
+            - "v*" # Triggers on semantic versioning tags (e.g., v1.2.3)
 
 permissions:
     contents: write # Required to create GitHub Releases and commit files.
