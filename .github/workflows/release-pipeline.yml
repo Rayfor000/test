@@ -1,0 +1,198 @@
+# This GitHub Actions workflow orchestrates the entire release process.
+# It is dynamically configured by the .github/release-manifest.toml file.
+name: Release Pipeline
+
+on:
+    workflow_dispatch:
+    push:
+        tags:
+            - "v*.*.*" # Triggers on semantic versioning tags (e.g., v1.2.3)
+
+permissions:
+    contents: write # Required to create GitHub Releases and commit files.
+    id-token: write # Required for OIDC authentication with external services.
+
+jobs:
+    # =====================================================================================
+    #  1. PARSE MANIFEST
+    #  This job reads the .github/release-manifest.toml file, converts it to JSON,
+    #  and exports critical configuration values as outputs for subsequent jobs.
+    # =====================================================================================
+    parse_manifest:
+        runs-on: ubuntu-latest
+        outputs:
+            skip_approval: ${{ fromJSON(steps.toml.outputs.json).release.skip_approval }}
+            check_matrix: ${{ toJSON(fromJSON(steps.toml.outputs.json).check.matrix) }}
+            check_script: ${{ fromJSON(steps.toml.outputs.json).check.run_script }}
+            build_matrix: ${{ toJSON(fromJSON(steps.toml.outputs.json).build.matrix) }}
+            build_script: ${{ fromJSON(steps.toml.outputs.json).build.run_script }}
+            manifest_json: ${{ steps.toml.outputs.json }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Python for manifest conversion
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.10"
+
+            - name: Install toml library
+              run: pip install toml
+
+            - name: Convert TOML manifest to JSON and set as output
+              id: toml
+              run: |
+                  JSON_DATA=$(python -c 'import sys, toml, json; print(json.dumps(toml.load(sys.argv[1])))' .github/release-manifest.toml)
+                  echo "json=$JSON_DATA" >> $GITHUB_OUTPUT
+
+    # =====================================================================================
+    #  2. CHECK
+    #  Runs pre-build checks and tests based on the matrix defined in the manifest.
+    #  This ensures code quality and correctness before proceeding to the build stage.
+    # =====================================================================================
+    check:
+        needs: parse_manifest
+        strategy:
+            fail-fast: false
+            matrix: ${{ fromJSON(needs.parse_manifest.outputs.check_matrix) }}
+        runs-on: ${{ matrix.os }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Python
+              if: ${{ matrix.python-version }}
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ matrix.python-version }}
+
+            - name: Run check script
+              env:
+                  # Pass matrix variables to the script environment
+                  PYTHON_VERSION: ${{ matrix.python-version }}
+                  RUNNER_OS: ${{ matrix.os }}
+              run: bash ${{ needs.parse_manifest.outputs.check_script }}
+
+    # =====================================================================================
+    #  3. APPROVAL
+    #  An optional manual approval gate. This job only runs if 'skip_approval' is false.
+    #  It leverages GitHub Environments to pause the workflow for a manual review.
+    # =====================================================================================
+    approval:
+        needs: check
+        if: needs.parse_manifest.outputs.skip_approval == 'false'
+        runs-on: ubuntu-latest
+        environment: release
+        steps:
+            - name: Wait for manual approval
+              run: echo "Workflow is paused. Waiting for a user with 'release' environment permissions to approve."
+
+    # =====================================================================================
+    #  4. BUILD
+    #  Builds the release artifacts based on the matrix defined in the manifest.
+    #  This job runs only after 'check' passes and 'approval' is either successful or skipped.
+    # =====================================================================================
+    build:
+        needs: [check, parse_manifest, approval]
+        if: always() && (needs.parse_manifest.outputs.skip_approval == 'true' || needs.approval.result == 'success')
+        strategy:
+            fail-fast: false
+            matrix: ${{ fromJSON(needs.parse_manifest.outputs.build_matrix) }}
+        runs-on: ${{ matrix.os }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Run build script
+              env:
+                  # Pass matrix variables to the script environment
+                  TARGET: ${{ matrix.target }}
+                  RUNNER_OS: ${{ matrix.os }}
+              run: bash ${{ needs.parse_manifest.outputs.build_script }}
+
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: release-assets-${{ matrix.os }}-${{ matrix.target }}
+                  path: |
+                      build-artifact-*.txt
+                      release_notes.md
+                  retention-days: 1
+
+    # =====================================================================================
+    #  5. RELEASE
+    #  This final job collects all artifacts, generates release notes, and creates
+    #  a new GitHub Release with the compiled assets.
+    # =====================================================================================
+    release:
+        needs: [build, parse_manifest]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # Required for git log to access full history
+
+            - name: Download all build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: artifacts # Artifacts are downloaded into subdirectories within 'artifacts/'
+
+            - name: Prepare release assets and notes
+              id: prepare_release
+              run: |
+                  # Move all actual build artifacts to a flat structure for the release action.
+                  find artifacts -type f -name "build-artifact-*.txt" -exec mv {} . \;
+
+                  # Concatenate all 'release_notes.md' fragments from build jobs into a single file.
+                  echo "Merging asset links..."
+                  find artifacts -type f -name "release_notes.md" -exec cat {} + > associated_release_notes.md
+
+                  echo "ASSETS_LINKS_FILE=associated_release_notes.md" >> $GITHUB_OUTPUT
+
+            - name: Set up Python for release notes
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.10"
+
+            - name: Install Python dependencies
+              run: pip install toml pytz
+
+            - name: Generate Release Notes
+              id: notes_generator
+              env:
+                  GITHUB_REPOSITORY: ${{ github.repository }}
+                  GITHUB_REF_NAME: ${{ github.ref_name }}
+                  MANIFEST_PATH: ".github/release-manifest.toml"
+              run: |
+                  echo "value<<EOF" >> $GITHUB_OUTPUT
+                  python .github/release.d/generate-release-notes.py >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+            - name: Prepare release asset patterns
+              id: prepare_assets
+              run: |
+                  # Move artifacts to root for glob matching
+                  find . -path "./artifacts" -prune -o -name "build-artifact-*.txt" -exec mv {} . \;
+
+                  # Delete files matching exclude patterns
+                  EXCLUDE_PATTERNS='${{ toJSON(fromJSON(needs.parse_manifest.outputs.manifest_json).release.assets.exclude) }}'
+                  if [[ "$EXCLUDE_PATTERNS" != "null" && "$EXCLUDE_PATTERNS" != "[]" ]]; then
+                    echo $EXCLUDE_PATTERNS | jq -r '.[]' | while read pattern; do
+                      echo "Excluding files matching '$pattern'"
+                      find . -maxdepth 1 -name "$pattern" -print -delete
+                    done
+                  fi
+
+                  # Convert include patterns to a multi-line string for the release action
+                  INCLUDE_PATTERNS='${{ toJSON(fromJSON(needs.parse_manifest.outputs.manifest_json).release.assets.include) }}'
+                  FILES_TO_INCLUDE=$(echo $INCLUDE_PATTERNS | jq -r '. | join("\n")')
+                  echo "files<<EOF" >> $GITHUB_OUTPUT
+                  echo "$FILES_TO_INCLUDE" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  body: ${{ steps.notes_generator.outputs.value }}
+                  files: ${{ steps.prepare_assets.outputs.files }}
