@@ -41,7 +41,7 @@ timezone = "+08:00"
 # --- Release Assets ---
 [release.assets]
 # List of glob patterns for files to include in the release.
-include = ["*.zip", "*.tar.gz"]
+include = ["dist/*"]
 # List of glob patterns for files to exclude from the release.
 exclude = ["debug_symbols.zip"]
 # Associate content of a file (matched by regex) to a release body variable.
