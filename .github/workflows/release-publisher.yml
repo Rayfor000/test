@@ -155,7 +155,7 @@ jobs:
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: release-artifacts
+                  name: release-artifacts-${{ matrix.target }}
                   path: ${{ needs.parse_configs.outputs.release_assets_include }}
 
     release:
@@ -167,11 +167,18 @@ jobs:
             - uses: actions/checkout@v5
               with:
                   fetch-depth: 0
+            - name: Check if tag exists
+              shell: bash
+              run: |
+                if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
+                  echo "Error: Tag '${{ github.event.inputs.tag }}' already exists."
+                  exit 1
+                fi
             - name: Download all artifacts
               uses: actions/download-artifact@v5
               with:
-                  name: release-artifacts
-                  path: .
+                  name: release-artifacts-*
+                  path: dist
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
@@ -193,4 +200,4 @@ jobs:
               with:
                   tag_name: ${{ github.event.inputs.tag }}
                   body: ${{ steps.notes_generator.outputs.body }}
-                  files: ${{ needs.parse_configs.outputs.release_assets_include }}
+                  files: dist/*
