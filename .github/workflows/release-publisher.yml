@@ -152,11 +152,14 @@ jobs:
               env:
                   TARGET: ${{ matrix.target }}
                   RUNNER_OS: ${{ matrix.os }}
+            - name: Package changed files
+              run: |
+                  git status --porcelain | awk '{print $2}' | xargs tar -czf changes.tar
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: release-artifacts-${{ matrix.target }}
-                  path: ${{ needs.parse_configs.outputs.release_assets_include }}
+                  name: release-artifacts
+                  path: changes.tar
 
     release:
         name: Create GitHub Release
@@ -170,15 +173,22 @@ jobs:
             - name: Check if tag exists
               shell: bash
               run: |
-                if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
-                  echo "Error: Tag '${{ github.event.inputs.tag }}' already exists."
-                  exit 1
-                fi
+                  if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
+                    echo "Error: Tag '${{ github.event.inputs.tag }}' already exists."
+                    exit 1
+                  fi
             - name: Download all artifacts
               uses: actions/download-artifact@v4
               with:
-                  name: release-artifacts-*
-                  path: dist
+                  name: release-artifacts
+                  path: release-assets
+            - name: Prepare Release Assets
+              id: prepare_assets
+              run: |
+                  tar -xzf release-assets/changes.tar
+                  python .github/release.d/prepare-release-assets.py
+              env:
+                  MANIFEST_PATH: ".github/release-manifest.toml"
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
@@ -200,4 +210,4 @@ jobs:
               with:
                   tag_name: ${{ github.event.inputs.tag }}
                   body: ${{ steps.notes_generator.outputs.body }}
-                  files: dist/*
+                  files: ${{ steps.prepare_assets.outputs.final_assets }}
