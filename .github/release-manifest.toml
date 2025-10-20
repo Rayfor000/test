@@ -1,8 +1,11 @@
-# General settings for the release
+# .github/release-manifest.toml
+# This is the single source of truth for the release workflow.
+
+[trigger]
+tag_pattern = "v*"
+
 [release]
-# Skip the manual approval step if set to true
 skip_approval = false
-# Template for the release notes body. Uses {{variable}} format.
 body_template = """
 # Release {{tag}} for {{repo_name}}
 
@@ -18,52 +21,34 @@ body_template = """
 ---
 _Release generated on: `{{release_date}}`_
 """
-
-# --- Changelog Generation ---
 [release.changelog]
-# Diffing method: ".." (commits since last tag) or "..." (commits in this tag's history not in parent)
 diff_method = ".."
-
-# --- Contributors ---
 [release.contributors]
-# HTML snippet to show contributors.
 template = """
 <a href="https://github.com/{{owner}}/{{repo_name}}/graphs/contributors">
   <img src="https://contrib.rocks/image?repo={{owner}}/{{repo_name}}" />
 </a>
 """
-
-# --- Release Date Formatting ---
 [release.date]
-# Timezone offset for the release date (e.g., "+08:00", "-05:00")
 timezone = "+08:00"
-
-# --- Release Assets ---
 [release.assets]
-# List of glob patterns for files to include in the release.
-include = ["dist/*"]
-# List of glob patterns for files to exclude from the release.
+include = ["dist/*", "release_notes.md"]
 exclude = ["debug_symbols.zip"]
-# Associate content of a file (matched by regex) to a release body variable.
-# The key 'assets_links' matches the {{assets_links}} variable in the body_template.
 [release.assets.associate]
-assets_links = "release_notes.md" # Link content of release_notes.md
+assets_links = "release_notes.md"
 
-# Job for pre-build checks and tests.
 [check]
-# Script to run for each matrix combination.
 run_script = ".github/release.d/python-check.sh"
-# Define the matrix for running check jobs.
-[check.matrix]
-os = ["ubuntu-latest", "windows-latest"]
-python-version = ["3.9", "3.10"]
+runs-on = "ubuntu-latest"
+[check.features.cache]
+enable = true
+path = "~/.cache/pip"
+key_file = "pyproject.toml"
 
-# Job for building the final release artifacts.
 [build]
-# Script to run for building.
 run_script = ".github/release.d/build-python.sh"
-# Define the matrix for running build jobs.
-[build.matrix]
-# Example: Build for different targets
-os = ["ubuntu-latest"]
-target = ["x86_64", "arm64"]
+runs-on = "ubuntu-latest"
+[build.features.cache]
+enable = true
+path = "~/.cache/pip"
+key_file = "pyproject.toml"
