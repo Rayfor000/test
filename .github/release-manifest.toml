@@ -5,7 +5,7 @@
 tag_pattern = "v*"
 
 [release]
-skip_approval = false
+skip_approval = true
 body_template = """
 # Release {{tag}} for {{repo_name}}
 
