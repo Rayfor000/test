@@ -23,6 +23,7 @@ _Release generated on: `{{release_date}}`_
 """
 [release.changelog]
 diff_method = ".."
+previous_tag_strategy = "latest"
 [release.contributors]
 template = """
 <a href="https://github.com/{{owner}}/{{repo_name}}/graphs/contributors">
