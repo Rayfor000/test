@@ -153,12 +153,11 @@ jobs:
                   TARGET: ${{ matrix.target }}
                   RUNNER_OS: ${{ matrix.os }}
             - name: Package changed files
-              run: |
-                  git status --porcelain | awk '{print $2}' | xargs tar -czf changes.tar
+              run: git status --porcelain | sed 's/^...//' | tar -cvf changes.tar -T -
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: release-artifacts
+                  name: build-changes
                   path: changes.tar
 
     release:
@@ -173,28 +172,27 @@ jobs:
             - name: Check if tag exists
               shell: bash
               run: |
-                  if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
-                    echo "Error: Tag '${{ github.event.inputs.tag }}' already exists."
-                    exit 1
-                  fi
-            - name: Download all artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: release-artifacts
-                  path: release-assets
-            - name: Prepare Release Assets
-              id: prepare_assets
-              run: |
-                  tar -xzf release-assets/changes.tar
-                  python .github/release.d/prepare-release-assets.py
-              env:
-                  MANIFEST_PATH: ".github/release-manifest.toml"
+                if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
+                  echo "Error: Tag '${{ github.event.inputs.tag }}' already exists."
+                  exit 1
+                fi
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
                   python-version: "3.12"
             - name: Install dependencies
-              run: pip install toml pytz
+              run: pip install toml pytz tomli
+            - name: Download all artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: build-changes
+            - name: Prepare Release Assets
+              id: prepare_assets
+              run: |
+                tar -xvf changes.tar
+                echo "final_assets<<EOF" >> $GITHUB_OUTPUT
+                python .github/release.d/prepare-release-assets.py .github/release-manifest.toml >> $GITHUB_OUTPUT
+                echo "EOF" >> $GITHUB_OUTPUT
             - name: Generate Release Notes
               id: notes_generator
               run: |

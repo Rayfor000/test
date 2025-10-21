@@ -1,77 +1,106 @@
-# .github/release.d/prepare-release-assets.py
+# -*- coding: utf-8 -*-
+"""
+Prepares a list of release assets based on include/exclude patterns from a TOML file.
+"""
+import argparse
 import fnmatch
 import os
 import sys
 from pathlib import Path
 
-import toml
+# Add the toml library from the vendored location
+sys.path.insert(0, str(Path(__file__).parent.parent / "vendored"))
+import tomli
 
 
-def get_all_files(directory):
-    """Recursively gets all files in a directory."""
-    file_paths = []
-    for root, _, files in os.walk(directory):
-        for file in files:
-            # Create a relative path from the starting directory
-            relative_path = Path(root).relative_to(directory) / file
-            file_paths.append(str(relative_path).replace("\\", "/"))
-    return file_paths
+def get_asset_patterns(manifest_path: Path) -> tuple[list[str], list[str]]:
+    """
+    Reads asset inclusion and exclusion patterns from the release manifest.
+
+    Args:
+        manifest_path: Path to the TOML manifest file.
+
+    Returns:
+        A tuple containing two lists: include patterns and exclude patterns.
+    """
+    if not manifest_path.is_file():
+        print(f"Error: Manifest file not found at '{manifest_path}'", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        with open(manifest_path, "rb") as f:
+            manifest = tomli.load(f)
+        
+        release_config = manifest.get("release", {})
+        assets_config = release_config.get("assets", {})
+        
+        include_patterns = assets_config.get("include", [])
+        exclude_patterns = assets_config.get("exclude", [])
+        
+        if not isinstance(include_patterns, list) or not isinstance(exclude_patterns, list):
+            print("Error: 'release.assets.include' and 'release.assets.exclude' must be arrays of strings.", file=sys.stderr)
+            sys.exit(1)
+            
+        return include_patterns, exclude_patterns
+    except tomli.TOMLDecodeError:
+        print(f"Error: Could not decode TOML file at '{manifest_path}'", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
-def filter_files(files, include_patterns, exclude_patterns):
-    """Filters files based on include and exclude glob patterns."""
-    included_files = set()
+def find_files(
+    root_dir: Path, include_patterns: list[str], exclude_patterns: list[str]
+) -> list[str]:
+    """
+    Finds files matching the patterns.
+
+    Args:
+        root_dir: The root directory to start searching from.
+        include_patterns: A list of glob patterns to include.
+        exclude_patterns: A list of glob patterns to exclude.
+
+    Returns:
+        A list of file paths that match the criteria.
+    """
+    final_files = set()
+
     for pattern in include_patterns:
-        included_files.update(fnmatch.filter(files, pattern))
+        for path in root_dir.glob(pattern):
+            if path.is_file():
+                final_files.add(str(path))
 
     excluded_files = set()
     for pattern in exclude_patterns:
-        excluded_files.update(fnmatch.filter(files, pattern))
+        for path in root_dir.glob(pattern):
+            if path.is_file():
+                excluded_files.add(str(path))
 
-    return sorted(list(included_files - excluded_files))
+    return sorted(list(final_files - excluded_files))
 
 
 def main():
-    """
-    Main function to prepare release assets.
-    1. Reads asset patterns from release-manifest.toml.
-    2. Scans all files in the current directory.
-    3. Filters files based on include/exclude patterns.
-    4. Sets the 'final_assets' output for GitHub Actions.
-    """
-    try:
-        manifest_path = ".github/release-manifest.toml"
-        with open(manifest_path) as f:
-            manifest = toml.load(f)
+    """Main entry point."""
+    parser = argparse.ArgumentParser(
+        description="Filter files for release based on a TOML manifest."
+    )
+    parser.add_argument(
+        "manifest",
+        type=Path,
+        help="Path to the .toml release manifest file.",
+    )
+    args = parser.parse_args()
 
-        asset_config = manifest.get("release", {}).get("assets", {})
-        include_patterns = asset_config.get("include", [])
-        exclude_patterns = asset_config.get("exclude", [])
+    include, exclude = get_asset_patterns(args.manifest)
+    
+    # We assume the script runs from the repository root
+    workspace_dir = Path(os.getcwd())
+    
+    final_asset_list = find_files(workspace_dir, include, exclude)
 
-        if not include_patterns:
-            print("No 'include' patterns found in manifest. Exiting.", file=sys.stderr)
-            output_value = ""
-        else:
-            all_files = get_all_files(".")
-            final_assets = filter_files(all_files, include_patterns, exclude_patterns)
-            # Quote each file path to handle spaces
-            output_value = " ".join(f'"{asset}"' for asset in final_assets)
-
-        # Set the output for GitHub Actions using the environment file
-        github_output = os.getenv("GITHUB_OUTPUT")
-        if github_output:
-            with open(github_output, "a") as f:
-                # The output needs to be a single line
-                f.write(f"final_assets={output_value}\n")
-            print("Successfully set 'final_assets' output.", file=sys.stderr)
-        else:
-            # Fallback for local testing
-            print("GITHUB_OUTPUT not set. Printing to stdout instead.", file=sys.stderr)
-            print(f"Final assets: {output_value}")
-
-    except Exception as e:
-        print(f"Error preparing release assets: {e}", file=sys.stderr)
-        sys.exit(1)
+    # Output for GitHub Actions
+    print("\n".join(final_asset_list))
 
 
 if __name__ == "__main__":
