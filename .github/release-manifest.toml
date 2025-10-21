@@ -35,7 +35,9 @@ assets_links = "release_notes.md"
 
 [check]
 run_script = ".github/release.d/python-check.sh"
-runs-on = "ubuntu-latest"
+[check.matrix]
+os = ["ubuntu-latest", "windows-latest"]
+"python-version" = ["3.9", "3.10"]
 [check.features.cache]
 enable = true
 path = "~/.cache/pip"
@@ -43,7 +45,9 @@ key_file = "pyproject.toml"
 
 [build]
 run_script = ".github/release.d/build-python.sh"
-runs-on = "ubuntu-latest"
+[build.matrix]
+os = ["ubuntu-latest"]
+target = ["x86_64", "arm64"]
 [build.features.cache]
 enable = true
 path = "~/.cache/pip"

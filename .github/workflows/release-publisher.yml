@@ -16,19 +16,16 @@ jobs:
         name: Parse Configuration Files
         runs-on: ubuntu-latest
         outputs:
-            # from actions-config.yml
-            check_matrix: ${{ steps.yaml.outputs.check_matrix }}
-            build_targets: ${{ steps.yaml.outputs.build_targets }}
             # from release-manifest.toml
+            check_matrix: ${{ steps.toml.outputs.check_matrix }}
+            build_matrix: ${{ steps.toml.outputs.build_matrix }}
             skip_approval: ${{ steps.toml.outputs.release_skip_approval }}
             release_assets_include: ${{ steps.toml.outputs.release_assets_include }}
             release_assets_exclude: ${{ steps.toml.outputs.release_assets_exclude }}
-            check_runs_on: ${{ steps.toml.outputs.check_runs-on }}
             check_run_script: ${{ steps.toml.outputs.check_run_script }}
             check_cache_enable: ${{ steps.toml.outputs.check_features_cache_enable }}
             check_cache_path: ${{ steps.toml.outputs.check_features_cache_path }}
             check_cache_key_file: ${{ steps.toml.outputs.check_features_cache_key_file }}
-            build_runs_on: ${{ steps.toml.outputs.build_runs-on }}
             build_run_script: ${{ steps.toml.outputs.build_run_script }}
             build_cache_enable: ${{ steps.toml.outputs.build_features_cache_enable }}
             build_cache_path: ${{ steps.toml.outputs.build_features_cache_path }}
@@ -49,25 +46,12 @@ jobs:
               with:
                   python-version: "3.12"
             - name: Install Python dependencies
-              run: pip install PyYAML toml
-            - name: Parse actions-config.yml
-              id: yaml
-              shell: python
-              run: |
-                  import json
-                  import os
-                  import yaml
-                  with open(".github/actions-config.yml") as f:
-                      data = yaml.safe_load(f)
-                  check_matrix = json.dumps(data["check"]["matrix"])
-                  build_targets = " ".join(data["build"]["matrix"]["target"])
-                  with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-                      f.write(f"check_matrix={check_matrix}\n")
-                      f.write(f"build_targets={build_targets}\n")
+              run: pip install toml
             - name: Parse release-manifest.toml
               id: toml
               shell: python
               run: |
+                  import json
                   import os
                   import toml
                   with open(".github/release-manifest.toml") as f:
@@ -82,17 +66,19 @@ jobs:
                       f.write(f"{key}<<{delimiter}\n")
                       f.write(f"{value}\n")
                       f.write(f"{delimiter}\n")
+                  check_matrix = json.dumps(data["check"].get("matrix", {}))
+                  build_matrix = json.dumps(data["build"].get("matrix", {}))
                   with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                      f.write(f"check_matrix={check_matrix}\n")
+                      f.write(f"build_matrix={build_matrix}\n")
                       f.write(get_output_line("release_skip_approval", data["release"]["skip_approval"]) + "\n")
                       assets = data.get("release", {}).get("assets", {})
                       set_multiline_output(f, "release_assets_include", assets.get("include", []))
                       set_multiline_output(f, "release_assets_exclude", assets.get("exclude", []))
-                      f.write(get_output_line("check_runs-on", data["check"]["runs-on"]) + "\n")
                       f.write(get_output_line("check_run_script", data["check"]["run_script"]) + "\n")
                       f.write(get_output_line("check_features_cache_enable", data["check"]["features"]["cache"]["enable"]) + "\n")
                       f.write(get_output_line("check_features_cache_path", data["check"]["features"]["cache"]["path"]) + "\n")
                       f.write(get_output_line("check_features_cache_key_file", data["check"]["features"]["cache"]["key_file"]) + "\n")
-                      f.write(get_output_line("build_runs-on", data["build"]["runs-on"]) + "\n")
                       f.write(get_output_line("build_run_script", data["build"]["run_script"]) + "\n")
                       f.write(get_output_line("build_features_cache_enable", data["build"]["features"]["cache"]["enable"]) + "\n")
                       f.write(get_output_line("build_features_cache_path", data["build"]["features"]["cache"]["path"]) + "\n")
@@ -100,8 +86,9 @@ jobs:
     check:
         needs: parse_configs
         name: Check & Test
-        runs-on: ${{ needs.parse_configs.outputs.check_runs_on }}
+        runs-on: ${{ matrix.os }}
         strategy:
+            fail-fast: false
             matrix: ${{ fromJson(needs.parse_configs.outputs.check_matrix) }}
         steps:
             - uses: actions/checkout@v5
@@ -132,11 +119,43 @@ jobs:
         steps:
             - name: Manual approval step
               run: echo "Release approved. Proceeding to build."
-    release:
-        name: Build and Release
+    build:
+        name: Build
         needs: [parse_configs, approval]
         if: always() && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
-        runs-on: ${{ needs.parse_configs.outputs.build_runs_on }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix: ${{ fromJson(needs.parse_configs.outputs.build_matrix) }}
+        steps:
+            - uses: actions/checkout@v5
+            - name: Cache dependencies
+              if: needs.parse_configs.outputs.build_cache_enable == 'true'
+              uses: actions/cache@v4
+              with:
+                  path: ${{ needs.parse_configs.outputs.build_cache_path }}
+                  key: "${{ runner.os }}-pip-${{ hashFiles(needs.parse_configs.outputs.build_cache_key_file) }}"
+            - name: Set up Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: "3.12"
+            - name: Make build script executable
+              run: chmod +x ${{ needs.parse_configs.outputs.build_run_script }}
+            - name: Run Build Script
+              shell: bash
+              run: ${{ needs.parse_configs.outputs.build_run_script }}
+              env:
+                  TARGET: ${{ matrix.target }}
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: build-artifact-${{ matrix.os }}-${{ matrix.target }}
+                  path: |
+                    dist/
+    release:
+        name: Create Release
+        needs: [build, parse_configs]
+        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5
               with:
@@ -147,20 +166,10 @@ jobs:
                   python-version: "3.12"
             - name: Install dependencies
               run: pip install toml tomli
-            - name: Cache dependencies
-              if: needs.parse_configs.outputs.build_cache_enable == 'true'
-              uses: actions/cache@v4
+            - name: Download all artifacts
+              uses: actions/download-artifact@v4
               with:
-                  path: ${{ needs.parse_configs.outputs.build_cache_path }}
-                  key: "${{ runner.os }}-pip-${{ hashFiles(needs.parse_configs.outputs.build_cache_key_file) }}"
-            - name: Run Build Script for All Targets
-              shell: bash
-              run: |
-                  chmod +x ${{ needs.parse_configs.outputs.build_run_script }}
-                  for target in ${{ needs.parse_configs.outputs.build_targets }}; do
-                    echo "--- Building for target: $target ---"
-                    TARGET=$target ${{ needs.parse_configs.outputs.build_run_script }}
-                  done
+                  path: ./dist
             - name: Prepare Release Assets
               id: prepare_assets
               shell: python
@@ -168,8 +177,6 @@ jobs:
                   import os
                   import sys
                   from pathlib import Path
-                  # Add the toml library from the vendored location
-                  sys.path.insert(0, str(Path(".github/vendored")))
                   import tomli
                   def get_asset_patterns(manifest_path: Path) -> tuple[list[str], list[str]]:
                       if not manifest_path.is_file():
@@ -195,12 +202,12 @@ jobs:
                   def find_files(root_dir: Path, include_patterns: list[str], exclude_patterns: list[str]) -> list[str]:
                       final_files = set()
                       for pattern in include_patterns:
-                          for path in root_dir.glob(pattern):
+                          for path in root_dir.glob(f"**/{pattern}"):
                               if path.is_file():
                                   final_files.add(str(path))
                       excluded_files = set()
                       for pattern in exclude_patterns:
-                          for path in root_dir.glob(pattern):
+                          for path in root_dir.glob(f"**/{pattern}"):
                               if path.is_file():
                                   excluded_files.add(str(path))
                       return sorted(list(final_files - excluded_files))
