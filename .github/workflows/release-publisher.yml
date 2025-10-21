@@ -148,7 +148,7 @@ jobs:
               with:
                   python-version: "3.12"
             - name: Install dependencies
-              run: pip install toml pytz tomli
+              run: pip install toml tomli
             - name: Cache dependencies
               if: needs.parse_configs.outputs.build_cache_enable == 'true'
               uses: actions/cache@v4

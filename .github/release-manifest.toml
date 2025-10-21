@@ -30,8 +30,6 @@ template = """
   <img src="https://contrib.rocks/image?repo={{owner}}/{{repo_name}}" />
 </a>
 """
-[release.date]
-timezone = "+08:00"
 [release.assets]
 include = ["dist/*", "release_notes.md"]
 exclude = ["debug_symbols.zip"]
