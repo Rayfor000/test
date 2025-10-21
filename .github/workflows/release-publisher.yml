@@ -37,10 +37,10 @@ jobs:
             - name: Check if tag exists
               shell: bash
               run: |
-                if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
-                  echo "::error::Tag '${{ github.event.inputs.tag }}' already exists. Workflow will be terminated."
-                  exit 1
-                fi
+                  if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
+                    echo "::error::Tag '${{ github.event.inputs.tag }}' already exists. Workflow will be terminated."
+                    exit 1
+                  fi
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
@@ -151,7 +151,7 @@ jobs:
               with:
                   name: build-artifact-${{ matrix.os }}-${{ matrix.target }}
                   path: |
-                    dist/
+                      dist/
     release:
         name: Create Release
         needs: [build, parse_configs]
