@@ -5,6 +5,9 @@ on:
             tag:
                 description: "The tag to create the release for (e.g., v1.0.0)"
                 required: true
+            previous_tag:
+                description: "The previous tag for changelog generation"
+                required: true
 permissions:
     contents: write
     id-token: write
@@ -221,51 +224,45 @@ jobs:
                   import os
                   import subprocess
                   import sys
+                  from datetime import datetime, timezone
                   from pathlib import Path
                   import toml
-                  def get_previous_tag(strategy: str) -> str:
-                      """
-                      Determines the previous tag based on the provided strategy.
-                      """
-                      if strategy == "latest":
-                          try:
-                              command = "git describe --tags --abbrev=0"
-                              result = subprocess.run(
-                                  command,
-                                  shell=True,
-                                  check=True,
-                                  capture_output=True,
-                                  text=True,
-                              )
-                              return result.stdout.strip()
-                          except subprocess.CalledProcessError as e:
-                              print(f"Error finding latest tag: {e}", file=sys.stderr)
-                              raise
-                      else:
-                          raise ValueError(f"Unsupported previous_tag_strategy: {strategy}")
-                  def generate_changelog(previous_tag: str) -> str:
-                      """
-                      Generates a changelog from Git history between the previous tag and HEAD.
-                      """
+
+                  def get_env_var(name: str, required: bool = True, default: str = "") -> str:
+                      """Gets an environment variable, exiting if required and not found."""
+                      value = os.environ.get(name)
+                      if required and not value:
+                          print(f"Error: Missing required environment variable '{name}'", file=sys.stderr)
+                          sys.exit(1)
+                      return value if value is not None else default
+
+                  def run_command(command: str) -> str:
+                      """Runs a shell command and returns its stdout, or an empty string on error."""
                       try:
-                          command = f'git log {previous_tag}..HEAD --pretty=format:"- %s (%h)"'
                           result = subprocess.run(
                               command,
                               shell=True,
                               check=True,
                               capture_output=True,
                               text=True,
+                              encoding='utf-8'
                           )
                           return result.stdout.strip()
                       except subprocess.CalledProcessError as e:
-                          print(f"Error generating changelog: {e}", file=sys.stderr)
-                          raise
+                          print(f"Warning: Command '{command}' failed with error: {e.stderr.strip()}", file=sys.stderr)
+                          return "" # Return empty string for robustness
+
+                  def generate_changelog(previous_tag: str, current_tag: str) -> str:
+                      """Generates a changelog from Git history between two tags."""
+                      if not previous_tag or not current_tag:
+                          return "Changelog generation skipped: missing previous or current tag."
+                      command = f'git log {previous_tag}..{current_tag} --pretty=format:"- %s (%h)"'
+                      return run_command(command)
+
                   def generate_assets_links(repo_full_name: str, tag: str, asset_files_str: str) -> str:
-                      """
-                      Generates a Markdown-formatted list of links for release assets.
-                      """
+                      """Generates a Markdown-formatted list of links for release assets."""
                       if not asset_files_str:
-                          return ""
+                          return "No assets provided."
                       asset_files = asset_files_str.strip().split("\n")
                       links = []
                       for asset_file in asset_files:
@@ -275,46 +272,71 @@ jobs:
                           link = f"- [{filename}](https://github.com/{repo_full_name}/releases/download/{tag}/{filename})"
                           links.append(link)
                       return "\n".join(links)
+
                   def main():
-                      """
-                      Main function to generate and print release notes.
-                      """
-                      manifest_path = os.environ.get("MANIFEST_PATH")
-                      if not manifest_path:
-                          print("Error: Missing environment variable MANIFEST_PATH", file=sys.stderr)
-                          sys.exit(1)
+                      """Main function to generate and print release notes."""
                       try:
-                          repo = os.environ["GITHUB_REPOSITORY"]
-                          tag = os.environ["INPUT_TAG"]
-                          asset_files = os.environ.get("ASSET_FILES", "")
+                          # --- 1. Read all inputs from environment variables ---
+                          repo_full_name = get_env_var("GITHUB_REPOSITORY")
+                          tag = get_env_var("INPUT_TAG")
+                          previous_tag = get_env_var("INPUT_PREVIOUS_TAG")
+                          asset_files = get_env_var("ASSET_FILES", required=False)
+                          manifest_path_str = get_env_var("MANIFEST_PATH")
+                          
+                          manifest_path = Path(manifest_path_str)
+                          if not manifest_path.is_file():
+                              print(f"Error: Manifest file not found at '{manifest_path}'", file=sys.stderr)
+                              sys.exit(1)
+
                           manifest = toml.load(manifest_path)
-                          body_template = manifest["release"]["body_template"]
-                          body = body_template.replace("{{tag}}", tag)
-                          changelog_config = manifest["release"]["changelog"]
-                          strategy = changelog_config.get("previous_tag_strategy", "latest")
-                          previous_tag = get_previous_tag(strategy)
-                          changelog_content = generate_changelog(previous_tag)
-                          body = body.replace("{{changelog}}", changelog_content)
-                          assets_links_content = generate_assets_links(repo, tag, asset_files)
-                          body = body.replace("{{assets_links}}", assets_links_content)
+                          body_template = manifest.get("release", {}).get("body_template", "")
+                          if not body_template:
+                              print("Error: 'release.body_template' not found in manifest.", file=sys.stderr)
+                              sys.exit(1)
+
+                          # --- 2. Prepare placeholder values ---
+                          owner, repo_name = repo_full_name.split('/', 1) if '/' in repo_full_name else (repo_full_name, "")
+                          
+                          release_date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+                          changelog_content = generate_changelog(previous_tag, tag)
+
+                          assets_links_content = generate_assets_links(repo_full_name, tag, asset_files)
+                          
+                          contributors_template = manifest.get("release", {}).get("contributors", {}).get("template", "")
+                          contributors_content = contributors_template.replace("{{owner}}", owner).replace("{{repo_name}}", repo_name)
+
+                          # --- 3. Render the template ---
+                          replacements = {
+                              "{{repo_name}}": repo_name,
+                              "{{owner}}": owner,
+                              "{{tag}}": tag,
+                              "{{release_date}}": release_date,
+                              "{{changelog}}": changelog_content,
+                              "{{assets_links}}": assets_links_content,
+                              "{{contributors}}": contributors_content,
+                          }
+
+                          body = body_template
+                          for placeholder, value in replacements.items():
+                              body = body.replace(placeholder, value)
+
+                          # --- 4. Set GitHub Action output ---
                           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
                               f.write("body<<EOF\n")
                               f.write(body)
                               f.write("\nEOF\n")
-                      except KeyError as e:
-                          print(f"Error: Missing environment variable {e}", file=sys.stderr)
+
+                      except (KeyError, FileNotFoundError, toml.TomlDecodeError, Exception) as e:
+                          print(f"An unexpected error occurred: {e}", file=sys.stderr)
                           sys.exit(1)
-                      except FileNotFoundError:
-                          print(f"Error: Manifest file not found at '{manifest_path}'", file=sys.stderr)
-                          sys.exit(1)
-                      except (subprocess.CalledProcessError, ValueError) as e:
-                          print(f"An error occurred: {e}", file=sys.stderr)
-                          sys.exit(1)
+
                   if __name__ == "__main__":
                       main()
               env:
                   GITHUB_REPOSITORY: ${{ github.repository }}
                   INPUT_TAG: ${{ github.event.inputs.tag }}
+                  INPUT_PREVIOUS_TAG: ${{ github.event.inputs.previous_tag }}
                   ASSET_FILES: ${{ steps.prepare_assets.outputs.final_assets }}
                   MANIFEST_PATH: ".github/release-manifest.toml"
             - name: Create Release
