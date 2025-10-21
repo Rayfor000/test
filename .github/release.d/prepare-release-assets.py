@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 Prepares a list of release assets based on include/exclude patterns from a TOML file.
 """
+
 import argparse
-import fnmatch
 import os
 import sys
 from pathlib import Path
@@ -30,17 +29,17 @@ def get_asset_patterns(manifest_path: Path) -> tuple[list[str], list[str]]:
     try:
         with open(manifest_path, "rb") as f:
             manifest = tomli.load(f)
-        
+
         release_config = manifest.get("release", {})
         assets_config = release_config.get("assets", {})
-        
+
         include_patterns = assets_config.get("include", [])
         exclude_patterns = assets_config.get("exclude", [])
-        
+
         if not isinstance(include_patterns, list) or not isinstance(exclude_patterns, list):
             print("Error: 'release.assets.include' and 'release.assets.exclude' must be arrays of strings.", file=sys.stderr)
             sys.exit(1)
-            
+
         return include_patterns, exclude_patterns
     except tomli.TOMLDecodeError:
         print(f"Error: Could not decode TOML file at '{manifest_path}'", file=sys.stderr)
@@ -50,9 +49,7 @@ def get_asset_patterns(manifest_path: Path) -> tuple[list[str], list[str]]:
         sys.exit(1)
 
 
-def find_files(
-    root_dir: Path, include_patterns: list[str], exclude_patterns: list[str]
-) -> list[str]:
+def find_files(root_dir: Path, include_patterns: list[str], exclude_patterns: list[str]) -> list[str]:
     """
     Finds files matching the patterns.
 
@@ -82,9 +79,7 @@ def find_files(
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Filter files for release based on a TOML manifest."
-    )
+    parser = argparse.ArgumentParser(description="Filter files for release based on a TOML manifest.")
     parser.add_argument(
         "manifest",
         type=Path,
@@ -93,10 +88,10 @@ def main():
     args = parser.parse_args()
 
     include, exclude = get_asset_patterns(args.manifest)
-    
+
     # We assume the script runs from the repository root
     workspace_dir = Path(os.getcwd())
-    
+
     final_asset_list = find_files(workspace_dir, include, exclude)
 
     # Output for GitHub Actions

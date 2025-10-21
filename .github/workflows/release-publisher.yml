@@ -17,7 +17,7 @@ jobs:
         outputs:
             # from actions-config.yml
             check_matrix: ${{ steps.yaml.outputs.check_matrix }}
-            build_matrix: ${{ steps.yaml.outputs.build_matrix }}
+            build_targets: ${{ steps.yaml.outputs.build_targets }}
             # from release-manifest.toml
             trigger_tag_pattern: ${{ steps.toml.outputs.trigger_tag_pattern }}
             skip_approval: ${{ steps.toml.outputs.release_skip_approval }}
@@ -49,10 +49,10 @@ jobs:
                   with open('.github/actions-config.yml', 'r') as f:
                       data = yaml.safe_load(f)
                   check_matrix = json.dumps(data['check']['matrix'])
-                  build_matrix = json.dumps(data['build']['matrix'])
+                  build_targets = " ".join(data['build']['matrix']['target'])
                   with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
                       f.write(f"check_matrix={check_matrix}\n")
-                      f.write(f"build_matrix={build_matrix}\n")
+                      f.write(f"build_targets={build_targets}\n")
             - name: Parse release-manifest.toml
               id: toml
               shell: python
@@ -129,42 +129,11 @@ jobs:
             - name: Manual approval step
               run: echo "Release approved. Proceeding to build."
 
-    build:
-        name: Build Artifacts
+    release:
+        name: Build and Release
         needs: [parse_configs, approval]
         if: always() && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
         runs-on: ${{ needs.parse_configs.outputs.build_runs_on }}
-        strategy:
-            matrix: ${{ fromJson(needs.parse_configs.outputs.build_matrix) }}
-        steps:
-            - uses: actions/checkout@v5
-            - name: Cache dependencies
-              if: needs.parse_configs.outputs.build_cache_enable == 'true'
-              uses: actions/cache@v4
-              with:
-                  path: ${{ needs.parse_configs.outputs.build_cache_path }}
-                  key: "${{ runner.os }}-pip-${{ hashFiles(needs.parse_configs.outputs.build_cache_key_file) }}"
-            - name: Make build script executable
-              run: chmod +x ${{ needs.parse_configs.outputs.build_run_script }}
-            - name: Run Build Script
-              shell: bash
-              run: ${{ needs.parse_configs.outputs.build_run_script }}
-              env:
-                  TARGET: ${{ matrix.target }}
-                  RUNNER_OS: ${{ matrix.os }}
-            - name: Package changed files
-              run: git status --porcelain | sed 's/^...//' | tar -cvf changes.tar -T -
-            - name: Upload artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: build-changes
-                  path: changes.tar
-
-    release:
-        name: Create GitHub Release
-        needs: build
-        if: success()
-        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5
               with:
@@ -172,27 +141,36 @@ jobs:
             - name: Check if tag exists
               shell: bash
               run: |
-                if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
-                  echo "Error: Tag '${{ github.event.inputs.tag }}' already exists."
-                  exit 1
-                fi
+                  if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
+                    echo "Error: Tag '${{ github.event.inputs.tag }}' already exists."
+                    exit 1
+                  fi
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
                   python-version: "3.12"
             - name: Install dependencies
               run: pip install toml pytz tomli
-            - name: Download all artifacts
-              uses: actions/download-artifact@v4
+            - name: Cache dependencies
+              if: needs.parse_configs.outputs.build_cache_enable == 'true'
+              uses: actions/cache@v4
               with:
-                  name: build-changes
+                  path: ${{ needs.parse_configs.outputs.build_cache_path }}
+                  key: "${{ runner.os }}-pip-${{ hashFiles(needs.parse_configs.outputs.build_cache_key_file) }}"
+            - name: Run Build Script for All Targets
+              shell: bash
+              run: |
+                  chmod +x ${{ needs.parse_configs.outputs.build_run_script }}
+                  for target in ${{ needs.parse_configs.outputs.build_targets }}; do
+                    echo "--- Building for target: $target ---"
+                    TARGET=$target ${{ needs.parse_configs.outputs.build_run_script }}
+                  done
             - name: Prepare Release Assets
               id: prepare_assets
               run: |
-                tar -xvf changes.tar
-                echo "final_assets<<EOF" >> $GITHUB_OUTPUT
-                python .github/release.d/prepare-release-assets.py .github/release-manifest.toml >> $GITHUB_OUTPUT
-                echo "EOF" >> $GITHUB_OUTPUT
+                  echo "final_assets<<EOF" >> $GITHUB_OUTPUT
+                  python .github/release.d/prepare-release-assets.py .github/release-manifest.toml >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
             - name: Generate Release Notes
               id: notes_generator
               run: |
