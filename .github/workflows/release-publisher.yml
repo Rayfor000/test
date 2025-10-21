@@ -154,7 +154,7 @@ jobs:
                       dist/
     release:
         name: Create Release
-        needs: [build, parse_configs]
+        needs: [build, parse_configs, check, approval]
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5
@@ -167,10 +167,12 @@ jobs:
             - name: Install dependencies
               run: pip install toml tomli
             - name: Download all artifacts
+              if: needs.check.result == 'success' && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
               uses: actions/download-artifact@v4
               with:
                   path: ./dist
             - name: Prepare Release Assets
+              if: needs.check.result == 'success' && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
               id: prepare_assets
               shell: python
               run: |
@@ -222,6 +224,7 @@ jobs:
                           f.write("\nEOF\n")
                   main()
             - name: Generate Release Notes
+              if: needs.check.result == 'success' && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
               id: notes_generator
               shell: python
               run: |
@@ -345,6 +348,7 @@ jobs:
                   ASSET_FILES: ${{ steps.prepare_assets.outputs.final_assets }}
                   MANIFEST_PATH: ".github/release-manifest.toml"
             - name: Create Release
+              if: needs.check.result == 'success' && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
               uses: softprops/action-gh-release@v1
               with:
                   tag_name: ${{ github.event.inputs.tag }}
