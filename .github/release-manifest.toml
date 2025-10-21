@@ -1,9 +1,6 @@
 # .github/release-manifest.toml
 # This is the single source of truth for the release workflow.
 
-[trigger]
-tag_pattern = "v*"
-
 [release]
 skip_approval = true
 body_template = """
@@ -31,7 +28,7 @@ template = """
 </a>
 """
 [release.assets]
-include = ["dist/*", "release_notes.md"]
+include = ["*", "release_notes.md"]
 exclude = ["debug_symbols.zip"]
 [release.assets.associate]
 assets_links = "release_notes.md"

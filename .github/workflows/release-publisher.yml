@@ -20,7 +20,6 @@ jobs:
             check_matrix: ${{ steps.yaml.outputs.check_matrix }}
             build_targets: ${{ steps.yaml.outputs.build_targets }}
             # from release-manifest.toml
-            trigger_tag_pattern: ${{ steps.toml.outputs.trigger_tag_pattern }}
             skip_approval: ${{ steps.toml.outputs.release_skip_approval }}
             release_assets_include: ${{ steps.toml.outputs.release_assets_include }}
             release_assets_exclude: ${{ steps.toml.outputs.release_assets_exclude }}
@@ -84,7 +83,6 @@ jobs:
                       f.write(f"{value}\n")
                       f.write(f"{delimiter}\n")
                   with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-                      f.write(get_output_line("trigger_tag_pattern", data["trigger"]["tag_pattern"]) + "\n")
                       f.write(get_output_line("release_skip_approval", data["release"]["skip_approval"]) + "\n")
                       assets = data.get("release", {}).get("assets", {})
                       set_multiline_output(f, "release_assets_include", assets.get("include", []))
