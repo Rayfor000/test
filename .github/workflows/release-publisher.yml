@@ -33,13 +33,6 @@ jobs:
             build_cache_key_file: ${{ steps.toml.outputs.build_features_cache_key_file }}
         steps:
             - uses: actions/checkout@v5
-            - name: Check if tag exists
-              shell: bash
-              run: |
-                  if git rev-parse "refs/tags/${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
-                    echo "Error: Tag '${{ github.event.inputs.tag }}' already exists."
-                    exit 1
-                  fi
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
@@ -138,6 +131,17 @@ jobs:
             - uses: actions/checkout@v5
               with:
                   fetch-depth: 0
+            - name: Check if release exists
+              id: check_release
+              continue-on-error: true
+              run: gh release view "${{ github.event.inputs.tag }}"
+              env:
+                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Fail if release exists
+              if: steps.check_release.outcome == 'success'
+              run: |
+                echo "Error: Release for tag '${{ github.event.inputs.tag }}' already exists."
+                exit 1
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
