@@ -113,16 +113,16 @@ jobs:
     approval:
         name: Approve for Release
         needs: [parse_configs, check]
-        if: needs.parse_configs.outputs.skip_approval == 'false'
         runs-on: ubuntu-latest
         environment: release
         steps:
             - name: Manual approval step
+              if: needs.parse_configs.outputs.skip_approval == 'false'
               run: echo "Release approved. Proceeding to build."
     build:
         name: Build
         needs: [parse_configs, approval]
-        if: always() && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
+        if: needs.approval.result == 'success' || needs.approval.result == 'skipped'
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
@@ -154,7 +154,8 @@ jobs:
                       dist/
     release:
         name: Create Release
-        needs: [build, parse_configs, check, approval]
+        needs: [check, build, approval]
+        if: needs.approval.result == 'success' || needs.approval.result == 'skipped'
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5
@@ -167,12 +168,10 @@ jobs:
             - name: Install dependencies
               run: pip install toml tomli
             - name: Download all artifacts
-              if: needs.check.result == 'success' && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
               uses: actions/download-artifact@v4
               with:
                   path: ./dist
             - name: Prepare Release Assets
-              if: needs.check.result == 'success' && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
               id: prepare_assets
               shell: python
               run: |
@@ -224,7 +223,6 @@ jobs:
                           f.write("\nEOF\n")
                   main()
             - name: Generate Release Notes
-              if: needs.check.result == 'success' && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
               id: notes_generator
               shell: python
               run: |
@@ -235,7 +233,6 @@ jobs:
                   from datetime import datetime, timezone
                   from pathlib import Path
                   import toml
-
                   def get_env_var(name: str, required: bool = True, default: str = "") -> str:
                       """Gets an environment variable, exiting if required and not found."""
                       value = os.environ.get(name)
@@ -243,7 +240,6 @@ jobs:
                           print(f"Error: Missing required environment variable '{name}'", file=sys.stderr)
                           sys.exit(1)
                       return value if value is not None else default
-
                   def run_command(command: str) -> str:
                       """Runs a shell command and returns its stdout, or an empty string on error."""
                       try:
@@ -259,14 +255,12 @@ jobs:
                       except subprocess.CalledProcessError as e:
                           print(f"Warning: Command '{command}' failed with error: {e.stderr.strip()}", file=sys.stderr)
                           return "" # Return empty string for robustness
-
                   def generate_changelog(previous_tag: str, current_tag: str) -> str:
                       """Generates a changelog from Git history between two tags."""
                       if not previous_tag or not current_tag:
                           return "Changelog generation skipped: missing previous or current tag."
                       command = f'git log {previous_tag}..{current_tag} --pretty=format:"- %s (%h)"'
                       return run_command(command)
-
                   def generate_assets_links(repo_full_name: str, tag: str, asset_files_str: str) -> str:
                       """Generates a Markdown-formatted list of links for release assets."""
                       if not asset_files_str:
@@ -280,7 +274,6 @@ jobs:
                           link = f"- [{filename}](https://github.com/{repo_full_name}/releases/download/{tag}/{filename})"
                           links.append(link)
                       return "\n".join(links)
-
                   def main():
                       """Main function to generate and print release notes."""
                       try:
@@ -295,25 +288,20 @@ jobs:
                           if not manifest_path.is_file():
                               print(f"Error: Manifest file not found at '{manifest_path}'", file=sys.stderr)
                               sys.exit(1)
-
                           manifest = toml.load(manifest_path)
                           body_template = manifest.get("release", {}).get("body_template", "")
                           if not body_template:
                               print("Error: 'release.body_template' not found in manifest.", file=sys.stderr)
                               sys.exit(1)
-
                           # --- 2. Prepare placeholder values ---
                           owner, repo_name = repo_full_name.split('/', 1) if '/' in repo_full_name else (repo_full_name, "")
                           
                           release_date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-
                           changelog_content = generate_changelog(previous_tag, tag)
-
                           assets_links_content = generate_assets_links(repo_full_name, tag, asset_files)
                           
                           contributors_template = manifest.get("release", {}).get("contributors", {}).get("template", "")
                           contributors_content = contributors_template.replace("{{owner}}", owner).replace("{{repo_name}}", repo_name)
-
                           # --- 3. Render the template ---
                           replacements = {
                               "{{repo_name}}": repo_name,
@@ -324,21 +312,17 @@ jobs:
                               "{{assets_links}}": assets_links_content,
                               "{{contributors}}": contributors_content,
                           }
-
                           body = body_template
                           for placeholder, value in replacements.items():
                               body = body.replace(placeholder, value)
-
                           # --- 4. Set GitHub Action output ---
                           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
                               f.write("body<<EOF\n")
                               f.write(body)
                               f.write("\nEOF\n")
-
                       except (KeyError, FileNotFoundError, toml.TomlDecodeError, Exception) as e:
                           print(f"An unexpected error occurred: {e}", file=sys.stderr)
                           sys.exit(1)
-
                   if __name__ == "__main__":
                       main()
               env:
@@ -348,7 +332,6 @@ jobs:
                   ASSET_FILES: ${{ steps.prepare_assets.outputs.final_assets }}
                   MANIFEST_PATH: ".github/release-manifest.toml"
             - name: Create Release
-              if: needs.check.result == 'success' && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success')
               uses: softprops/action-gh-release@v1
               with:
                   tag_name: ${{ github.event.inputs.tag }}
