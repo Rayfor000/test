@@ -1,42 +1,47 @@
+# .github/workflows/release-publisher.yml
+# This workflow is a simple wrapper around the master release script.
+# All logic is contained within `run_release.py`.
+
 name: Release Publisher
+
 on:
     workflow_dispatch:
         inputs:
             tag:
                 description: "The tag to create the release for (e.g., v1.0.0)"
                 required: true
-            previous_tag:
-                description: "The previous tag for changelog generation"
-                required: true
 
+# Required permissions for the 'gh' CLI to create releases and for checkout.
 permissions:
     contents: write
-    id-token: write # Required for gh cli
+    id-token: write
 
 jobs:
     release:
-        name: Create Release
+        name: Run Unified Release Process
         runs-on: ubuntu-latest
         steps:
+            # Step 1: Checkout repository
+            # fetch-depth: 0 is required to fetch all history for changelog generation.
             - name: Checkout repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v4
               with:
-                  fetch-depth: 0 # Required for changelog generation
+                  fetch-depth: 0
 
+            # Step 2: Set up Python environment
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
                   python-version: "3.12"
 
             - name: Install Dependencies
-              run: pip install toml
+              run: pip install tomllib
 
-            - name: Run Release Script
+            # Step 3: Execute the master release script
+            # The script orchestrates all steps: checks, build, approval, and release.
+            - name: Run Master Release Script
               env:
-                  # The GITHUB_TOKEN is automatically available to the workflow.
-                  # gh cli will use it for authentication.
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # The GITHUB_TOKEN is aliased to GH_TOKEN for the 'gh' CLI.
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  python .github/release.d/run_release.py \
-                    --tag "${{ github.event.inputs.tag }}" \
-                    --previous-tag "${{ github.event.inputs.previous_tag }}"
+                  python .github/release.d/run_release.py --tag "${{ github.event.inputs.tag }}"
