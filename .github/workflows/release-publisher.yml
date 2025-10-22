@@ -1,6 +1,5 @@
 # .github/workflows/release-publisher.yml
-# This workflow is a simple wrapper around the master release script.
-# All logic is contained within `run_release.py`.
+# This workflow orchestrates the release process through a series of modular jobs.
 
 name: Release Publisher
 
@@ -11,24 +10,22 @@ on:
                 description: "The tag to create the release for (e.g., v1.0.0)"
                 required: true
 
-# Required permissions for the 'gh' CLI to create releases and for checkout.
 permissions:
     contents: write
     id-token: write
 
 jobs:
-    release:
-        name: Run Unified Release Process
+    # Job 1: Parse Configuration
+    # Reads the release manifest and sets outputs for other jobs.
+    parse_configs:
+        name: Parse Release Configs
         runs-on: ubuntu-latest
+        outputs:
+            skip_approval: ${{ steps.parse.outputs.skip_approval }}
         steps:
-            # Step 1: Checkout repository
-            # fetch-depth: 0 is required to fetch all history for changelog generation.
             - name: Checkout repository
               uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
 
-            # Step 2: Set up Python environment
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
@@ -37,11 +34,96 @@ jobs:
             - name: Install Dependencies
               run: pip install tomllib
 
-            # Step 3: Execute the master release script
-            # The script orchestrates all steps: checks, build, approval, and release.
-            - name: Run Master Release Script
+            - name: Parse Manifest
+              id: parse
+              run: |
+                  output=$(python .github/release.d/parse_config_outputs.py)
+                  echo "$output" >> $GITHUB_OUTPUT
+
+    # Job 2: Run Pre-flight Checks
+    # Depends on config parsing and runs verification scripts.
+    check:
+        name: Run Pre-flight Checks
+        needs: parse_configs
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Run Check Script
+              run: bash .github/release.d/python-check.sh
+
+    # Job 3: Build Artifacts
+    # Depends on checks and runs the build script.
+    build:
+        name: Build Artifacts
+        needs: check
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Run Build Script
+              run: bash .github/release.d/build-python.sh
+
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dist
+                  path: dist/
+
+    # Job 4: Manual Approval Gate
+    # Runs only if `skip_approval` is false.
+    approval:
+        name: Manual Approval
+        needs: build
+        if: ${{ needs.parse_configs.outputs.skip_approval == 'false' }}
+        runs-on: ubuntu-latest
+        environment: release
+        steps:
+            - name: Wait for manual approval
+              run: echo "Waiting for manual approval. Review build artifacts and logs, then approve the job to continue."
+
+    # Job 5: Create GitHub Release
+    # Always runs, but succeeds only if approval was skipped or successful.
+    release:
+        name: Create GitHub Release
+        needs: [parse_configs, approval]
+        if: ${{ always() && (needs.parse_configs.outputs.skip_approval == 'true' || needs.approval.result == 'success') }}
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  # fetch-depth: 0 is required to get all tags for changelog generation.
+                  fetch-depth: 0
+
+            - name: Set up Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: "3.12"
+
+            - name: Install Dependencies
+              run: pip install tomllib
+
+            - name: Download Artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: dist
+                  path: dist/
+
+            - name: Generate Release Notes
+              id: generate_notes
+              run: |
+                  python .github/release.d/generate-release-notes.py \
+                    --tag "${{ github.event.inputs.tag }}" \
+                    --notes-file "release_notes.md"
+
+            - name: Create GitHub Release
               env:
-                  # The GITHUB_TOKEN is aliased to GH_TOKEN for the 'gh' CLI.
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  python .github/release.d/run_release.py --tag "${{ github.event.inputs.tag }}"
+                  gh release create "${{ github.event.inputs.tag }}" \
+                    --title "Release ${{ github.event.inputs.tag }}" \
+                    --notes-file "release_notes.md" \
+                    dist/*

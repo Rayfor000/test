@@ -16,7 +16,6 @@ body_template = """
 {{contributors}}
 
 ---
-_Release generated on: `{{release_date}}`_
 """
 [release.changelog]
 diff_method = ".."
