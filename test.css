@@ -1,0 +1,144 @@
+/* ==UserStyle==
+@name              蝦皮購物 - 精緻暗黑模式 (Shopee Dark Mode)
+@namespace         github.com/openstyles/stylus
+@version           2.0.0
+@description       一套為蝦皮購物設計的精緻暗黑模式，取代預設色彩配置，提供舒適的夜間瀏覽體驗。不再使用 filter: invert()，顏色更精準。
+@author            Optimized by AI
+==/UserStyle== */
+
+@-moz-document regexp("https?://(www\\.)?shopee\\.[a-z]{2,3}(\\.[a-z]{2,3})?(/.*)?")
+{
+	:root {
+		--dark-bg-primary: #121212;
+		--dark-bg-secondary: #1e1e1e;
+		--dark-bg-tertiary: #2a2a2a;
+		--dark-text-primary: #e0e0e0;
+		--dark-text-secondary: #a0a0a0;
+		--dark-text-on-brand: #ffffff;
+		--dark-border-color: #383838;
+		--shopee-brand: #ee4d2d;
+		--shopee-brand-hover: #f06a4d;
+		scrollbar-color: #555 var(--dark-bg-tertiary) !important;
+	}
+	html,
+	body,
+	#main,
+	.container,
+	.page-product,
+	.shop-page,
+	.cart-page {
+		background-color: var(--dark-bg-primary) !important;
+		color: var(--dark-text-primary) !important;
+	}
+	div,
+	section,
+	header,
+	footer,
+	aside,
+	main,
+	article,
+	nav,
+	ul,
+	li {
+		background-color: transparent !important;
+	}
+	[class*="shopee-popup"],
+	.shopee-modal__container,
+	.stardust-tabs-panels,
+	[class*="product-card"],
+	.shopee-search-item-result__item,
+	.shop-page__shop-info-list,
+	.shopee-page-product,
+	._236d2a,
+	.product-briefing,
+	.page-product__content,
+	.shopee-header-section,
+	.stardust-dropdown__popover,
+	.shopee-drawer__contents,
+	[role="contentinfo"] {
+		background-color: var(--dark-bg-secondary) !important;
+		color: var(--dark-text-primary) !important;
+		border-color: var(--dark-border-color) !important;
+	}
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6,
+	p,
+	span,
+	div,
+	label,
+	a {
+		color: var(--dark-text-primary) !important;
+	}
+	a:hover {
+		color: var(--shopee-brand-hover) !important;
+	}
+	.stardust-tabs-header__tab--active div,
+	[class*="--active"] > a,
+	.shopee-link--active-red,
+	[style*="color: rgb(238, 77, 45)"] {
+		color: var(--shopee-brand) !important;
+	}
+	.shopee-top,
+	.navbar-wrapper--without-search,
+	.header-with-search-wrapper,
+	.shopee-top .shopee-top__bg {
+		background: var(--shopee-brand) !important;
+		background-image: linear-gradient(-180deg, var(--shopee-brand), var(--shopee-brand-hover)) !important;
+	}
+	.shopee-searchbar-input__input,
+	input,
+	textarea {
+		background-color: var(--dark-bg-tertiary) !important;
+		color: var(--dark-text-primary) !important;
+		border: 1px solid var(--dark-border-color) !important;
+	}
+	.shopee-button-solid--primary,
+	.btn-solid-primary:not(.btn-solid-primary--disabled) {
+		background: var(--shopee-brand) !important;
+		color: var(--dark-text-on-brand) !important;
+		border: none !important;
+	}
+	.shopee-button-solid--primary:hover,
+	.btn-solid-primary:not(.btn-solid-primary--disabled):hover {
+		background: var(--shopee-brand-hover) !important;
+	}
+	.shopee-button-outline {
+		color: var(--dark-text-primary) !important;
+		border: 1px solid var(--dark-border-color) !important;
+		background: transparent !important;
+	}
+	.shopee-button-outline:hover {
+		background: var(--dark-bg-tertiary) !important;
+	}
+	.shopee-svg-icon {
+		fill: var(--dark-text-secondary);
+	}
+	.shopee-cart-number-badge,
+	.shopee-notification-number-badge {
+		background: var(--dark-text-on-brand) !important;
+		color: var(--shopee-brand) !important;
+		border-color: var(--shopee-brand) !important;
+	}
+	.shopee-rating-stars__primary-star .icon-rating-solid {
+		fill: var(--shopee-brand) !important;
+	}
+	.shopee-rating-stars__dark-star .icon-rating-solid {
+		fill: var(--dark-border-color) !important;
+	}
+	.shopee-divider,
+	hr {
+		border-color: var(--dark-border-color) !important;
+		background: var(--dark-border-color) !important;
+	}
+	.stardust-tabs-header__tab--active:after,
+	._3D9Aun {
+		background-color: var(--shopee-brand) !important;
+	}
+	[style*="url(data:image/svg+xml"] {
+		background-image: none !important;
+	}
+}

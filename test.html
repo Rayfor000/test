@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>本地縮時攝影影片生成器</title>
+		<style>
+			:root {
+				--primary-color: #007bff;
+				--secondary-color: #6c757d;
+				--background-color: #f8f9fa;
+				--container-bg: #ffffff;
+				--text-color: #333;
+				--border-color: #dee2e6;
+				--success-color: #28a745;
+				--error-color: #dc3545;
+				--spinner-color: #007bff;
+			}
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+				background-color: var(--background-color);
+				color: var(--text-color);
+				margin: 0;
+				padding: 20px;
+				display: flex;
+				justify-content: center;
+				align-items: flex-start;
+				min-height: 100vh;
+			}
+			#app-container {
+				background-color: var(--container-bg);
+				padding: 25px 30px;
+				border-radius: 8px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+				width: 100%;
+				max-width: 700px;
+			}
+			h1 {
+				text-align: center;
+				color: var(--primary-color);
+				margin-top: 0;
+			}
+			.instructions {
+				background-color: #e9ecef;
+				border-left: 4px solid var(--primary-color);
+				padding: 15px;
+				margin: 20px 0;
+				border-radius: 4px;
+			}
+			.control-group {
+				margin-bottom: 20px;
+			}
+			label {
+				display: block;
+				font-weight: bold;
+				margin-bottom: 8px;
+			}
+			input[type="file"],
+			input[type="number"],
+			select {
+				width: 100%;
+				padding: 10px;
+				border: 1px solid var(--border-color);
+				border-radius: 4px;
+				box-sizing: border-box;
+				background-color: white;
+			}
+			input[type="file"]::file-selector-button {
+				margin-right: 10px;
+				border: none;
+				background: var(--primary-color);
+				padding: 8px 12px;
+				border-radius: 4px;
+				color: #fff;
+				cursor: pointer;
+				transition: background-color 0.2s;
+			}
+			input[type="file"]::file-selector-button:hover {
+				background: #0056b3;
+			}
+			.sort-controls {
+				display: flex;
+				gap: 10px;
+			}
+			.sort-controls select {
+				width: 50%;
+			}
+			button {
+				width: 100%;
+				padding: 12px;
+				background-color: var(--success-color);
+				color: white;
+				border: none;
+				border-radius: 4px;
+				font-size: 16px;
+				cursor: pointer;
+				transition: background-color 0.2s;
+			}
+			button:disabled {
+				background-color: var(--secondary-color);
+				cursor: not-allowed;
+			}
+			button:not(:disabled):hover {
+				background-color: #218838;
+			}
+			#status {
+				margin-top: 20px;
+				text-align: center;
+			}
+			#status-text.error {
+				color: var(--error-color);
+				font-weight: bold;
+			}
+			#progress-bar-container {
+				width: 100%;
+				background-color: #e9ecef;
+				border-radius: 4px;
+				overflow: hidden;
+				display: none;
+				margin-top: 10px;
+			}
+			#progress-bar {
+				width: 0;
+				height: 20px;
+				background-color: var(--primary-color);
+				text-align: center;
+				line-height: 20px;
+				color: white;
+				transition: width 0.1s linear;
+			}
+			#video-container {
+				margin-top: 25px;
+				display: none;
+			}
+			video {
+				width: 100%;
+				max-width: 100%;
+				border: 1px solid var(--border-color);
+				border-radius: 4px;
+			}
+			#download-link {
+				display: block;
+				width: 100%;
+				margin-top: 15px;
+				text-align: center;
+				padding: 12px;
+				background-color: var(--primary-color);
+				color: white;
+				text-decoration: none;
+				border-radius: 4px;
+				box-sizing: border-box;
+				transition: background-color 0.2s;
+			}
+			#download-link:hover {
+				background-color: #0056b3;
+			}
+			.spinner {
+				border: 4px solid rgba(0, 0, 0, 0.1);
+				width: 36px;
+				height: 36px;
+				border-radius: 50%;
+				border-left-color: var(--spinner-color);
+				animation: spin 1s ease infinite;
+				display: none;
+				margin: 15px auto 0;
+			}
+			@keyframes spin {
+				0% {
+					transform: rotate(0deg);
+				}
+				100% {
+					transform: rotate(360deg);
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app-container">
+			<h1>本地縮時攝影影片生成器</h1>
+			<div class="instructions">
+				<p><strong>使用步驟：</strong></p>
+				<ol>
+					<li>選擇圖片檔案或資料夾。</li>
+					<li>設定您希望的排序規則。</li>
+					<li>設定影片幀率 (FPS)。</li>
+					<li>點擊 "生成影片" 按鈕。</li>
+				</ol>
+				<p>
+					<small><strong>偵錯提示：</strong>若遇到問題，請在瀏覽器中按下 <strong>F12</strong> 打開開發者工具，並查看 "Console" (主控台) 中的詳細日誌訊息。</small>
+				</p>
+			</div>
+
+			<div class="control-group">
+				<label for="image-files">1. 選擇多個圖片檔案</label>
+				<input type="file" id="image-files" multiple accept="image/*" />
+			</div>
+
+			<div class="control-group">
+				<label for="image-directory">或者，選擇整個資料夾</label>
+				<input type="file" id="image-directory" webkitdirectory directory />
+			</div>
+
+			<!-- ==================== 新增的排序控制項 ==================== -->
+			<div class="control-group">
+				<label>2. 設定排序規則</label>
+				<div class="sort-controls">
+					<select id="sort-criteria">
+						<option value="name" selected>按檔案名稱</option>
+						<option value="date">按修改日期</option>
+					</select>
+					<select id="sort-direction">
+						<option value="asc" selected>遞增 (A-Z, 早到晚)</option>
+						<option value="desc">遞減 (Z-A, 晚到早)</option>
+					</select>
+				</div>
+			</div>
+			<!-- ======================================================== -->
+
+			<div class="control-group">
+				<label for="fps">3. 設定影片幀率 (FPS)</label>
+				<input type="number" id="fps" value="24" min="1" max="120" />
+			</div>
+
+			<button id="generate-btn" disabled>生成影片</button>
+
+			<div id="status">
+				<p id="status-text">請先選擇圖片檔案或資料夾。</p>
+				<div class="spinner" id="spinner"></div>
+				<div id="progress-bar-container">
+					<div id="progress-bar">0%</div>
+				</div>
+			</div>
+
+			<div id="video-container">
+				<h2>生成結果</h2>
+				<video id="output-video" controls></video>
+				<a id="download-link" href="#" download="timelapse.webm">下載影片 (.webm)</a>
+			</div>
+		</div>
+
+		<script>
+			console.log("縮時攝影生成器腳本已載入。");
+
+			const imageFilesInput = document.getElementById("image-files");
+			const imageDirectoryInput = document.getElementById("image-directory");
+			const sortCriteriaSelect = document.getElementById("sort-criteria");
+			const sortDirectionSelect = document.getElementById("sort-direction");
+			const fpsInput = document.getElementById("fps");
+			const generateBtn = document.getElementById("generate-btn");
+			const statusText = document.getElementById("status-text");
+			const spinner = document.getElementById("spinner");
+			const progressBarContainer = document.getElementById("progress-bar-container");
+			const progressBar = document.getElementById("progress-bar");
+			const videoContainer = document.getElementById("video-container");
+			const outputVideo = document.getElementById("output-video");
+			const downloadLink = document.getElementById("download-link");
+
+			let imageFiles = [];
+
+			function handleFileSelection() {
+				// 從觸發事件的 input 或所有 input 中獲取檔案
+				const filesFromInput = Array.from(imageFilesInput.files);
+				const filesFromDir = Array.from(imageDirectoryInput.files);
+				const allFiles = [...filesFromInput, ...filesFromDir];
+
+				console.log(`- 初始選取的檔案數量: ${allFiles.length}`);
+				imageFiles = allFiles.filter((file) => file.type.startsWith("image/"));
+				console.log(`- 過濾後有效的圖片數量: ${imageFiles.length}`);
+
+				if (imageFiles.length > 0) {
+					sortFiles(); // 調用排序函數
+					statusText.textContent = `已選擇 ${imageFiles.length} 張圖片。準備就緒。`;
+					statusText.classList.remove("error");
+					generateBtn.disabled = false;
+					videoContainer.style.display = "none";
+				} else {
+					statusText.textContent = "未選擇任何有效的圖片檔案。請確認檔案格式。";
+					statusText.classList.add("error");
+					generateBtn.disabled = true;
+				}
+			}
+
+			function sortFiles() {
+				const sortCriteria = sortCriteriaSelect.value;
+				const sortDirection = sortDirectionSelect.value;
+				console.log(`正在排序... 規則: ${sortCriteria}, 方向: ${sortDirection}`);
+
+				imageFiles.sort((a, b) => {
+					let comparison = 0;
+					if (sortCriteria === "name") {
+						// 使用自然排序，能正確處理 'img2' 和 'img10'
+						comparison = a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+					} else {
+						// 'date'
+						// File.lastModified 是一個時間戳 (數字)
+						comparison = a.lastModified - b.lastModified;
+					}
+
+					// 根據方向反轉結果
+					return sortDirection === "asc" ? comparison : -comparison;
+				});
+
+				console.log(`- 排序後的第一個檔案: ${imageFiles[0].name}`);
+				console.log(`- 排序後的最後一個檔案: ${imageFiles[imageFiles.length - 1].name}`);
+				statusText.textContent = `已重新排序 ${imageFiles.length} 張圖片。準備就緒。`;
+			}
+
+			// 事件監聽
+			imageFilesInput.addEventListener("change", handleFileSelection);
+			imageDirectoryInput.addEventListener("change", handleFileSelection);
+			sortCriteriaSelect.addEventListener("change", sortFiles);
+			sortDirectionSelect.addEventListener("change", sortFiles);
+
+			function delay(ms) {
+				return new Promise((resolve) => setTimeout(resolve, ms));
+			}
+
+			generateBtn.addEventListener("click", async () => {
+				if (imageFiles.length === 0) {
+					alert("請先選擇圖片！");
+					return;
+				}
+
+				console.log("%c--- 開始生成影片 ---", "color: blue; font-weight: bold;");
+
+				// 禁用所有控制項
+				enableControls(false);
+
+				spinner.style.display = "block";
+				progressBarContainer.style.display = "block";
+				progressBar.style.width = "0%";
+				progressBar.textContent = "0%";
+				videoContainer.style.display = "none";
+				statusText.textContent = "正在初始化...";
+				statusText.classList.remove("error");
+
+				try {
+					const fps = parseInt(fpsInput.value, 10);
+					if (isNaN(fps) || fps < 1) {
+						throw new Error("無效的 FPS 值。請輸入大於 0 的數字。");
+					}
+					console.log(`設定 FPS: ${fps}`);
+
+					statusText.textContent = "步驟 1/4: 讀取圖片尺寸...";
+					const firstImage = await loadImage(imageFiles[0]);
+					const { naturalWidth: width, naturalHeight: height } = firstImage;
+					console.log(`影片尺寸確定為: ${width}x${height}`);
+
+					const canvas = document.createElement("canvas");
+					canvas.width = width;
+					canvas.height = height;
+					const ctx = canvas.getContext("2d");
+					console.log("Canvas 已建立。");
+
+					statusText.textContent = "步驟 2/4: 設定影片編碼器...";
+					const stream = canvas.captureStream();
+					const mimeType = "video/webm; codecs=vp9";
+					if (!MediaRecorder.isTypeSupported(mimeType)) {
+						throw new Error(`瀏覽器不支援 ${mimeType} 編碼格式。`);
+					}
+					const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
+					console.log(`MediaRecorder 已設定，使用格式: ${mimeType}`);
+					const chunks = [];
+
+					recorder.ondataavailable = (event) => {
+						if (event.data.size > 0) chunks.push(event.data);
+					};
+
+					recorder.onstop = () => {
+						console.log("MediaRecorder 已停止。");
+						statusText.textContent = "步驟 4/4: 合成影片檔案...";
+						const videoBlob = new Blob(chunks, { type: "video/webm" });
+						const videoUrl = URL.createObjectURL(videoBlob);
+						console.log(`影片 Blob 已建立，大小: ${(videoBlob.size / 1024 / 1024).toFixed(2)} MB`);
+
+						outputVideo.src = videoUrl;
+						downloadLink.href = videoUrl;
+
+						videoContainer.style.display = "block";
+						spinner.style.display = "none";
+						statusText.textContent = `處理完成！成功生成了包含 ${imageFiles.length} 幀的影片。`;
+						console.log("%c--- 影片生成成功 ---", "color: green; font-weight: bold;");
+						enableControls(true);
+					};
+
+					recorder.start();
+					console.log("MediaRecorder 已啟動，開始繪製幀...");
+					statusText.textContent = `步驟 3/4: 處理圖片幀...`;
+
+					const frameDelay = 1000 / fps;
+
+					for (let i = 0; i < imageFiles.length; i++) {
+						const file = imageFiles[i];
+						const progress = Math.round(((i + 1) / imageFiles.length) * 100);
+						statusText.textContent = `步驟 3/4: 正在處理第 ${i + 1} / ${imageFiles.length} 張圖片...`;
+						progressBar.style.width = `${progress}%`;
+						progressBar.textContent = `${progress}%`;
+
+						const image = await loadImage(file);
+						ctx.drawImage(image, 0, 0, width, height);
+						await delay(frameDelay);
+					}
+
+					console.log("所有幀已繪製完成，正在停止 MediaRecorder...");
+					recorder.stop();
+				} catch (error) {
+					console.error("生成影片時發生嚴重錯誤:", error);
+					statusText.textContent = `發生錯誤: ${error.message} (詳情請見主控台 F12)`;
+					statusText.classList.add("error");
+					spinner.style.display = "none";
+					progressBarContainer.style.display = "none";
+					enableControls(true);
+				}
+			});
+
+			function loadImage(file) {
+				return new Promise((resolve, reject) => {
+					const img = new Image();
+					const reader = new FileReader();
+					reader.onload = (e) => {
+						img.onload = () => resolve(img);
+						img.onerror = (err) => reject(new Error(`無法載入圖片: ${file.name}`));
+						img.src = e.target.result;
+					};
+					reader.onerror = (err) => reject(new Error(`無法讀取檔案: ${file.name}`));
+					reader.readAsDataURL(file);
+				});
+			}
+
+			function enableControls(enable) {
+				console.log(enable ? "正在重新啟用所有控制項。" : "正在禁用所有控制項。");
+				generateBtn.disabled = !enable;
+				imageFilesInput.disabled = !enable;
+				imageDirectoryInput.disabled = !enable;
+				sortCriteriaSelect.disabled = !enable;
+				sortDirectionSelect.disabled = !enable;
+				fpsInput.disabled = !enable;
+			}
+		</script>
+	</body>
+</html>

@@ -1,0 +1,265 @@
+---
+# Command: glocaltext --config config.yaml --debug . --incrementa
+providers:
+  google: {}
+
+tasks:
+- name: "Translate kejilion.sh to Traditional Chinese"
+  enabled: true
+  translator: "google"
+  source_lang: "zh-CN"
+  target_lang: "zh-TW"
+  source:
+    include:
+    - "kejilion.sh"
+  extraction_rules:
+  - 'echo -e "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'echo "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -r -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -e -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'webname="(.*)"'
+  cache_path: "tw"
+  output:
+    in_place: false
+    path: "tw"
+  rules:
+  - match:
+      regex: "[yY]/[nN]"
+    action:
+      action: "modify"
+      value: "y/N"
+  - match:
+      regex: ': (?!")'
+    action:
+      action: "modify"
+      value: "："
+  - match:
+      regex: '\$\{\w*\}'
+    action:
+      action: "protect"
+  - match:
+      exact: '\n# 自动进入 tmux 会话\nif [[ -z \'
+    action:
+      action: "skip"
+- name: "Translate kejilion.sh to Simplified Chinese"
+  enabled: true
+  translator: "google"
+  source_lang: "zh-CN"
+  target_lang: "zh-CN"
+  source:
+    include:
+    - "kejilion.sh"
+  extraction_rules:
+  - 'echo -e "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'echo "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -r -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -e -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'webname="(.*)"'
+  cache_path: "cn"
+  output:
+    in_place: false
+    path: "cn"
+  rules:
+  - match:
+      regex: "[yY]/[nN]"
+    action:
+      action: "modify"
+      value: "y/N"
+  - match:
+      regex: ': (?!")'
+    action:
+      action: "modify"
+      value: "："
+  - match:
+      regex: '\$\{\w*\}'
+    action:
+      action: "protect"
+  - match:
+      exact: '\n# 自动进入 tmux 会话\nif [[ -z \'
+    action:
+      action: "skip"
+- name: "Translate kejilion.sh to English"
+  enabled: true
+  translator: "google"
+  source_lang: "zh-CN"
+  target_lang: "en"
+  source:
+    include:
+    - "kejilion.sh"
+  extraction_rules:
+  - 'echo -e "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'echo "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -r -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -e -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'webname="(.*)"'
+  cache_path: "en"
+  output:
+    in_place: false
+    path: "en"
+  rules:
+  - match:
+      regex: "[yY]/[nN]"
+    action:
+      action: "modify"
+      value: "y/N"
+  - match:
+      contains: '：'
+    action:
+      action: "modify"
+      value: ": "
+  - match:
+      regex: '\$\{\w*\}'
+    action:
+      action: "protect"
+  - match:
+      exact: '\n# 自动进入 tmux 会话\nif [[ -z \'
+    action:
+      action: "skip"
+- name: "Translate kejilion.sh to Japanese"
+  enabled: true
+  translator: "gemini"
+  source_lang: "zh-CN"
+  target_lang: "ja"
+  source:
+    include:
+    - "kejilion.sh"
+  extraction_rules:
+  - 'echo -e "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'echo "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -r -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -e -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'webname="(.*)"'
+  cache_path: "ja"
+  output:
+    in_place: false
+    path: "ja"
+  rules:
+  - match:
+      regex: "[yY]/[nN]"
+    action:
+      action: "modify"
+      value: "y/N"
+  - match:
+      contains: '：'
+    action:
+      action: "modify"
+      value: ": "
+  - match:
+      regex: '\$\{\w*\}'
+    action:
+      action: "protect"
+  - match:
+      exact: '\n# 自动进入 tmux 会话\nif [[ -z \'
+    action:
+      action: "skip"
+- name: "Translate kejilion.sh to Korean"
+  enabled: true
+  translator: "gemini"
+  source_lang: "zh-CN"
+  target_lang: "ko"
+  source:
+    include:
+    - "kejilion.sh"
+  extraction_rules:
+  - 'echo -e "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'echo "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -r -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -e -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'webname="(.*)"'
+  cache_path: "kr"
+  output:
+    in_place: false
+    path: "kr"
+  rules:
+  - match:
+      regex: "[yY]/[nN]"
+    action:
+      action: "modify"
+      value: "y/N"
+  - match:
+      regex: ': (?!")'
+    action:
+      action: "modify"
+      value: "："
+  - match:
+      regex: '\$\{\w*\}'
+    action:
+      action: "protect"
+  - match:
+      exact: '\n# 自动进入 tmux 会话\nif [[ -z \'
+    action:
+      action: "skip"
+- name: "Translate kejilion.sh to Russian"
+  enabled: true
+  translator: "gemini"
+  source_lang: "zh-CN"
+  target_lang: "ru"
+  source:
+    include:
+    - "kejilion.sh"
+  extraction_rules:
+  - 'echo -e "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'echo "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -r -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -e -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'webname="(.*)"'
+  cache_path: "ru"
+  output:
+    in_place: false
+    path: "ru"
+  rules:
+  - match:
+      regex: "[yY]/[nN]"
+    action:
+      action: "modify"
+      value: "y/N"
+  - match:
+      contains: '：'
+    action:
+      action: "modify"
+      value: ": "
+  - match:
+      regex: '\$\{\w*\}'
+    action:
+      action: "protect"
+  - match:
+      exact: '\n# 自动进入 tmux 会话\nif [[ -z \'
+    action:
+      action: "skip"
+- name: "Translate kejilion.sh to Persian"
+  enabled: true
+  translator: "gemini"
+  source_lang: "zh-CN"
+  target_lang: "fa"
+  source:
+    include:
+    - "kejilion.sh"
+  extraction_rules:
+  - 'echo -e "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'echo "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -r -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'read -e -p "([^"]*[\u4e00-\u9fa5][^"]*)"'
+  - 'webname="(.*)"'
+  cache_path: "fa"
+  output:
+    in_place: false
+    path: "fa"
+  rules:
+  - match:
+      regex: "[yY]/[nN]"
+    action:
+      action: "modify"
+      value: "y/N"
+  - match:
+      contains: '：'
+    action:
+      action: "modify"
+      value: ": "
+  - match:
+      regex: '\$\{\w*\}'
+    action:
+      action: "protect"
+  - match:
+      exact: '\n# 自动进入 tmux 会话\nif [[ -z \'
+    action:
+      action: "skip"
