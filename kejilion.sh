@@ -189,6 +189,8 @@ check_disk_space() {
 	local required_gb=$1
 	local path=${2:-/}
 
+	mkdir -p "$path"
+
 	local required_space_mb=$((required_gb * 1024))
 	local available_space_mb=$(df -m "$path" | awk 'NR==2 {print $4}')
 
@@ -2091,9 +2093,10 @@ web_optimization() {
 		1)
 			send_stats "站点标准模式"
 
-			# nginx调优
-			sed -i 's/worker_connections.*/worker_connections 10240;/' /home/web/nginx.conf
-			sed -i 's/worker_processes.*/worker_processes 4;/' /home/web/nginx.conf
+			local cpu_cores=$(nproc)
+			local connections=$((1024 * ${cpu_cores}))
+			sed -i "s/worker_processes.*/worker_processes ${cpu_cores};/" /home/web/nginx.conf
+			sed -i "s/worker_connections.*/worker_connections ${connections};/" /home/web/nginx.conf
 
 			# php调优
 			wget -O /home/optimized_php.ini ${gh_proxy}raw.githubusercontent.com/kejilion/sh/main/optimized_php.ini
@@ -2130,8 +2133,10 @@ web_optimization() {
 			send_stats "站点高性能模式"
 
 			# nginx调优
-			sed -i 's/worker_connections.*/worker_connections 20480;/' /home/web/nginx.conf
-			sed -i 's/worker_processes.*/worker_processes 8;/' /home/web/nginx.conf
+			local cpu_cores=$(nproc)
+			local connections=$((2048 * ${cpu_cores}))
+			sed -i "s/worker_processes.*/worker_processes ${cpu_cores};/" /home/web/nginx.conf
+			sed -i "s/worker_connections.*/worker_connections ${connections};/" /home/web/nginx.conf
 
 			# php调优
 			wget -O /home/optimized_php.ini ${gh_proxy}raw.githubusercontent.com/kejilion/sh/main/optimized_php.ini
@@ -3125,26 +3130,31 @@ stream_panel() {
 		1)
 			nginx_install_status
 			add_app_id
+			send_stats "安装Stream四层代理"
 			;;
 		2)
 			update_docker_compose_with_db_creds
 			nginx_upgrade
 			add_app_id
+			send_stats "更新Stream四层代理"
 			;;
 		3)
 			read -e -p "确定要删除 nginx 容器吗？这可能会影响网站功能！(y/N): " confirm
 			if [[ "$confirm" =~ ^[Yy]$ ]]; then
 				docker rm -f nginx
+				sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+				send_stats "更新Stream四层代理"
 				echo "nginx 容器已删除。"
 			else
 				echo "操作已取消。"
 			fi
-			sed -i "/\b${app_id}\b/d" /home/docker/appno.txt
+
 			;;
 
 		4)
 			ldnmp_Proxy_backend_stream
 			add_app_id
+			send_stats "添加四层代理"
 			;;
 		5)
 			send_stats "编辑转发配置"
@@ -3152,12 +3162,14 @@ stream_panel() {
 			install nano
 			nano /home/web/stream.d/$stream_name.conf
 			docker restart nginx
+			send_stats "修改四层代理"
 			;;
 		6)
 			send_stats "删除转发配置"
 			read -e -p "请输入你要删除的服务名: " stream_name
 			rm /home/web/stream.d/$stream_name.conf >/dev/null 2>&1
 			docker restart nginx
+			send_stats "删除四层代理"
 			;;
 		*)
 			break
