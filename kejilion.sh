@@ -1,5 +1,5 @@
 #!/bin/bash
-sh_v="4.2.0"
+sh_v="4.2.1"
 
 gl_hui='\e[37m'
 gl_hong='\033[31m'
@@ -207,6 +207,11 @@ check_disk_space() {
 
 install_dependency() {
 	install wget unzip tar jq grep
+
+	check_swap
+	auto_optimize_dns
+	prefer_ipv4
+
 }
 
 remove() {
@@ -342,23 +347,23 @@ install_add_docker_cn() {
 		cat >/etc/docker/daemon.json <<EOF
 {
   "registry-mirrors": [
-	"https://docker-0.unsee.tech",
-	"https://docker.1panel.live",
-	"https://registry.dockermirror.com",
-	"https://docker.imgdb.de",
-	"https://docker.m.daocloud.io",
-	"https://hub.firefly.store",
-	"https://hub.littlediary.cn",
+	"https://docker.1ms.run",
+	"https://docker.m.ixdev.cn",
 	"https://hub.rat.dev",
-	"https://dhub.kubesre.xyz",
-	"https://cjie.eu.org",
-	"https://docker.1panelproxy.com",
+	"https://dockerproxy.net",
+	"https://docker-registry.nmqu.com",
+	"https://docker.amingg.com",
 	"https://docker.hlmirror.com",
-	"https://hub.fast360.xyz",
-	"https://dockerpull.cn",
-	"https://cr.laoyou.ip-ddns.com",
-	"https://docker.melikeme.cn",
-	"https://docker.kejilion.pro"
+	"https://hub1.nat.tf",
+	"https://hub2.nat.tf",
+	"https://hub3.nat.tf",
+	"https://docker.m.daocloud.io",
+	"https://docker.kejilion.pro",
+	"https://docker.367231.xyz",
+	"https://hub.1panel.dev",
+	"https://dockerproxy.cool",
+	"https://docker.apiba.cn",
+	"https://proxy.vvvv.ee"
   ]
 }
 EOF
@@ -1274,9 +1279,37 @@ update_docker_compose_with_db_creds() {
 
 }
 
+auto_optimize_dns() {
+	# 获取国家代码（如 CN、US 等）
+	local country=$(curl -s ipinfo.io/country)
+
+	# 根据国家设置 DNS
+	if [ "$country" = "CN" ]; then
+		local dns1_ipv4="223.5.5.5"
+		local dns2_ipv4="183.60.83.19"
+		local dns1_ipv6="2400:3200::1"
+		local dns2_ipv6="2400:da00::6666"
+	else
+		local dns1_ipv4="1.1.1.1"
+		local dns2_ipv4="8.8.8.8"
+		local dns1_ipv6="2606:4700:4700::1111"
+		local dns2_ipv6="2001:4860:4860::8888"
+	fi
+
+	# 调用设置 DNS 的函数（需你定义）
+	set_dns "$dns1_ipv4" "$dns2_ipv4" "$dns1_ipv6" "$dns2_ipv6"
+
+}
+
+prefer_ipv4() {
+	grep -q '^precedence ::ffff:0:0/96  100' /etc/gai.conf 2>/dev/null ||
+		echo 'precedence ::ffff:0:0/96  100' >>/etc/gai.conf
+	echo "已切换为 IPv4 优先"
+	send_stats "已切换为 IPv4 优先"
+}
+
 install_ldnmp() {
 
-	check_swap
 	update_docker_compose_with_db_creds
 
 	cd /home/web && docker compose up -d
@@ -2984,7 +3017,7 @@ ldnmp_wp() {
 	wget -O latest.zip ${gh_proxy}github.com/kejilion/Website_source_code/raw/refs/heads/main/wp-latest.zip
 	unzip latest.zip
 	rm latest.zip
-	echo "define('FS_METHOD', 'direct'); define('WP_REDIS_HOST', 'redis'); define('WP_REDIS_PORT', '6379');" >>/home/web/html/$yuming/wordpress/wp-config-sample.php
+	echo "define('FS_METHOD', 'direct'); define('WP_REDIS_HOST', 'redis'); define('WP_REDIS_PORT', '6379'); define('WP_REDIS_MAXTTL', 86400); define('WP_CACHE_KEY_SALT', '${yuming}_');" >>/home/web/html/$yuming/wordpress/wp-config-sample.php
 	sed -i "s|database_name_here|$dbname|g" /home/web/html/$yuming/wordpress/wp-config-sample.php
 	sed -i "s|username_here|$dbuse|g" /home/web/html/$yuming/wordpress/wp-config-sample.php
 	sed -i "s|password_here|$dbusepasswd|g" /home/web/html/$yuming/wordpress/wp-config-sample.php
@@ -11921,7 +11954,12 @@ linux_panel() {
 					-p ${docker_port}:80 \
 					-v /home/docker/pansou/data:/app/data \
 					-v /home/docker/pansou/logs:/app/logs \
-					-e ENABLED_PLUGINS="labi,zhizhen,shandian,duoduo,muou,wanou" \
+					-e ENABLED_PLUGINS="hunhepan,jikepan,panwiki,pansearch,panta,qupansou,
+susu,thepiratebay,wanou,xuexizhinan,panyq,zhizhen,labi,muou,ouge,shandian,
+duoduo,huban,cyg,erxiao,miaoso,fox4k,pianku,clmao,wuji,cldi,xiaozhang,
+libvio,leijing,xb6v,xys,ddys,hdmoli,yuhuage,u3c3,javdb,clxiong,jutoushe,
+sdso,xiaoji,xdyh,haisou,bixin,djgou,nyaa,xinjuc,aikanzy,qupanshe,xdpan,
+discourse,yunsou,ahhhhfs,nsgame,gying" \
 					ghcr.io/fish2018/pansou-web
 
 			}
@@ -12447,10 +12485,7 @@ EOF
 
 				case $choice in
 				1)
-					grep -q '^precedence ::ffff:0:0/96  100' /etc/gai.conf 2>/dev/null ||
-						echo 'precedence ::ffff:0:0/96  100' >>/etc/gai.conf
-					echo "已切换为 IPv4 优先"
-					send_stats "已切换为 IPv4 优先"
+					prefer_ipv4
 					;;
 				2)
 					rm -f /etc/gai.conf
@@ -13299,20 +13334,7 @@ EOF
 				echo -e "[${gl_lv}OK${gl_bai}] 7/10. 设置时区到${gl_huang}上海${gl_bai}"
 
 				echo "------------------------------------------------"
-				local country=$(curl -s ipinfo.io/country)
-				if [ "$country" = "CN" ]; then
-					local dns1_ipv4="223.5.5.5"
-					local dns2_ipv4="183.60.83.19"
-					local dns1_ipv6="2400:3200::1"
-					local dns2_ipv6="2400:da00::6666"
-				else
-					local dns1_ipv4="1.1.1.1"
-					local dns2_ipv4="8.8.8.8"
-					local dns1_ipv6="2606:4700:4700::1111"
-					local dns2_ipv6="2001:4860:4860::8888"
-				fi
-
-				set_dns
+				auto_optimize_dns
 				echo -e "[${gl_lv}OK${gl_bai}] 8/10. 自动优化DNS地址${gl_huang}${gl_bai}"
 
 				echo "------------------------------------------------"
