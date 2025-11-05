@@ -1,0 +1,349 @@
+# ==============================================================================
+# GlocalText Configuration File
+#
+# Command: glocaltext --incremental --debug --dry-run
+# ==============================================================================
+
+# All relative paths are resolved from here.
+project_root: .
+
+# ------------------------------------------------------------------------------
+#  1. Provider Settings
+# ------------------------------------------------------------------------------
+providers:
+    google:
+        batch_size: 20
+
+    gemini:
+        api_key: GEMINI_API_KEY
+        model: gemini-2.5-flash-lite
+        rpm: 15
+        tpm: 250000
+        rpd: 1000
+        # batch_size: 20
+        retry_attempts: 3
+        retry_delay: 1.0
+        retry_backoff_factor: 2.0
+
+    gemma:
+        api_key: GEMINI_API_KEY
+        model: gemma-3-27b-it
+        rpm: 30
+        tpm: 15000
+        rpd: 14400
+        retry_attempts: 3
+        retry_delay: 1.0
+        retry_backoff_factor: 2.0
+
+    mock: {}
+
+# ------------------------------------------------------------------------------
+#  2. Shortcuts & Rulesets: For reusable configuration
+# ------------------------------------------------------------------------------
+shortcuts:
+    # .defaults is implicitly inherited by ALL tasks.
+    .defaults:
+        translator: google
+        source_lang: en
+        incremental: true
+
+        # Reusable rule sets, converted from the old 'rulesets'
+    .shell-common-protections:
+        rules:
+            protect:
+                - \$\{\w*\}
+            skip:
+                - ^\\n# 自动进入 tmux 会话\\nif \[\[ -z \\$
+
+    .zh-punctuation:
+        rules:
+            replace:
+                ': (?!")': '：'
+                '!': '！'
+
+    .en-punctuation:
+        rules:
+            replace:
+                ：: ': '
+                ！: '! '
+                ？: '? '
+                ）: ') '
+                （: '( '
+                科技lion: KejiLion
+            skip:
+                - 1. English          2. 简体中文          3. 繁體中文
+
+    .y-n-prompt:
+        rules:
+            replace:
+                \([yY]/[nN]\): \(y/N\)
+                （y/n）: \(y/N\)
+                \[y/n\]: \(y/N\)
+
+        # Custom shortcut for translating the kejilion.sh script.
+    .kejilion-defaults:
+        extends: .defaults
+        source_lang: zh-TW
+        source:
+            include: ['tw/kejilion.sh']
+        extraction_rules:
+            - echo -e "([^"]*[\u4e00-\u9fa5][^"]*)"
+            - echo "([^"]*[\u4e00-\u9fa5][^"]*)"
+            - read -r -p "([^"]*[\u4e00-\u9fa5][^"]*)"
+            - read -e -p "([^"]*[\u4e00-\u9fa5][^"]*)"
+            - read -rp "([^"]*[\u4e00-\u9fa5][^"]*)"
+            - local status_message="([^"]*[\u4e00-\u9fa5][^"]*)"
+            - app_name="(.*)"
+            - app_text="(.*)"
+            - app_url="(.*)"
+            - docker_describe="(.*)"
+            - docker_url="(.*)"
+            - docker_use="(.*)"
+            - docker_passwd="(.*)"
+            - webname="(.*)"
+            - local runtime=\$\((.*)\)
+
+# ------------------------------------------------------------------------------
+#  3. Tasks: The core translation jobs
+# ------------------------------------------------------------------------------
+tasks:
+    - name: Translate kejilion.sh to MOCK
+      task_id: eb491030-865d-5952-97f1-0e2cddf6cdea
+      enabled: true
+      translator: mock
+      extends: .kejilion-defaults
+      target_lang: mock
+      source:
+          include: ['kejilion.sh']
+      cache_path: mock
+      output:
+          in_place: false
+          path: mock
+
+    - name: Translate kejilion.sh to Traditional Chinese
+      task_id: bde0c1a6-9cd3-5977-94d4-8b576f834516
+      enabled: true
+      extends: .kejilion-defaults
+      source_lang: zh-CN
+      target_lang: zh-TW
+      source:
+          include: ['kejilion.sh']
+      cache_path: tw
+      output:
+          in_place: false
+          path: tw
+      rules:
+          extends:
+              - .shell-common-protections
+              - .zh-punctuation
+              - .y-n-prompt
+          replace:
+              ? cat /proc/uptime \| awk -F\. '\{run_days=int\(\$1 / 86400\);run_hours=int\(\(\$1 % 86400\) / 3600\);run_minutes=int\(\(\$1 % 3600\) / 60\); if \(run_days > 0\) printf\("%d天 ", run_days\); if \(run_hours > 0\) printf\("%d时 ", run_hours\); printf\("%d分\\n", run_minutes\)\}'
+              : uptime -p | sed -E 's/^up //; s/ year[s]?/ 年/g; s/ week[s]?/ 週/g; s/ day[s]?/ 天/g; s/ hour[s]?/ 小時/g; s/ minute[s]?/ 分鐘/g; s/, /，/g'
+
+    - name: Translate kejilion.sh to Simplified Chinese
+      task_id: 8ccd583f-c385-5e78-8442-72e6c89730b1
+      enabled: true
+      extends: .kejilion-defaults
+      source_lang: zh-CN
+      target_lang: zh-CN
+      source:
+          include: ['kejilion.sh']
+      cache_path: cn
+      output:
+          in_place: false
+          path: cn
+      rules:
+          extends:
+              - .shell-common-protections
+              - .zh-punctuation
+              - .y-n-prompt
+
+    - name: Translate kejilion.sh to English
+      task_id: dde76b41-6767-5e20-8a45-ebf352d5d30d
+      enabled: true
+      extends: .kejilion-defaults
+      target_lang: en
+      source:
+          include: ['tw/kejilion.sh'] # Overrides the source from the shortcut
+      cache_path: en
+      output:
+          in_place: false
+          path: en
+      rules:
+          extends:
+              - .shell-common-protections
+              - .en-punctuation
+              - .y-n-prompt
+          replace:
+              ? uptime -p \| sed -E 's/\^up //; s/ year\[s\]\?/ 年/g; s/ week\[s\]\?/ 週/g; s/ day\[s\]\?/ 天/g; s/ hour\[s\]\?/ 小時/g; s/ minute\[s\]\?/ 分鐘/g; s/, /，/g'
+              : uptime -p | sed 's/up //'
+
+    - name: Translate kejilion.sh to Japanese
+      task_id: 52529aad-f0cc-59a7-84e5-3929f9a29bec
+      extends: .kejilion-defaults
+      enabled: true
+      target_lang: ja
+      prompts:
+          system: |
+              <start_of_turn>user
+              You are an expert localization specialist and professional translator.
+              Your task is to translate a list of texts from {source_lang} (Simplified Chinese) to {target_lang}.
+
+              ## Core Principles:
+              1.  **Highest Accuracy:** Preserve the precise meaning, tone, and intent of the original text.
+              2.  **Native Localization:** Do not just translate word-for-word. You MUST adapt the text to be natural, idiomatic, and culturally appropriate for a native speaker of {target_lang}.
+              3.  **Correct Symbology & Typography:** You MUST use the correct and conventional punctuation, spacing, and symbols for the {target_lang}. This is critical for Japanese, Korean, Russian, and Persian. Pay close attention to quotation marks, full-width/half-width characters, and spacing rules.
+              4.  **Source Context (zh-CN):** The source text is Simplified Chinese. It may contain technical terms, UI elements, or modern internet slang. Translate these into their accepted, equivalent terms in {target_lang}.
+
+              ## Output Format (Mandatory & Strict):
+              You MUST return a single, valid JSON object and nothing else.
+              -   Do NOT add any explanations, apologies, or introductory text.
+              -   Do NOT wrap the JSON in markdown backticks (```json ... ```).
+              -   Your *entire* response must be the raw JSON object.
+              -   The JSON object MUST contain only one key: "translations".
+              -   The "translations" key must contain a list of strings.
+              -   This list MUST have the exact same number of items as the input list.
+              -   If a specific text cannot be meaningfully translated, return the original text for that item.
+
+              Translate the following texts:
+              {texts_json_array}<end_of_turn>
+              <start_of_turn>model
+      cache_path: ja
+      output:
+          in_place: false
+          path: ja
+      rules:
+          extends:
+              - .shell-common-protections
+              - .en-punctuation
+              - .y-n-prompt
+          replace:
+              ? uptime -p \| sed -E 's/\^up //; s/ year\[s\]\?/ 年/g; s/ week\[s\]\?/ 週/g; s/ day\[s\]\?/ 天/g; s/ hour\[s\]\?/ 小時/g; s/ minute\[s\]\?/ 分鐘/g; s/, /，/g'
+              : uptime -p | sed 's/up //'
+
+    - name: Translate kejilion.sh to Korean
+      task_id: eb6e8859-d61c-5625-a813-b1b59c8a5325
+      extends: .kejilion-defaults
+      enabled: true
+      target_lang: ko
+      prompts:
+          system: |
+              You are an expert localization specialist and professional translator.
+              Your task is to translate a list of texts from {source_lang} (Simplified Chinese) to {target_lang}.
+
+              ## Core Principles:
+              1.  **Highest Accuracy:** Preserve the precise meaning, tone, and intent of the original text.
+              2.  **Native Localization:** Do not just translate word-for-word. You MUST adapt the text to be natural, idiomatic, and culturally appropriate for a native speaker of {target_lang}.
+              3.  **Correct Symbology & Typography:** You MUST use the correct and conventional punctuation, spacing, and symbols for the {target_lang}. Pay close attention to:
+                  * Quotation marks (e.g., `「」` vs. `""` vs. `«»`).
+                  * Full-width vs. half-width characters.
+                  * Proper spacing rules (e.g., around Hangul, Cyrillic, or Persian script).
+              4.  **Source Context (zh-CN):** The source text is Simplified Chinese. It may contain technical terms, UI elements, or modern internet slang. Translate these into their accepted, equivalent terms in {target_lang}, not just literally.
+
+              ## Output Format (Mandatory & Strict):
+              -   You MUST return a single, valid JSON object.
+              -   This JSON object MUST contain only one key: "translations".
+              -   The "translations" key must contain a list of strings.
+              -   This list MUST have the exact same number of items as the input list.
+              -   If a specific text cannot be meaningfully translated, return the original text for that item.
+              -   Do NOT add any explanations, apologies, or introductory text. Your entire response must be the JSON object itself.
+
+              Translate the following texts:
+              {texts_json_array}
+      cache_path: kr
+      output:
+          in_place: false
+          path: kr
+      rules:
+          extends:
+              - .shell-common-protections
+              - .y-n-prompt
+          replace:
+              ：: ': '
+              ? uptime -p \| sed -E 's/\^up //; s/ year\[s\]\?/ 年/g; s/ week\[s\]\?/ 週/g; s/ day\[s\]\?/ 天/g; s/ hour\[s\]\?/ 小時/g; s/ minute\[s\]\?/ 分鐘/g; s/, /，/g'
+              : uptime -p | sed 's/up //'
+
+    - name: Translate kejilion.sh to Russian
+      task_id: 627b4c4e-f4af-5a39-b8e4-103357eabd7d
+      extends: .kejilion-defaults
+      enabled: true
+      target_lang: ru
+      prompts:
+          system: |
+              You are an expert localization specialist and professional translator.
+              Your task is to translate a list of texts from {source_lang} (Simplified Chinese) to {target_lang}.
+
+              ## Core Principles:
+              1.  **Highest Accuracy:** Preserve the precise meaning, tone, and intent of the original text.
+              2.  **Native Localization:** Do not just translate word-for-word. You MUST adapt the text to be natural, idiomatic, and culturally appropriate for a native speaker of {target_lang}.
+              3.  **Correct Symbology & Typography:** You MUST use the correct and conventional punctuation, spacing, and symbols for the {target_lang}. Pay close attention to:
+                  * Quotation marks (e.g., `「」` vs. `""` vs. `«»`).
+                  * Full-width vs. half-width characters.
+                  * Proper spacing rules (e.g., around Hangul, Cyrillic, or Persian script).
+              4.  **Source Context (zh-CN):** The source text is Simplified Chinese. It may contain technical terms, UI elements, or modern internet slang. Translate these into their accepted, equivalent terms in {target_lang}, not just literally.
+
+              ## Output Format (Mandatory & Strict):
+              -   You MUST return a single, valid JSON object.
+              -   This JSON object MUST contain only one key: "translations".
+              -   The "translations" key must contain a list of strings.
+              -   This list MUST have the exact same number of items as the input list.
+              -   If a specific text cannot be meaningfully translated, return the original text for that item.
+              -   Do NOT add any explanations, apologies, or introductory text. Your entire response must be the JSON object itself.
+
+              Translate the following texts:
+              {texts_json_array}
+      cache_path: ru
+      output:
+          in_place: false
+          path: ru
+      rules:
+          extends:
+              - .shell-common-protections
+              - .en-punctuation
+              - .y-n-prompt
+          replace:
+              ? uptime -p \| sed -E 's/\^up //; s/ year\[s\]\?/ 年/g; s/ week\[s\]\?/ 週/g; s/ day\[s\]\?/ 天/g; s/ hour\[s\]\?/ 小時/g; s/ minute\[s\]\?/ 分鐘/g; s/, /，/g'
+              : uptime -p | sed 's/up //'
+
+    - name: Translate kejilion.sh to Persian
+      task_id: b5688a6a-8275-54e7-9e34-60c9aea23e88
+      extends: .kejilion-defaults
+      enabled: true
+      target_lang: fa
+      prompts:
+          system: |
+              You are an expert localization specialist and professional translator.
+              Your task is to translate a list of texts from {source_lang} (Simplified Chinese) to {target_lang}.
+
+              ## Core Principles:
+              1.  **Highest Accuracy:** Preserve the precise meaning, tone, and intent of the original text.
+              2.  **Native Localization:** Do not just translate word-for-word. You MUST adapt the text to be natural, idiomatic, and culturally appropriate for a native speaker of {target_lang}.
+              3.  **Correct Symbology & Typography:** You MUST use the correct and conventional punctuation, spacing, and symbols for the {target_lang}. Pay close attention to:
+                  * Quotation marks (e.g., `「」` vs. `""` vs. `«»`).
+                  * Full-width vs. half-width characters.
+                  * Proper spacing rules (e.g., around Hangul, Cyrillic, or Persian script).
+              4.  **Source Context (zh-CN):** The source text is Simplified Chinese. It may contain technical terms, UI elements, or modern internet slang. Translate these into their accepted, equivalent terms in {target_lang}, not just literally.
+
+              ## Output Format (Mandatory & Strict):
+              -   You MUST return a single, valid JSON object.
+              -   This JSON object MUST contain only one key: "translations".
+              -   The "translations" key must contain a list of strings.
+              -   This list MUST have the exact same number of items as the input list.
+              -   If a specific text cannot be meaningfully translated, return the original text for that item.
+              -   Do NOT add any explanations, apologies, or introductory text. Your entire response must be the JSON object itself.
+
+              Translate the following texts:
+              {texts_json_array}
+      cache_path: fa
+      output:
+          in_place: false
+          path: fa
+      rules:
+          extends:
+              - .shell-common-protections
+              - .en-punctuation
+              - .y-n-prompt
+          replace:
+              ? uptime -p \| sed -E 's/\^up //; s/ year\[s\]\?/ 年/g; s/ week\[s\]\?/ 週/g; s/ day\[s\]\?/ 天/g; s/ hour\[s\]\?/ 小時/g; s/ minute\[s\]\?/ 分鐘/g; s/, /，/g'
+              : uptime -p | sed 's/up //'
