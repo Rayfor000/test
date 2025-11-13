@@ -1,0 +1,25 @@
+{
+	"mcpServers": {
+		"context7": {
+			"command": "npx",
+			"args": ["-y", "@upstash/context7-mcp@latest"],
+			"alwaysAllow": ["resolve-library-id", "get-library-docs"]
+		},
+		"mcp-sequentialthinking-tools": {
+			"command": "npx",
+			"args": ["-y", "mcp-sequentialthinking-tools"],
+			"env": { "MAX_HISTORY_SIZE": "1000" },
+			"alwaysAllow": ["sequentialthinking_tools"]
+		},
+		"mcp-server-time": {
+			"command": "uvx",
+			"args": ["mcp-server-time", "--local-timezone=Asia/Taipei"],
+			"alwaysAllow": ["get_current_time", "convert_time"]
+		},
+		"deepwiki": {
+			"type": "sse",
+			"url": "https://mcp.deepwiki.com/sse",
+			"alwaysAllow": ["read_wiki_structure", "read_wiki_contents", "ask_question"]
+		}
+	}
+}
