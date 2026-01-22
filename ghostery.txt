@@ -1,0 +1,83 @@
+18comic.vip##.float-right-daily
+18comic.vip##.float-right-image
+18comic.vip##.footer-container
+18comic.vip##.top-nav
+aistudio.google.com##div.disclaimer.ng-star-inserted
+aistudio.google.com##div.zero-state-container.ng-star-inserted
+aistudio.google.com##ms-home-code.fade-in
+aistudio.google.com##ms-project-zero-state.ng-star-inserted
+bakamh.com###main-sidebar.main-sidebar
+charactercalculator.com##article
+charactercalculator.com##footer
+filecr.com##footer
+gemini.google.com##a[target][rel][mat-menu-item][queryparamshandling][data-test-id][aria-describedby][href][jslog][role][tabindex][aria-disabled]
+gemini.google.com##button[mat-menu-item][data-test-id][jslog][role][tabindex][aria-disabled]
+gemini.google.com##gemini.google.com##div.right-section
+github.com##.feed-right-column
+github.com##.feed-right-sidebar
+itch.io##.anon_intro
+itch.io##.blog_post_section
+jules.google.com##a.bottom-button.social-icon
+jules.google.com##button.nav-button.feedback-button.ng-star-inserted
+linux.do##button.btn.no-text.btn-icon.btn-flat.sidebar-footer-actions-button.sidebar-footer-actions-keyboard-shortcuts
+linux.do##div.rewind-callout__container
+linux.do##p.reason > span.text
+mail.google.com##div.zo
+mail.google.com##div[aria-pressed][role][aria-label][tabindex][style]
+mail.google.com##div[jsaction] > div[role][aria-label][style]
+manhuabika.com##div.slideshow-section
+shopee.tw###HomePageSkinnyBannerSection
+shopee.tw##.flex.justify-center.items-center
+shopee.tw##.home-category-list
+shopee.tw##.navbar-wrapper.container-wrapper
+shopee.tw##.section-banner-hotword--no-skin
+shopee.tw##.shopee-header-section
+shopee.tw##.stardust-tabs-header-wrapper
+shopee.tw##footer
+translate.google.com##c-wiz[jsrenderer][aria-labelledby][role][jsshadow][jsdata][data-p][jscontroller][jsaction][data-node-index][jsmodel][c-wiz] > div > div > div > div[jscontroller]
+translate.google.com##div[aria-expanded][aria-label][role][tabindex]
+translate.google.com##div[data-ogsr-fb][data-ogsr-alt] > div
+translate.google.com##div[ng-non-bindable][role]
+wheregoes.com###newsletter
+wheregoes.com##footer
+www.cna.com.tw##div.nav
+www.facebook.com##footer[aria-label][role]
+www.facebook.com##li:nth-of-type(11)
+www.facebook.com##li:nth-of-type(3)
+www.google.com##center
+www.google.com##div > div:nth-of-type(7)
+www.google.com##div[data-ogbl]
+www.google.com##div[role] > a[href][ping]
+www.instagram.com##div[style] > div > div > div[data-visualcompletion] > div > span[aria-describedby]
+www.instagram.com##div[style] > div > div > span[aria-describedby]
+www.roblox.com###upgrade-now-button
+www.roblox.com##li:has(> #header-develop-md-link)
+www.youtube.com###country-code
+www.youtube.com###primary-entry
+www.youtube.com###sponsor-button
+www.youtube.com###toast
+www.youtube.com###voice-search-button
+www.youtube.com##.opened
+www.youtube.com##dialog-layout[style]
+www.youtube.com##div.top-level-buttons.style-scope.ytd-menu-renderer > yt-button-view-model
+www.youtube.com##div.ytReelChannelBarViewModelReelSponsorButton
+www.youtube.com##reel-action-bar-view-model > button-view-model:nth-of-type(2)
+www.youtube.com##reel-action-bar-view-model > button-view-model:nth-of-type(3)
+www.youtube.com##yt-button-view-model:nth-of-type(2)
+www.youtube.com##yt-multi-page-menu-section-renderer:nth-of-type(5)
+www.youtube.com##ytd-button-renderer.style-scope.ytd-masthead
+www.youtube.com##ytd-chips-shelf-with-video-shelf-renderer
+www.youtube.com##ytd-compact-link-renderer:nth-of-type(5)
+www.youtube.com##ytd-download-button-renderer
+www.youtube.com##ytd-guide-section-renderer:nth-of-type(1)
+www.youtube.com##ytd-guide-section-renderer:nth-of-type(5)
+www.youtube.com##ytd-guide-section-renderer:nth-of-type(6)
+www.youtube.com##ytd-inline-survey-renderer
+www.youtube.com##ytd-mini-guide-entry-renderer:nth-of-type(2)
+www.youtube.com##ytd-reel-shelf-renderer
+www.youtube.com##ytd-rich-section-renderer
+x.com##a[href][aria-label][role]:has-text(Grok)
+x.com##a[href][aria-label][role]:has-text(Premium)
+x.com##div[aria-label][tabindex] > div > div:has-text(Premium)
+x.com##div[data-testid] > div > div > a[href][rel][target][role]
+x.com##div[style] > div > div[data-testid][style]
