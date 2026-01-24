@@ -43,7 +43,7 @@ def process_single_file(file_path, echo_db):
         print(f"警告：處理檔案 {file_path} 時發生錯誤: {e}")
 
 
-def save_master_list(echo_db, output_filename="echos.json"):
+def save_master_list(echo_db, output_filename="echos_list.json"):
     """
     輔助函式：排序並保存最終結果
     """
@@ -80,7 +80,7 @@ def aggregate_echos(json_folder="."):
     for file_path in json_files:
         process_single_file(file_path, echo_db)
     count = save_master_list(echo_db)
-    print(f"聚合完成！共處理 {count} 個唯一聲骸。已保存至 echos.json")
+    print(f"聚合完成！共處理 {count} 個唯一聲骸。已保存至 echos_list.json")
 
 
 if __name__ == "__main__":

@@ -79,7 +79,7 @@ def parse_html_to_json(html_file):
 
 
 if __name__ == "__main__":
-    if os.path.exists("input.html"):
-        parse_html_to_json("input.html")
+    if os.path.exists("sonata.html"):
+        parse_html_to_json("sonata.html")
     else:
-        print("錯誤: 未找到 input.html 文件")
+        print("錯誤: 未找到 sonata.html 文件")
