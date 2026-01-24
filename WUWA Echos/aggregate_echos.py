@@ -29,7 +29,7 @@ def process_single_file(file_path, echo_db):
     """
     輔助函式：讀取並處理單個 JSON 檔案
     """
-    if "master_echo_list" in file_path:
+    if "echos" in file_path:
         return
     try:
         with open(file_path, "r", encoding="utf-8") as f:
@@ -43,7 +43,7 @@ def process_single_file(file_path, echo_db):
         print(f"警告：處理檔案 {file_path} 時發生錯誤: {e}")
 
 
-def save_master_list(echo_db, output_filename="master_echo_list.json"):
+def save_master_list(echo_db, output_filename="echos.json"):
     """
     輔助函式：排序並保存最終結果
     """
@@ -80,11 +80,11 @@ def aggregate_echos(json_folder="."):
     for file_path in json_files:
         process_single_file(file_path, echo_db)
     count = save_master_list(echo_db)
-    print(f"聚合完成！共處理 {count} 個唯一聲骸。已保存至 master_echo_list.json")
+    print(f"聚合完成！共處理 {count} 個唯一聲骸。已保存至 echos.json")
 
 
 if __name__ == "__main__":
-    potential_files = [f for f in glob.glob("*.json") if "master_echo_list" not in f]
+    potential_files = [f for f in glob.glob("*.json") if "echos" not in f]
     if potential_files:
         aggregate_echos(".")
     else:
