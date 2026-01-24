@@ -1,0 +1,41 @@
+{
+	"set_name": "失序彼岸之夢",
+	"set_icon": "https://prod-alicdn-community.kurobbs.com/forum/0d484c1917e64090920baa89af235b3820250823.png",
+	"echos": [
+		{
+			"name": "夢魘·赫卡忒",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/2c5b664965114ad8bd5bef811a6fc8b420250719.png"
+		},
+		{
+			"name": "共鳴迴響·芬萊克",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/416e4761bb6247669bc7e22e0af03ca420250719.png"
+		},
+		{
+			"name": "夢魘·振鐸樂師",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/a6e04defee1445299255587af7307dec20250719.png"
+		},
+		{
+			"name": "浮靈偶",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/d5a286da7eff4d5ea6ef0b82c432604d20250721.png"
+		},
+		{
+			"name": "夢魘·審判戰士",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/9e425649c44a48d8b1db58178b9e8aec20250719.png"
+		},
+		{
+			"name": "夢魘·破霜獵手",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/19b13461b4e84019aeea9ad08303b2fd20250719.png"
+		},
+		{
+			"name": "幽翎火",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/5f3e1d0816e240c489b55a94b868407820250721.png"
+		}
+	]
+}

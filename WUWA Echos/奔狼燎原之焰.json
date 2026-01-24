@@ -1,0 +1,66 @@
+{
+	"set_name": "奔狼燎原之焰",
+	"set_icon": "https://prod-alicdn-community.kurobbs.com/forum/d69b07483937453a8e1025c6611e934f20250606.png",
+	"echos": [
+		{
+			"name": "榮耀獅像",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/5c0394c761f04ba687d90cbd15e3fc1920250605.png"
+		},
+		{
+			"name": "傳道者的遺形",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/abfb6ae390c04f58ac6c382b62bd903a20250605.png"
+		},
+		{
+			"name": "角鱷",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/0ca9055a55c34861b717031ccdbac6d420250605.png"
+		},
+		{
+			"name": "蝕脊龍",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/9f9ba29686a64140981ba569d7a106ef20250823.png"
+		},
+		{
+			"name": "苦信者的作俑",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/6eab643b5953436299017d0da662426720250605.png"
+		},
+		{
+			"name": "小翼龍·導電",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/3e70591ba8ad4c99bcd71f6e58d446a920250324.png"
+		},
+		{
+			"name": "衞冕節使",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/f44d1760f06b4ac6b042845c1cbdd10c20250324.png"
+		},
+		{
+			"name": "小翼龍·氣動",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/205a9391105249babd7045d57f8ffc9e20250324.png"
+		},
+		{
+			"name": "赦罪節使",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/131c771b88244b40b5a5cbe92225110020250324.png"
+		},
+		{
+			"name": "小翼龍·衍射",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/e5620bf09964496090697de3331a84ee20250605.png"
+		},
+		{
+			"name": "小翼龍·熱熔",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/e876fe5f0dcc466fa45b8b768d57881120250605.png"
+		},
+		{
+			"name": "小翼龍·湮滅",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/d188e00473cc42a898579eeed1e65dc620250605.png"
+		}
+	]
+}

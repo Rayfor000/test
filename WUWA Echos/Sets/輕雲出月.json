@@ -1,0 +1,81 @@
+{
+	"set_name": "輕雲出月",
+	"set_icon": "https://prod-alicdn-community.kurobbs.com/forum/864ca506d1f647a1a101ed0a1182af9220250805.png",
+	"echos": [
+		{
+			"name": "鳴鐘之龜",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/49bec8eede4147898f283862818e831220240426.png"
+		},
+		{
+			"name": "無常兇鷺",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/82db0ee7fddd49b5b9db44a8046aa40620240426.png"
+		},
+		{
+			"name": "堅巖鬥士",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/139e18f7c5e94426b4658398ff0b6b3720240515.png"
+		},
+		{
+			"name": "車刃鐮",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/ac32e850460949199613d96b3a50c82220240515.png"
+		},
+		{
+			"name": "綠熔蜥",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/70e38060fbdc4c3eb37f85857f3bca9520240515.png"
+		},
+		{
+			"name": "箭簇熊",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/3cdb74eed48d425d997fc432c23fbd5620240611.png"
+		},
+		{
+			"name": "雪鬃狼",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/1893989abf9040eb94ce999f9195edf920240709.png"
+		},
+		{
+			"name": "冷凝稜鏡",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/5f0fe0a86c4d448c8c020bc90db8de2720240515.png"
+		},
+		{
+			"name": "晶螯蠍",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/166c8c9a066e4d159b404665e1cce54a20240515.png"
+		},
+		{
+			"name": "阿嗞嗞",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/0af061a5b6184725b670afe21340da1e20240515.png"
+		},
+		{
+			"name": "裂變幼巖",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/212ad51b4f894964999afdb5fd1186d420240515.png"
+		},
+		{
+			"name": "遊弋蝶",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/77ad0bb778a24633b029430e1f8f3cb420240515.png"
+		},
+		{
+			"name": "碎獠豬",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/d829aa08c8094b5ab14fdb0735e3090120240515.png"
+		},
+		{
+			"name": "呼咻咻",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/923b14d0d4fc4735a67174206ff0e6f020240515.png"
+		},
+		{
+			"name": "Unknown",
+			"cost": 1,
+			"icon": ""
+		}
+	]
+}

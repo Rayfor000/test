@@ -1,0 +1,76 @@
+{
+	"set_name": "凌冽決斷之心",
+	"set_icon": "https://prod-alicdn-community.kurobbs.com/forum/b64c223279fd4608965943c95fbe5e9f20250823.png",
+	"echos": [
+		{
+			"name": "異構武裝",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/3423ac52ed72479d9f0157e500dcbbfb20241226.png"
+		},
+		{
+			"name": "夢魘·輝螢軍勢",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/024ce340b524413c8e6012eed767e9c820250324.png"
+		},
+		{
+			"name": "巡遊騎士",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/726895523f464770a4a9ff4cf84c52d420241226.png"
+		},
+		{
+			"name": "毒冠貴族",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/841cbbdb084b42ec816724797d5f011820241226.png"
+		},
+		{
+			"name": "凝水貴族",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/b95e6ce0836742339eca817ed80cf11f20241226.png"
+		},
+		{
+			"name": "巨布偶",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/df114a0efa8a4505af62e6c2d158327020241226.png"
+		},
+		{
+			"name": "風鬃狼",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/7cdcfb8509bc4c5e9d82ff60c7c77a9d20241227.png"
+		},
+		{
+			"name": "寂寞小姐",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/a86c6a2785404637b429f7fe4c4c6f5220241226.png"
+		},
+		{
+			"name": "浮靈偶·蕾弗",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/b116391a25c244fab2bdcc1387bff18720241226.png"
+		},
+		{
+			"name": "欺詐奇藏",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/830cca220ed744f080f331216500e85520241226.png"
+		},
+		{
+			"name": "浮靈偶·萊特",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/772b86ddbf984b9d90e38403a1425c8920241226.png"
+		},
+		{
+			"name": "愚金幼巖",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/e43c899fb40540f1ac929b701920ffa620250211.png"
+		},
+		{
+			"name": "魔術先生",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/e194fb79854146e099d4c365be9b3a5220241226.png"
+		},
+		{
+			"name": "Unknown",
+			"cost": 1,
+			"icon": ""
+		}
+	]
+}

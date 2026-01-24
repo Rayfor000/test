@@ -1,0 +1,46 @@
+{
+	"set_name": "流金溯真之式",
+	"set_icon": "https://prod-alicdn-community.kurobbs.com/forum/ed77823cabf949beb629bcfc7cf2a7ae20251221.png",
+	"echos": [
+		{
+			"name": "海維夏",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/55953a6ce0544b7d9faca5d12c662de220251221.png"
+		},
+		{
+			"name": "風鱗蜃甲",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/ed5c97bc4ad246679b84713d241678aa20251221.png"
+		},
+		{
+			"name": "蒔植機麋",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/ceba72b32a3d40069b9ddce6d0367b6f20251221.png"
+		},
+		{
+			"name": "雙極·淵隕重鋒",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/25d17765422b4cedaaa703d6a050d55f20251221.png"
+		},
+		{
+			"name": "雙極·星升輝銃",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/d242fb9c9e5d44d7b59ea82dde141c0620251221.png"
+		},
+		{
+			"name": "噼啪啪",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/1fb6b1a1cf224444932072aaa02cd9cc20251221.png"
+		},
+		{
+			"name": "礦巖熊蜂",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/46ff15b855de407b8d63239156ec98c720251221.png"
+		},
+		{
+			"name": "蒔植熊蜂",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/cb81d3d0a7de429e9318b9e3fb8c310820251221.png"
+		}
+	]
+}

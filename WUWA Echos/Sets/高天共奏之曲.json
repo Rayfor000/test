@@ -1,0 +1,71 @@
+{
+	"set_name": "高天共奏之曲",
+	"set_icon": "https://prod-alicdn-community.kurobbs.com/forum/86b3ae72dbd34c0a817f2f5758844d3520250823.png",
+	"echos": [
+		{
+			"name": "赫卡忒",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/f7eaa84186864e968d7717ed5b9f940a20241226.png"
+		},
+		{
+			"name": "夢魘·朔雷之鱗",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/3d248540c5714d5db2044dbc28b5a5eb20241226.png"
+		},
+		{
+			"name": "夢魘·輝螢軍勢",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/d2ec673921d041acaa4b029877ba4dd120250324.png"
+		},
+		{
+			"name": "暗夜騎士",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/928b4834e995417ebb8789457aaa957f20241226.png"
+		},
+		{
+			"name": "毒冠貴族",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/8daec3ac4e6c43ce9929475a4043d0ad20241226.png"
+		},
+		{
+			"name": "浮靈偶",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/3e412656e08a434aa45b40b9477cd5ee20241226.png"
+		},
+		{
+			"name": "琉璃刀伶",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/07fc775bc9f44ab48af441a71291b68920241226.png"
+		},
+		{
+			"name": "雲海妖精",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/742e1e66c87f43d4b2ab72ef4c44bd4120241226.png"
+		},
+		{
+			"name": "霜鬃狼",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/73c2c53629a141cc8e083e2a6a2fb0a020241228.png"
+		},
+		{
+			"name": "魔術先生",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/95909d4ff5e44c448c96c8d1bcbc474d20241226.png"
+		},
+		{
+			"name": "雷鬃狼",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/ff725cd84b61461081b54d2b3aac58d920241228.png"
+		},
+		{
+			"name": "欺詐奇藏",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/6b492221f02244518f757ccc0c5e42e320241226.png"
+		},
+		{
+			"name": "釉變幼巖",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/c6ba9f5e181a4015a0f506ebfbb27a7a20250211.png"
+		}
+	]
+}

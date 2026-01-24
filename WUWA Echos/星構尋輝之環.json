@@ -1,0 +1,46 @@
+{
+	"set_name": "星構尋輝之環",
+	"set_icon": "https://prod-alicdn-community.kurobbs.com/forum/066ed1e9d3f24b6e8584cb409ee4731420251221.png",
+	"echos": [
+		{
+			"name": "爐芯機骸",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/7d4eba6073ff4c0da40e2f03735004c420251221.png"
+		},
+		{
+			"name": "霜鱗蜃甲",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/b8c0f01819c1419bb53beabb34e4afac20251221.png"
+		},
+		{
+			"name": "隱跡鐵影",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/57620c14b2dc47e5b036be2ebea8a10920251221.png"
+		},
+		{
+			"name": "鋸襲鐵影",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/9906dec748044f94932287db1ed4c63920251221.png"
+		},
+		{
+			"name": "探隧重機",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/c6e3711aefe645a4a2f7468a449eb84d20251221.png"
+		},
+		{
+			"name": "巖蛛S4型",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/0d7dcedd12654f179d752979b15d5e9a20251221.png"
+		},
+		{
+			"name": "礦巖熊蜂",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/6f8d2348df9f43fbaf0f62abac2d449120251221.png"
+		},
+		{
+			"name": "顫慄戰士",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/c0fbc8ff328f415e9de99a63962753e520251221.png"
+		}
+	]
+}

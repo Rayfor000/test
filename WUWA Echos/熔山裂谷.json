@@ -1,0 +1,81 @@
+{
+	"set_name": "熔山裂谷",
+	"set_icon": "https://prod-alicdn-community.kurobbs.com/forum/bd9265108c0b43358cbfbc2a144a1cd920250823.png",
+	"echos": [
+		{
+			"name": "燎照之騎",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/eb61b0d17f854dd59cc2861ebfa5874520240515.png"
+		},
+		{
+			"name": "夢魘·燎照之騎",
+			"cost": 4,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/9d044cacdcb64dfe9c1e7bdbd55e3e3220241228.png"
+		},
+		{
+			"name": "綠熔蜥",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/70e38060fbdc4c3eb37f85857f3bca9520240515.png"
+		},
+		{
+			"name": "紫羽鷺",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/0ffd660176ff4b18a02eeaf07cc1a8d920240515.png"
+		},
+		{
+			"name": "暗鬃狼",
+			"cost": 3,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/f78b0b483be24985abe822f58e5427d820240515.png"
+		},
+		{
+			"name": "熱熔稜鏡",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/c984bfb5fc7444bd9d6ec871c055d12b20240515.png"
+		},
+		{
+			"name": "通行燈偶",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/473b67494ef949ca99ce9e98d5f84c1320240515.png"
+		},
+		{
+			"name": "綠熔蜥（稚形）",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/0406f2c9938e472292aab0afb771590720240515.png"
+		},
+		{
+			"name": "咔嚓嚓",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/ff041156a6254508a4f03fb95692012620240515.png"
+		},
+		{
+			"name": "鳴泣戰士",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/1cee0d7620724b09ad49fb4b3f7373bf20240515.png"
+		},
+		{
+			"name": "衍射稜鏡",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/815e822edb514a36bb4a7ce383d5ec5720240515.png"
+		},
+		{
+			"name": "火鬃狼",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/50ad668029f34c348af66f50be7c019020240515.png"
+		},
+		{
+			"name": "驚蟄獵手",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/5816207ab3534e109148540638d554f120240515.png"
+		},
+		{
+			"name": "融火蟲",
+			"cost": 1,
+			"icon": "https://prod-alicdn-community.kurobbs.com/forum/fa94d14ad6be4ca78a957763d857270e20240709.png"
+		},
+		{
+			"name": "Unknown",
+			"cost": 1,
+			"icon": ""
+		}
+	]
+}
