@@ -1,0 +1,52 @@
+{
+	"sonatas": {
+		"1212037090995421184": { "en": "Freezing Frost", "zh-Hans": "凝夜白霜", "zh-Hant": "凝夜白霜" },
+		"1233106270208733184": { "en": "Rejuvenating Glow", "zh-Hans": "隐世回光", "zh-Hant": "隱世回光" },
+		"1233504230639992832": { "en": "Celestial Light", "zh-Hans": "浮星祛暗", "zh-Hant": "浮星祛暗" },
+		"1233504762221887488": { "en": "Sierra Gale", "zh-Hans": "啸谷长风", "zh-Hant": "嘯谷長風" },
+		"1233504904249409536": { "en": "Havoc Eclipse", "zh-Hans": "沉日劫明", "zh-Hant": "沉日劫明" },
+		"1233505002939936768": { "en": "Void Thunder", "zh-Hans": "彻空冥雷", "zh-Hant": "徹空冥雷" },
+		"1233505098310021120": { "en": "Lingering Tunes", "zh-Hans": "不绝余音", "zh-Hant": "不絕餘音" },
+		"1233505120063127552": { "en": "Moonlit Clouds", "zh-Hans": "轻云出月", "zh-Hant": "輕雲出月" },
+		"1233505199486468096": { "en": "Molten Rift", "zh-Hans": "熔山裂谷", "zh-Hant": "熔山裂谷" },
+		"1321845428049342464": { "en": "Frosty Resolve", "zh-Hans": "凌冽决断之心", "zh-Hant": "凌冽決斷之心" },
+		"1321863783854567424": { "en": "Eternal Radiance", "zh-Hans": "此间永驻之光", "zh-Hant": "此間永駐之光" },
+		"1321878127726972928": { "en": "Midnight Veil", "zh-Hans": "幽夜隐匿之帷", "zh-Hant": "幽夜隱匿之帷" },
+		"1321882647069708288": { "en": "Empyrean Anthem", "zh-Hans": "高天共奏之曲", "zh-Hant": "高天共奏之曲" },
+		"1321897948803911680": { "en": "Tidebreaking Courage", "zh-Hans": "无惧浪涛之勇", "zh-Hant": "無懼浪濤之勇" },
+		"1353855270166462464": { "en": "Gusts of Welkin", "zh-Hans": "流云逝尽之空", "zh-Hant": "流雲逝盡之空" },
+		"1380234925152161792": { "en": "Windward Pilgrimage", "zh-Hans": "愿戴荣光之旅", "zh-Hant": "願戴榮光之旅" },
+		"1380240498098720768": { "en": "Flaming Clawprint", "zh-Hans": "奔狼燎原之焰", "zh-Hant": "奔狼燎原之焰" },
+		"1396232328857526272": { "en": "Dream of the Lost", "zh-Hans": "失序彼岸之梦", "zh-Hant": "失序彼岸之夢" },
+		"1408881479672999936": { "en": "Crown of Valor", "zh-Hans": "荣斗铸锋之冠", "zh-Hant": "榮鬥鑄鋒之冠" },
+		"1408887728350175232": { "en": "Law of Harmony", "zh-Hans": "息界同调之律", "zh-Hant": "息界同調之律" },
+		"1418669356516003840": { "en": "Flamewing's Shadow", "zh-Hans": "焚羽猎魔之影", "zh-Hant": "焚羽獵魔之影" },
+		"1431439416570245120": { "en": "Thread of Severed Fate", "zh-Hans": "命理崩毁之弦", "zh-Hant": "命理崩毀之弦" },
+		"1452385855040229376": { "en": "Halo of Starry Radiance", "zh-Hans": "星构寻辉之环", "zh-Hant": "星構尋輝之環" },
+		"1452391375529074688": { "en": "Pact of Neonlight Leap", "zh-Hans": "逆光跃彩之约", "zh-Hant": "逆光躍彩之約" },
+		"1452395725424975872": { "en": "Rite of Gilded Revelation", "zh-Hans": "流金溯真之式", "zh-Hant": "流金溯真之式" }
+	},
+	"stats": {
+		"01": { "en": "HP $", "zh-Hans": "生命 $", "zh-Hant": "生命 $" },
+		"02": { "en": "ATK $", "zh-Hans": "攻击 $", "zh-Hant": "攻擊 $" },
+		"03": { "en": "DEF $", "zh-Hans": "防御 $", "zh-Hant": "防禦 $" },
+		"04": { "en": "HP %", "zh-Hans": "生命 %", "zh-Hant": "生命 %" },
+		"05": { "en": "ATK %", "zh-Hans": "攻击 %", "zh-Hant": "攻擊 %" },
+		"06": { "en": "DEF %", "zh-Hans": "防御 %", "zh-Hant": "防禦 %" },
+		"07": { "en": "Resonance Skill DMG Bonus %", "zh-Hans": "共鸣技能伤害加成 %", "zh-Hant": "共鳴技能傷害加成 %" },
+		"08": { "en": "Basic Attack DMG Bonus %", "zh-Hans": "普攻伤害加成 %", "zh-Hant": "普攻傷害加成 %" },
+		"09": { "en": "Heavy Attack DMG Bonus %", "zh-Hans": "重击伤害加成 %", "zh-Hant": "重擊傷害加成 %" },
+		"10": { "en": "Resonance Liberation DMG Bonus %", "zh-Hans": "共鸣解放伤害加成 %", "zh-Hant": "共鳴解放傷害加成 %" },
+		"11": { "en": "Crit. Rate %", "zh-Hans": "暴击 %", "zh-Hant": "暴擊 %" },
+		"12": { "en": "Crit. DMG %", "zh-Hans": "暴击伤害 %", "zh-Hant": "暴擊傷害 %" },
+		"13": { "en": "Energy Regen %", "zh-Hans": "共鸣效率 %", "zh-Hant": "共鳴效率 %" }
+	},
+	"attributes": {
+		"1ef135d7": { "en": "Havoc", "zh-Hans": "湮灭", "zh-Hant": "湮滅" },
+		"6478910f": { "en": "Spectro", "zh-Hans": "衍射", "zh-Hant": "衍射" },
+		"70e24f32": { "en": "Fusion", "zh-Hans": "热熔", "zh-Hant": "熱熔" },
+		"91a66080": { "en": "Aero", "zh-Hans": "气动", "zh-Hant": "氣動" },
+		"bfb551a6": { "en": "Glacio", "zh-Hans": "冷凝", "zh-Hant": "冷凝" },
+		"d780a0e5": { "en": "Electro", "zh-Hans": "导电", "zh-Hant": "導電" }
+	}
+}
