@@ -2,9 +2,7 @@
 <html lang="zh-Hant">
 	<head>
 		<meta charset="UTF-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>本地縮時攝影影片生成器</title>
 		<style>
 			:root {
@@ -198,73 +196,39 @@
 			</div>
 			<div class="control-group">
 				<label for="image-files">1. 選擇多個圖片檔案</label>
-				<input
-					type="file"
-					id="image-files"
-					multiple
-					accept="image/*" />
+				<input type="file" id="image-files" multiple accept="image/*" />
 			</div>
 			<div class="control-group">
 				<label for="image-directory">或者，選擇整個資料夾</label>
-				<input
-					type="file"
-					id="image-directory"
-					webkitdirectory
-					directory />
+				<input type="file" id="image-directory" webkitdirectory directory />
 			</div>
 			<div class="control-group">
 				<label>2. 設定排序規則</label>
 				<div class="sort-controls">
 					<select id="sort-criteria">
-						<option
-							value="name"
-							selected>
-							按檔案名稱
-						</option>
+						<option value="name" selected>按檔案名稱</option>
 						<option value="date">按修改日期</option>
 					</select>
 					<select id="sort-direction">
-						<option
-							value="asc"
-							selected>
-							遞增 (A-Z, 早到晚)
-						</option>
+						<option value="asc" selected>遞增 (A-Z, 早到晚)</option>
 						<option value="desc">遞減 (Z-A, 晚到早)</option>
 					</select>
 				</div>
 			</div>
 			<div class="control-group">
 				<label for="fps">3. 設定影片幀率 (FPS)</label>
-				<input
-					type="number"
-					id="fps"
-					value="24"
-					min="1"
-					max="120" />
+				<input type="number" id="fps" value="24" min="1" max="120" />
 			</div>
-			<button
-				id="generate-btn"
-				disabled>
-				生成影片
-			</button>
+			<button id="generate-btn" disabled>生成影片</button>
 			<div id="status">
 				<p id="status-text">請先選擇圖片檔案或資料夾。</p>
-				<div
-					class="spinner"
-					id="spinner"></div>
+				<div class="spinner" id="spinner"></div>
 				<div id="progress-bar-container"><div id="progress-bar">0%</div></div>
 			</div>
 			<div id="video-container">
 				<h2>生成結果</h2>
-				<video
-					id="output-video"
-					controls></video>
-				<a
-					id="download-link"
-					href="#"
-					download="timelapse.webm">
-					下載影片 (.webm)
-				</a>
+				<video id="output-video" controls></video>
+				<a id="download-link" href="#" download="timelapse.webm">下載影片 (.webm)</a>
 			</div>
 		</div>
 		<script>
@@ -345,8 +309,8 @@
 				statusText.textContent = '正在初始化...';
 				statusText.classList.remove('error');
 				try {
-					const fps = parseInt(fpsInput.value, 10);
-					if (isNaN(fps) || fps < 1) {
+					const fps = Number.parseInt(fpsInput.value, 10);
+					if (Number.isNaN(fps) || fps < 1) {
 						throw new Error('無效的 FPS 值。請輸入大於 0 的數字。');
 					}
 					console.log(`設定 FPS: ${fps}`);
