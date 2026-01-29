@@ -1,8 +1,7 @@
-# analyzer.py v0.1.2a1-15
+# analyzer.py v0.1.2a1-19
 
 import json
 import re
-import uuid
 import base64
 import requests
 from pathlib import Path
@@ -11,9 +10,10 @@ from typing import List, Dict, Any
 # CONFIG
 MODE = "LOCAL"
 INP = "inputs"
-OUP = "outputs"
+OUP = "data"
 IMG = "img"
 LOC_FILE = "localization.json"
+AST_FILE = "asset.json"
 LANGS = ["SC", "TC", "EN"]
 TYPES = {"1105": "resonators", "1106": "weapons", "1107": "echoes", "1219": "sonatas"}
 SKIP_TAG = "699"
@@ -23,19 +23,20 @@ TIMEOUT = 10
 BASE = Path(__file__).parent
 CACHE: Dict[str, str] = {}
 TAGS: Dict[str, str] = {}
+TAG_URLS: Dict[str, str] = {}
+ASSETS: Dict[str, str] = {}
 URLS: Dict[str, str] = {}
 
 
-def fetch(url: str, ukey: str) -> str:
+def fetch(url: str, name_id: str) -> str:
     if MODE == "URL" or not url:
         return url
     if url in CACHE:
         return CACHE[url]
 
-    name = f"{ukey}.png"
+    name = f"{name_id}.png"
     dp = BASE / IMG
     fp = dp / name
-    # ? User requested format: img/{uuid}.png
     rel_path = f"{IMG}/{name}"
 
     if fp.exists():
@@ -50,6 +51,7 @@ def fetch(url: str, ukey: str) -> str:
         if MODE == "BASE64":
             ext = url.split(".")[-1].split("?")[0] or "png"
             raw = base64.b64encode(res.content).decode()
+            # ? Fixed syntax error f: -> f
             CACHE[url] = f"data:image/{ext};base64,{raw}"
         else:
             dp.mkdir(parents=True, exist_ok=True)
@@ -64,7 +66,6 @@ def fetch(url: str, ukey: str) -> str:
 def get_text(data: Dict[str, Any], rid: Any, lang: str, fallback: str = "") -> str:
     if rid is None:
         return fallback
-    # ? localization.json keys are 5-digit padded
     sid = str(rid).zfill(5)
     val = data.get(sid, {}).get(lang, "")
     return val if val else fallback
@@ -74,63 +75,81 @@ def parse_tree(node: Dict[str, Any], cat: str = ""):
     if not node:
         return
     kids = node.get("children")
+    tid = str(node.get("id") or node.get("key"))
+    icon = node.get("icon")
+
+    if icon:
+        TAG_URLS[tid] = icon
+        TAG_URLS[tid.zfill(5)] = icon
+
     if not kids:
-        # ? Map raw and padded ID for metadata tag lookup
-        tid = str(node.get("id") or node.get("key"))
         TAGS[tid] = cat
         TAGS[tid.zfill(5)] = cat
     else:
         name = node.get("name") or cat
-        # ? Level 1 nodes are categories
         lvl = str(name) if node.get("level") == 1 else cat
         for k in kids:
             parse_tree(k, lvl)
 
 
+def map_tag(t: str, loc: Dict[str, Any], lang: str) -> tuple:
+    val = get_text(loc, t, lang)
+    sid = t.zfill(5)
+    url = ASSETS.get(t) or ASSETS.get(sid) or TAG_URLS.get(t) or TAG_URLS.get(sid)
+    icon = fetch(url, sid) if url else ""
+    return val, icon
+
+
 def map_res(tids: List[str], loc: Dict[str, Any], lang: str) -> Dict[str, Any]:
-    styles: List[str] = []
+    styles: List[Dict[str, str]] = []
     res = {
         "Attribute": "",
+        "AttributeIcon": "",
         "WeaponType": "",
+        "WeaponTypeIcon": "",
         "Rarity": "",
+        "RarityIcon": "",
         "Version": "",
         "Styles": styles,
     }
     for t in tids:
-        c, v = TAGS.get(t), get_text(loc, t, lang)
+        c = TAGS.get(t)
+        v, i = map_tag(t, loc, lang)
         if not v:
             continue
         if c == "属性":
-            res["Attribute"] = v
+            res["Attribute"], res["AttributeIcon"] = v, i
         elif c == "武器":
-            res["WeaponType"] = v
+            res["WeaponType"], res["WeaponTypeIcon"] = v, i
         elif c == "稀有度":
-            res["Rarity"] = v
+            res["Rarity"], res["RarityIcon"] = v, i
         elif c == "实装版本":
             res["Version"] = v
         elif c == "风格定位":
-            styles.append(v)
+            styles.append({"Val": v, "Icon": i})
     return res
 
 
 def map_weap(tids: List[str], loc: Dict[str, Any], lang: str) -> Dict[str, Any]:
-    res = {"Type": "", "Rarity": ""}
+    res = {"Type": "", "TypeIcon": "", "Rarity": "", "RarityIcon": ""}
     for t in tids:
-        c, v = TAGS.get(t), get_text(loc, t, lang)
+        c = TAGS.get(t)
+        v, i = map_tag(t, loc, lang)
         if not v:
             continue
         if c == "类型":
-            res["Type"] = v
-        elif c == "武器星级":
-            res["Rarity"] = v
+            res["Type"], res["TypeIcon"] = v, i
+        elif c == "武器星級":
+            res["Rarity"], res["RarityIcon"] = v, i
     return res
 
 
 def map_echo(tids: List[str], loc: Dict[str, Any], lang: str) -> Dict[str, Any]:
-    sonatas: List[str] = []
+    sonatas: List[Dict[str, str]] = []
     res = {"Class": "", "Cost": "", "SonataGroup": sonatas}
     for t in tids:
-        c, v = TAGS.get(t), get_text(loc, t, lang)
+        c = TAGS.get(t)
+        v, i = map_tag(t, loc, lang)
         if not v:
             continue
         if c == "级别":
@@ -138,7 +157,7 @@ def map_echo(tids: List[str], loc: Dict[str, Any], lang: str) -> Dict[str, Any]:
         elif c == "COST":
             res["Cost"] = v
         elif c == "套装":
-            sonatas.append(v)
+            sonatas.append({"Val": v, "Icon": i})
     return res
 
 
@@ -194,15 +213,14 @@ def process_record(
     if tid == "1107" and (SKIP_TAG in tids or SKIP_TAG.zfill(5) in tids):
         return None
 
-    ukey = str(uuid.uuid5(uuid.NAMESPACE_DNS, fid))
     name_key = str(r.get("name") or "")
     url = r.get("content", {}).get("contentUrl") or URLS.get(name_key, "")
-    icon = fetch(url, ukey)
+    icon = fetch(url, fid)
 
     for lang in LANGS:
         item = build_item(tid, r, loc, lang)
         item["Icon"] = icon
-        store[lang][TYPES[tid]][ukey] = item
+        store[lang][TYPES[tid]][fid] = item
     return fid
 
 
@@ -212,15 +230,19 @@ def main():
         if not targets:
             return
         out_dir = BASE / OUP
-        lp = BASE / LOC_FILE  # ? Localization is usually at root
+
+        lp = BASE / LOC_FILE
         if not lp.exists():
             lp = out_dir / LOC_FILE
+
         loc_data = json.loads(lp.read_text("utf-8")) if lp.exists() else {}
 
+        ap = BASE / AST_FILE
+        if ap.exists():
+            ASSETS.update(json.loads(ap.read_text("utf-8")))
+
         scan_meta(targets)
-        store: Dict[str, Dict[str, Dict[str, Any]]] = {
-            lang: {t: {} for t in TYPES.values()} for lang in LANGS
-        }
+        store = {lang: {t: {} for t in TYPES.values()} for lang in LANGS}
 
         for tid, path in targets.items():
             cat = TYPES[tid]
@@ -244,6 +266,7 @@ def main():
                 (ld / f"{cat}.json").write_text(
                     json.dumps(data, ensure_ascii=False, separators=(",", ":")), "utf-8"
                 )
+
     except Exception as e:
         print(f"\n!! {e}")
         exit(1)

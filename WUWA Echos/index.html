@@ -1,0 +1,228 @@
+<!-- index.html v3.0.0a1-4 -->
+<!doctype html>
+<html lang="zh-TW">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>WUWA Echo Configurator</title>
+		<link rel="stylesheet" href="css/style.css" />
+		<script src="https://unpkg.com/lucide@latest"></script>
+	</head>
+	<body>
+		<div id="app" class="container">
+			<header>
+				<div class="brand">
+					<h1>WUWA Echos</h1>
+					<span class="version">v3.0.0</span>
+				</div>
+				<nav class="lang-switch">
+					<button data-lang="TC" class="active">繁體</button>
+					<button data-lang="SC">简体</button>
+					<button data-lang="EN">EN</button>
+				</nav>
+			</header>
+
+			<main>
+				<!-- Page 1: Dashboard (Configured Characters) -->
+				<section id="page-dashboard" class="page active">
+					<div class="section-header">
+						<h2>配置總覽</h2>
+						<button class="btn-primary" id="btn-new-build"><i data-lucide="plus"></i> 新增配置</button>
+					</div>
+					<div class="dashboard-grid" id="dashboard-grid">
+						<!-- Configured builds will be rendered here -->
+						<div class="empty-state">
+							<div class="empty-icon"><i data-lucide="clipboard-list"></i></div>
+							<p>尚無配置</p>
+							<span>點擊右上角新增配置開始</span>
+						</div>
+					</div>
+				</section>
+
+				<!-- Page 2: Character Selection -->
+				<section id="page-char" class="page">
+					<div class="section-header">
+						<h2>選擇角色</h2>
+					</div>
+
+					<!-- Character Filters -->
+					<div class="filter-bar">
+						<div class="filter-tabs">
+							<button class="filter-tab active" data-filter="all">全部</button>
+							<button class="filter-tab" data-filter="5">★★★★★</button>
+							<button class="filter-tab" data-filter="4">★★★★</button>
+						</div>
+						<select class="filter-select" id="attr-filter">
+							<option value="">全部屬性</option>
+							<option value="氣動">氣動</option>
+							<option value="導電">導電</option>
+							<option value="冷凝">冷凝</option>
+							<option value="熱熔">熱熔</option>
+							<option value="衍射">衍射</option>
+							<option value="湮滅">湮滅</option>
+						</select>
+					</div>
+
+					<div class="char-grid" id="char-grid">
+						<!-- Character cards will be rendered here -->
+					</div>
+
+					<div class="nav-buttons">
+						<button class="btn-secondary" id="btn-back-dashboard"><i data-lucide="arrow-left"></i> 返回總覽</button>
+					</div>
+				</section>
+
+				<!-- Page 3: Weapon Selection -->
+				<section id="page-weapon" class="page">
+					<div class="section-header">
+						<h2>選擇武器</h2>
+					</div>
+
+					<!-- Selected Character Preview -->
+					<div class="selected-preview">
+						<div class="preview-card" id="char-preview-weapon">
+							<img class="card-bg" src="img/card.png" alt="" />
+							<img class="char-img" src="" alt="" />
+							<img class="attr-icon" src="" alt="" />
+							<img class="rarity-icon" src="" alt="" />
+						</div>
+					</div>
+
+					<!-- Weapon Filters -->
+					<div class="filter-bar">
+						<div class="filter-tabs">
+							<button class="filter-tab active" data-filter="all">全部</button>
+							<button class="filter-tab" data-filter="5">★★★★★</button>
+							<button class="filter-tab" data-filter="4">★★★★</button>
+						</div>
+					</div>
+
+					<div class="weapon-grid" id="weapon-grid">
+						<!-- Weapon cards will be rendered here -->
+					</div>
+
+					<div class="nav-buttons">
+						<button class="btn-secondary" id="btn-back-char"><i data-lucide="arrow-left"></i> 返回角色</button>
+						<button class="btn-primary" id="btn-to-echo">下一步: 聲骸 <i data-lucide="arrow-right"></i></button>
+					</div>
+				</section>
+
+				<!-- Page 4: Echo Selection -->
+				<section id="page-echo-select" class="page">
+					<div class="section-header">
+						<h2>聲骸配置</h2>
+						<div class="cost-display">
+							<span>COST:</span>
+							<span id="total-cost" class="cost-value">0</span>
+							<span>/ 12</span>
+						</div>
+					</div>
+
+					<!-- Selected Preview Bar -->
+					<div class="selected-preview-bar">
+						<div class="preview-card small" id="char-preview-echo">
+							<img class="card-bg" src="img/card.png" alt="" />
+							<img class="char-img" src="" alt="" />
+							<img class="attr-icon" src="" alt="" />
+						</div>
+						<div class="weapon-thumb" id="weapon-thumb">
+							<img src="" alt="" />
+						</div>
+					</div>
+
+					<!-- Echo Filters -->
+					<div class="filter-bar">
+						<div class="filter-tabs">
+							<button class="filter-tab active" data-cost="all">全部</button>
+							<button class="filter-tab" data-cost="4">COST 4</button>
+							<button class="filter-tab" data-cost="3">COST 3</button>
+							<button class="filter-tab" data-cost="1">COST 1</button>
+						</div>
+						<select class="filter-select" id="sonata-filter">
+							<option value="">全部套裝</option>
+						</select>
+					</div>
+
+					<!-- Echo Grid -->
+					<div class="echo-select-grid" id="echo-select-grid">
+						<!-- Echo items will be rendered here -->
+					</div>
+
+					<!-- Selected Echoes Slots -->
+					<div class="echo-slots-section">
+						<div class="slots-label">
+							<span class="main-label">主位</span>
+							<span class="sub-label">副位</span>
+						</div>
+						<div class="slots-container">
+							<div class="echo-slot-circle main" data-slot="0" title="主位聲骸">
+								<div class="slot-placeholder">主</div>
+								<img class="slot-img" src="" alt="" />
+								<span class="slot-cost"></span>
+							</div>
+							<div class="echo-slot-circle sub" data-slot="1">
+								<div class="slot-placeholder">1</div>
+								<img class="slot-img" src="" alt="" />
+								<span class="slot-cost"></span>
+							</div>
+							<div class="echo-slot-circle sub" data-slot="2">
+								<div class="slot-placeholder">2</div>
+								<img class="slot-img" src="" alt="" />
+								<span class="slot-cost"></span>
+							</div>
+							<div class="echo-slot-circle sub" data-slot="3">
+								<div class="slot-placeholder">3</div>
+								<img class="slot-img" src="" alt="" />
+								<span class="slot-cost"></span>
+							</div>
+							<div class="echo-slot-circle sub" data-slot="4">
+								<div class="slot-placeholder">4</div>
+								<img class="slot-img" src="" alt="" />
+								<span class="slot-cost"></span>
+							</div>
+						</div>
+					</div>
+
+					<div class="nav-buttons">
+						<button class="btn-secondary" id="btn-back-weapon"><i data-lucide="arrow-left"></i> 返回武器</button>
+						<button class="btn-primary" id="btn-to-stats">下一步: 屬性 <i data-lucide="arrow-right"></i></button>
+					</div>
+				</section>
+
+				<!-- Page 5: Echo Stats Configuration -->
+				<section id="page-echo-stats" class="page">
+					<div class="section-header">
+						<h2>屬性配置</h2>
+					</div>
+
+					<!-- Echo Config List -->
+					<div class="echo-config-list" id="echo-config-list">
+						<!-- Echo config rows will be rendered here -->
+					</div>
+
+					<div class="nav-buttons">
+						<button class="btn-secondary" id="btn-back-echo"><i data-lucide="arrow-left"></i> 返回聲骸</button>
+						<button class="btn-primary" id="btn-save-build"><i data-lucide="save"></i> 保存配置</button>
+					</div>
+				</section>
+			</main>
+
+			<footer>
+				<p>&copy; 2026 WUWA Echo Configurator</p>
+			</footer>
+		</div>
+
+		<!-- Echo Tooltip -->
+		<div id="echo-tooltip" class="echo-tooltip hidden">
+			<img class="tooltip-img" src="" alt="" />
+			<div class="tooltip-info">
+				<div class="tooltip-name"></div>
+				<div class="tooltip-cost"></div>
+				<div class="tooltip-sonata"></div>
+			</div>
+		</div>
+
+		<script src="js/app.js"></script>
+		<script>lucide.createIcons();</script>
+	</body>
+</html>

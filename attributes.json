@@ -1,0 +1,447 @@
+{
+	"suites": [
+		{
+			"id": 1,
+			"name": "冰套"
+		},
+		{
+			"id": 2,
+			"name": "火套"
+		},
+		{
+			"id": 3,
+			"name": "雷套"
+		},
+		{
+			"id": 4,
+			"name": "風套"
+		},
+		{
+			"id": 5,
+			"name": "光套"
+		},
+		{
+			"id": 6,
+			"name": "暗套"
+		},
+		{
+			"id": 7,
+			"name": "奶套"
+		},
+		{
+			"id": 8,
+			"name": "輕雲套"
+		},
+		{
+			"id": 9,
+			"name": "攻擊套"
+		},
+		{
+			"id": 10,
+			"name": "凌冽套"
+		},
+		{
+			"id": 11,
+			"name": "此間套"
+		},
+		{
+			"id": 12,
+			"name": "幽夜套"
+		},
+		{
+			"id": 13,
+			"name": "高天套"
+		},
+		{
+			"id": 14,
+			"name": "無懼套"
+		},
+		{
+			"id": 15,
+			"name": "流雲套"
+		},
+		{
+			"id": 16,
+			"name": "願戴套"
+		},
+		{
+			"id": 17,
+			"name": "奔狼套"
+		},
+		{
+			"id": 18,
+			"name": "失序套"
+		},
+		{
+			"id": 19,
+			"name": "榮鬥套"
+		},
+		{
+			"id": 20,
+			"name": "息界套"
+		},
+		{
+			"id": 21,
+			"name": "焚羽套"
+		},
+		{
+			"id": 22,
+			"name": "命理套"
+		},
+		{
+			"id": 23,
+			"name": "星構套"
+		},
+		{
+			"id": 24,
+			"name": "流金套"
+		},
+		{
+			"id": 25,
+			"name": "逆光套"
+		}
+	],
+	"scoringRules": [
+		{
+			"ruleId": 0,
+			"attack01": 1,
+			"attack02": 1,
+			"crit": 1,
+			"critDamage": 1,
+			"property": 1,
+			"health01": 1,
+			"health02": 1,
+			"defenseLimit": 40,
+			"defense01": 1,
+			"defense02": 1, 
+			"efficiency01": 1,
+			"efficiency02": 0,
+			"unike": 1,
+			"treat": 0
+		},
+		{
+			"ruleId": 1,
+			"attack01": 1,
+			"attack02": 0.1,
+			"crit": 1.8,
+			"critDamage": 0.9,
+			"property": 1,
+			"health01": 0,
+			"health02": 0,
+			"defense01": 0,
+			"defense02": 0,
+			"defenseLimit": 40,
+			"efficiency01": 0.5,
+			"efficiency02": 0,
+			"unike": 1,
+			"treat": 0
+		},
+		{
+			"ruleId": 2,
+			"attack01": 1,
+			"attack02": 0.1,
+			"crit": 1.8,
+			"critDamage": 0.9,
+			"property": 1,
+			"health01": 0,
+			"health02": 0,
+			"defense01": 0,
+			"defense02": 0,
+			"defenseLimit": 40,
+			"efficiency01": 1,
+			"efficiency02": 0.3,
+			"unike": 1,
+			"treat": 0
+		},
+		{
+			"ruleId": 3,
+			"attack01": 1.2,
+			"attack02": 0.12,
+			"crit": 0,
+			"critDamage": 0,
+			"property": 1,
+			"health01": 0.9,
+			"health02": 0.009,
+			"defense01": 0.5,
+			"defense02": 0.06,
+			"defenseLimit": 80,
+			"efficiency01": 1,
+			"efficiency02": 0.5,
+			"unike": 0,
+			"treat": 2
+		},
+		{
+			"ruleId": 4,
+			"attack01": 0,
+			"attack02": 0,
+			"crit": 0,
+			"critDamage": 0,
+			"property": 1,
+			"health01": 1.2,
+			"health02": 0.012,
+			"defense01": 0.8,
+			"defense02": 0.06,
+			"defenseLimit": 80,
+			"efficiency01": 1,
+			"efficiency02": 0.5,
+			"unike": 0,
+			"treat": 2
+		},
+		{
+			"ruleId": 5,
+			"attack01": 0,
+			"attack02": 0,
+			"crit": 1.8,
+			"critDamage": 0.9,
+			"property": 1,
+			"health01": 0,
+			"health02": 0,
+			"defense01": 1.2,
+			"defense02": 0.09,
+			"defenseLimit": 40,
+			"efficiency01": 1,
+			"efficiency02": 0.3,
+			"unike": 1,
+			"treat": 0
+		},
+		{
+			"ruleId": 6,
+			"attack01": 0,
+			"attack02": 0,
+			"crit": 0,
+			"critDamage": 0.1,
+			"property": 0.1,
+			"health01": 1,
+			"health02": 0.01,
+			"defense01": 0.8,
+			"defense02": 0.06,
+			"defenseLimit": 100,
+			"efficiency01": 1.1,
+			"efficiency02": 0.55,
+			"unike": 0.1,
+			"treat": 2
+		},
+		{
+			"ruleId": 7,
+			"attack01": 0.5,
+			"attack02": 0.05,
+			"crit": 1.8,
+			"critDamage": 0.9,
+			"property": 1,
+			"health01": 0,
+			"health02": 0,
+			"defense01": 0,
+			"defense02": 0,
+			"defenseLimit": 180,
+			"efficiency01": 1,
+			"efficiency02": 0,
+			"unike": 1,
+			"treat": 0
+		},
+		{
+			"ruleId": 8,
+			"attack01": 0,
+			"attack02": 0,
+			"crit": 2,
+			"critDamage": 1,
+			"property": 1,
+			"health01": 1,
+			"health02": 0.007,
+			"defense01": 0,
+			"defense02": 0,
+			"defenseLimit": 40,
+			"efficiency01": 0.5,
+			"efficiency02": 0,
+			"unike": 1,
+			"treat": 0
+		},
+		{
+			"ruleId": 9,
+			"attack01": 1,
+			"attack02": 0.1,
+			"crit": 1.8,
+			"critDamage": 0.9,
+			"property": 1,
+			"health01": 0,
+			"health02": 0,
+			"defense01": 0,
+			"defense02": 0,
+			"defenseLimit": 1000,
+			"efficiency01": 0,
+			"efficiency02": 0,
+			"unike": 1,
+			"treat": 0
+		},
+		{
+			"ruleId": 10,
+			"attack01": 0,
+			"attack02": 0,
+			"crit": 0,
+			"critDamage": 0,
+			"property": 0.1,
+			"health01": 0.9,
+			"health02": 0.009,
+			"defense01": 1.4,
+			"defense02": 0.1,
+			"defenseLimit": 160,
+			"efficiency01": 1.4,
+			"efficiency02": 0.7,
+			"unike": 0.1,
+			"treat": 2
+		}
+	],
+	"mainAttributes": [
+		{
+			"type": "Cost4",
+			"values": [
+				"暴擊22%",
+				"暴傷44%",
+				"生命33%",
+				"攻擊力33%",
+				"防禦41.8%",
+				"治療26.4%"
+			]
+		},
+		{
+			"type": "Cost3",
+			"values": ["攻擊力30%", "屬傷30%", "生命30%", "共鳴效率32%", "防禦38%"]
+		},
+		{
+			"type": "Cost1",
+			"values": ["攻擊力18%", "生命22.8%", "防禦18%"]
+		}
+	],
+	"subAttributes": [
+		{
+			"type": 0,
+			"values": [
+				"6.3%",
+				"6.9%",
+				"7.5%",
+				"8.1%",
+				"8.7%",
+				"9.3%",
+				"9.9%",
+				"10.5%"
+			]
+		},
+		{
+			"type": 1,
+			"values": [
+				"12.6%",
+				"13.8%",
+				"15%",
+				"16.2%",
+				"17.4%",
+				"18.6%",
+				"19.8%",
+				"21%"
+			]
+		},
+		{
+			"type": 2,
+			"values": [
+				"6.4%",
+				"7.1%",
+				"7.9%",
+				"8.6%",
+				"9.4%",
+				"10.1%",
+				"10.9%",
+				"11.6%"
+			]
+		},
+		{
+			"type": 3,
+			"values": [
+				"8.1%",
+				"9%",
+				"10%",
+				"10.9%",
+				"11.8%",
+				"12.8%",
+				"13.8%",
+				"14.7%"
+			]
+		},
+		{
+			"type": 4,
+			"values": [
+				"6.8%",
+				"7.6%",
+				"8.4%",
+				"9.2%",
+				"10%",
+				"10.8%",
+				"11.6%",
+				"12.4%"
+			]
+		},
+		{
+			"type": 5,
+			"values": ["320", "360", "390", "430", "470", "510", "540", "580"]
+		},
+		{
+			"type": 6,
+			"values": ["30", "40", "50", "60"]
+		},
+		{
+			"type": 7,
+			"values": ["40", "50", "60", "70"]
+		}
+	],
+	"subAttributeMaxSums": [
+		{
+			"property": "暴擊",
+			"value": "67.2%"
+		},
+		{
+			"property": "暴傷",
+			"value": "134.4%"
+		},
+		{
+			"property": "大攻擊",
+			"value": "72%"
+		},
+		{
+			"property": "小攻擊",
+			"value": "180"
+		},
+		{
+			"property": "小生命",
+			"value": "3600"
+		},
+		{
+			"property": "小防禦",
+			"value": "180"
+		},
+		{
+			"property": "共鳴效率",
+			"value": "76.8%"
+		},
+		{
+			"property": "大防禦",
+			"value": "91.1%"
+		},
+		{
+			"property": "大生命",
+			"value": "72%"
+		},
+		{
+			"property": "普攻傷害",
+			"value": "72%"
+		},
+		{
+			"property": "重擊傷害",
+			"value": "72%"
+		},
+		{
+			"property": "技能傷害",
+			"value": "72%"
+		},
+		{
+			"property": "解放傷害",
+			"value": "72%"
+		}
+	]
+}
