@@ -275,7 +275,7 @@
 					let comparison = 0;
 					if (sortCriteria === 'name') {
 						// 使用自然排序，能正確處理 'img2' 和 'img10'
-						comparison = a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'});
+						comparison = a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
 					} else {
 						// 'date'
 						// File.lastModified 是一個時間戳 (數字)
@@ -316,7 +316,7 @@
 					console.log(`設定 FPS: ${fps}`);
 					statusText.textContent = '步驟 1/4: 讀取圖片尺寸...';
 					const firstImage = await loadImage(imageFiles[0]);
-					const {naturalWidth: width, naturalHeight: height} = firstImage;
+					const { naturalWidth: width, naturalHeight: height } = firstImage;
 					console.log(`影片尺寸確定為: ${width}x${height}`);
 					const canvas = document.createElement('canvas');
 					canvas.width = width;
@@ -329,7 +329,7 @@
 					if (!MediaRecorder.isTypeSupported(mimeType)) {
 						throw new Error(`瀏覽器不支援 ${mimeType} 編碼格式。`);
 					}
-					const recorder = new MediaRecorder(stream, {mimeType, videoBitsPerSecond: 8000000});
+					const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
 					console.log(`MediaRecorder 已設定，使用格式: ${mimeType}`);
 					const chunks = [];
 					recorder.ondataavailable = (event) => {
@@ -338,7 +338,7 @@
 					recorder.onstop = () => {
 						console.log('MediaRecorder 已停止。');
 						statusText.textContent = '步驟 4/4: 合成影片檔案...';
-						const videoBlob = new Blob(chunks, {type: 'video/webm'});
+						const videoBlob = new Blob(chunks, { type: 'video/webm' });
 						const videoUrl = URL.createObjectURL(videoBlob);
 						console.log(`影片 Blob 已建立，大小: ${(videoBlob.size / 1024 / 1024).toFixed(2)} MB`);
 						outputVideo.src = videoUrl;
