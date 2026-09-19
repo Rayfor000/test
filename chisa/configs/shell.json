@@ -1,0 +1,26 @@
+{
+	"fontScale":1.6,
+	"frameBars":{
+		"menus":{
+			"quick-settings":{
+				"anchor":"left",
+				"expansion":"always",
+				"minWidth":400,
+				"modules":["home","notifications","weather","capture"],
+				"widgets":["quick-settings"]
+			},
+			"wallpaper":{
+				"anchor":"bottom",
+				"expansion":"always",
+				"minWidth":1280,
+				"widgets":["theme","wallpaper"]
+			}
+		},
+		"surfaces":{"stash":{
+			"anchor":"right",
+			"minWidth":340,
+			"panes":["stash"]
+		}},
+		"version":1
+	}
+}

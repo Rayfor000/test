@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>專業統計計算與繪圖工具 (支援下載與調整)</title>
+		<!-- 使用 Plotly.js 進行科學圖表繪製 -->
+		<script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+		<style>
+			:root {
+				--primary: #2563eb;
+				--primary-hover: #1d4ed8;
+				--bg-main: #f9fafb;
+				--bg-card: #ffffff;
+				--text-main: #1f2937;
+				--text-muted: #4b5563;
+				--border: #e5e7eb;
+				--accent: #10b981;
+				--preset-bg: #eff6ff;
+				--preset-border: #bfdbfe;
+			}
+
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+				background-color: var(--bg-main);
+				color: var(--text-main);
+				line-height: 1.6;
+				margin: 0;
+				padding: 20px;
+			}
+
+			.container {
+				max-width: 1000px;
+				margin: 0 auto;
+			}
+
+			header {
+				text-align: center;
+				margin-bottom: 24px;
+			}
+
+			header h1 {
+				font-size: 24px;
+				font-weight: 600;
+				margin-bottom: 8px;
+			}
+
+			header p {
+				font-size: 14px;
+				color: var(--text-muted);
+				margin: 0;
+			}
+
+			/* 快捷載入區 */
+			.preset-container {
+				background-color: var(--preset-bg);
+				border: 1px solid var(--preset-border);
+				border-radius: 8px;
+				padding: 16px;
+				margin-bottom: 20px;
+			}
+
+			.preset-title {
+				font-size: 14px;
+				font-weight: 600;
+				color: #1e40af;
+				margin-bottom: 8px;
+			}
+
+			.preset-buttons {
+				display: flex;
+				gap: 10px;
+				flex-wrap: wrap;
+			}
+
+			.btn-preset {
+				background-color: #ffffff;
+				border: 1px solid var(--preset-border);
+				color: #1d4ed8;
+				padding: 6px 12px;
+				font-size: 13px;
+				border-radius: 4px;
+				cursor: pointer;
+				transition: all 0.2s;
+			}
+
+			.btn-preset:hover {
+				background-color: #dbeafe;
+			}
+
+			/* 頁籤導覽 */
+			.tabs {
+				display: flex;
+				border-bottom: 2px solid var(--border);
+				margin-bottom: 20px;
+			}
+
+			.tab-btn {
+				background: none;
+				border: none;
+				padding: 12px 20px;
+				font-size: 14px;
+				font-weight: 500;
+				color: var(--text-muted);
+				cursor: pointer;
+				transition: all 0.2s;
+				position: relative;
+				bottom: -2px;
+			}
+
+			.tab-btn.active {
+				color: var(--primary);
+				border-bottom: 2px solid var(--primary);
+			}
+
+			/* 卡片樣式 */
+			.card {
+				background-color: var(--bg-card);
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				padding: 20px;
+				margin-bottom: 20px;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+			}
+
+			.grid-2 {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 16px;
+			}
+
+			@media (max-width: 768px) {
+				.grid-2 {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			label {
+				display: block;
+				font-size: 13px;
+				font-weight: 500;
+				margin-bottom: 6px;
+			}
+
+			textarea {
+				width: 100%;
+				height: 100px;
+				padding: 8px;
+				border: 1px solid var(--border);
+				border-radius: 6px;
+				font-family: monospace;
+				font-size: 13px;
+				resize: vertical;
+				box-sizing: border-box;
+				background-color: #fafafa;
+			}
+
+			textarea:focus {
+				outline: none;
+				border-color: var(--primary);
+				background-color: #fff;
+			}
+
+			.btn {
+				background-color: var(--primary);
+				color: white;
+				border: none;
+				padding: 10px 16px;
+				font-size: 14px;
+				font-weight: 500;
+				border-radius: 6px;
+				cursor: pointer;
+				width: 100%;
+				margin-top: 10px;
+			}
+
+			.btn:hover {
+				background-color: var(--primary-hover);
+			}
+
+			/* 調整控制區 */
+			.control-panel {
+				background-color: #f9fafb;
+				border: 1px dashed #d1d5db;
+				border-radius: 6px;
+				padding: 12px;
+				margin-top: 12px;
+				font-size: 13px;
+			}
+
+			.control-row {
+				display: flex;
+				align-items: center;
+				gap: 15px;
+				margin-bottom: 8px;
+				flex-wrap: wrap;
+			}
+
+			.control-row:last-child {
+				margin-bottom: 0;
+			}
+
+			.control-row label {
+				margin-bottom: 0;
+				font-weight: normal;
+				min-width: 120px;
+			}
+
+			.control-row input[type='range'] {
+				flex-grow: 1;
+				max-width: 200px;
+			}
+
+			.btn-action {
+				background-color: #374151;
+				color: #ffffff;
+				border: none;
+				padding: 4px 10px;
+				font-size: 12px;
+				border-radius: 4px;
+				cursor: pointer;
+				transition: background-color 0.15s;
+			}
+
+			.btn-action:hover {
+				background-color: #1f2937;
+			}
+
+			/* 表格樣式 */
+			.summary-table-container {
+				overflow-x: auto;
+				margin-top: 12px;
+				transition: all 0.2s;
+			}
+
+			.summary-table {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 13px;
+				background-color: #ffffff;
+			}
+
+			.summary-table th,
+			.summary-table td {
+				border: 1px solid var(--border);
+				padding: 8px;
+				text-align: left;
+			}
+
+			.summary-table th {
+				background-color: #f9fafb;
+				font-weight: 600;
+			}
+
+			/* 運算過程 */
+			.process-section {
+				margin-top: 20px;
+				border-top: 1px solid var(--border);
+				padding-top: 16px;
+			}
+
+			pre {
+				background-color: #1e1e1e;
+				color: #d4d4d4;
+				padding: 14px;
+				border-radius: 6px;
+				font-family: monospace;
+				font-size: 12px;
+				overflow-x: auto;
+				line-height: 1.5;
+			}
+
+			/* 圖表容器外部 */
+			.chart-outer-container {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				width: 100%;
+				overflow: auto;
+				margin-top: 16px;
+			}
+
+			.chart-container {
+				width: 800px; /* 預設寬度 */
+				height: 400px; /* 預設高度 */
+				border: 1px solid var(--border);
+				border-radius: 6px;
+				background-color: #fff;
+				box-sizing: border-box;
+			}
+
+			.hidden {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<header>
+				<h1>簡易統計分析與繪圖工具</h1>
+				<p>支持多組數據比較 (t-test / ANOVA) 與連續數據線性擬合</p>
+			</header>
+
+			<!-- 快捷載入手寫數據區 -->
+			<div class="preset-container">
+				<div class="preset-title">📝 快速載入您照片中的手寫數據：</div>
+				<div class="preset-buttons">
+					<button class="btn-preset" onclick="loadHandwrittenChalk()">載入：粉筆粗細反應數據 (左圖-分組比較)</button>
+					<button class="btn-preset" onclick="loadHandwrittenTimeCurrent()">載入：時間與電流數據 (右圖-線性擬合)</button>
+				</div>
+			</div>
+
+			<!-- 頁籤切換 -->
+			<div class="tabs">
+				<button id="tab-c-btn" class="tab-btn active" onclick="switchTab('continuous')">連續數據分析 (擬合 & 相關)</button>
+				<button id="tab-d-btn" class="tab-btn" onclick="switchTab('discrete')">不連續數據分析 (多組比較 & 檢定)</button>
+			</div>
+
+			<!-- 頁籤一：連續數據分析 -->
+			<div id="continuous-tab" class="tab-content">
+				<div class="card">
+					<div class="grid-2">
+						<div>
+							<label for="cx-input">X 軸數據 (以逗號、空格或換行分隔)</label>
+							<textarea id="cx-input" placeholder="例如: 1, 2, 3, 4, 5">1, 2, 3, 4, 5</textarea>
+						</div>
+						<div>
+							<label for="cy-input">Y 軸數據 (數量須與 X 軸相同)</label>
+							<textarea id="cy-input" placeholder="例如: 12, 13, 15, 11, 10">12, 13, 15, 11, 10</textarea>
+						</div>
+					</div>
+					<button class="btn" onclick="calculateContinuous()">執行連續數據分析</button>
+				</div>
+
+				<div id="c-results-card" class="card hidden">
+					<h3>分析結果摘要表</h3>
+
+					<div class="summary-table-container">
+						<table class="summary-table" id="c-summary-table">
+							<thead>
+								<tr>
+									<th>統計指標名稱</th>
+									<th>計算數值</th>
+									<th>指標說明</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><b>資料點數量 (n)</b></td>
+									<td id="tc-n">-</td>
+									<td>有效樣本總數</td>
+								</tr>
+								<tr>
+									<td><b>X 平均數 (x̄)</b></td>
+									<td id="tc-x-mean">-</td>
+									<td>X軸數據平均值</td>
+								</tr>
+								<tr>
+									<td><b>Y 平均數 (ȳ)</b></td>
+									<td id="tc-y-mean">-</td>
+									<td>Y軸數據平均值</td>
+								</tr>
+								<tr>
+									<td><b>Y 樣本標準差 (s_y)</b></td>
+									<td id="tc-y-sd">-</td>
+									<td>衡量Y數據的離散程度 (分母為 n-1)</td>
+								</tr>
+								<tr>
+									<td><b>Y A類不確定度 (uA)</b></td>
+									<td id="tc-y-ua">-</td>
+									<td>平均值標準誤差 (無條件進位至小數點後兩位)</td>
+								</tr>
+								<tr>
+									<td><b>Pearson 相關係數 (r)</b></td>
+									<td id="tc-pearson">-</td>
+									<td>衡量線性相關程度</td>
+								</tr>
+								<tr>
+									<td><b>Spearman 等級相關 (ρ)</b></td>
+									<td id="tc-spearman">-</td>
+									<td>衡量單調關係程度 (非線性適用)</td>
+								</tr>
+								<tr>
+									<td><b>判定係數 (R²)</b></td>
+									<td id="tc-r2">-</td>
+									<td>模型解釋變異的比例 (擬合優度)</td>
+								</tr>
+								<tr>
+									<td><b>最佳擬合方程式</b></td>
+									<td id="tc-formula" style="font-family: monospace; font-weight: bold; color: var(--primary)">-</td>
+									<td>Y = mX + c 最小平方法擬合結果</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- 表格控制器 -->
+					<div class="control-panel">
+						<div class="control-row">
+							<button class="btn-action" onclick="downloadTableAsImage('c-summary-table', '連續數據統計摘要表')">💾 下載表格為 PNG</button>
+							<label>
+								字型大小:
+								<span id="tc-zoom-val">13px</span>
+							</label>
+							<input type="range" min="10" max="22" value="13" step="1" oninput="adjustTableFontSize('c-summary-table', this.value, 'tc-zoom-val')" />
+						</div>
+					</div>
+
+					<!-- 圖表區 -->
+					<div class="chart-outer-container">
+						<div id="c-chart" class="chart-container"></div>
+					</div>
+
+					<!-- 圖表控制器 -->
+					<div class="control-panel" style="margin-top: 10px">
+						<div class="control-row">
+							<button class="btn-action" onclick="downloadChartAsImage('c-chart', '連續數據擬合圖')">💾 下載圖表為 PNG</button>
+							<label>
+								寬度:
+								<span id="cc-w-val">800px</span>
+							</label>
+							<input type="range" min="400" max="1200" value="800" step="50" oninput="adjustChartSize('c-chart', this.value, 'width', 'cc-w-val')" />
+							<label>
+								高度:
+								<span id="cc-h-val">400px</span>
+							</label>
+							<input type="range" min="250" max="800" value="400" step="50" oninput="adjustChartSize('c-chart', this.value, 'height', 'cc-h-val')" />
+						</div>
+					</div>
+
+					<div class="process-section">
+						<h4>詳細運算過程</h4>
+						<pre id="c-process-text"></pre>
+					</div>
+				</div>
+			</div>
+
+			<!-- 頁籤二：不連續數據分析 -->
+			<div id="discrete-tab" class="tab-content hidden">
+				<div class="card">
+					<label for="d-groups-input">各組數據輸入 (每行一組，格式為「組名: 數值1, 數值2, ...」)</label>
+					<textarea id="d-groups-input" style="height: 120px" placeholder="組A: 12, 13, 15&#10;組B: 8, 9, 11">組A: 12, 13, 15, 11, 10&#10;組B: 8, 9, 11, 10, 8</textarea>
+					<button class="btn" onclick="calculateDiscrete()">執行組間比較與分析</button>
+				</div>
+
+				<div id="d-results-card" class="card hidden">
+					<h3>分組描述統計表</h3>
+					<div class="summary-table-container">
+						<table class="summary-table" id="d-summary-table">
+							<thead>
+								<tr>
+									<th>組別名稱</th>
+									<th>樣本數 (n)</th>
+									<th>平均值 (x̄)</th>
+									<th>標準差 (s)</th>
+									<th>A類不確定度 (uA / 向上取整)</th>
+								</tr>
+							</thead>
+							<tbody id="d-summary-body"></tbody>
+						</table>
+					</div>
+
+					<!-- 表格控制器 -->
+					<div class="control-panel">
+						<div class="control-row">
+							<button class="btn-action" onclick="downloadTableAsImage('d-summary-table', '分組統計描述表')">💾 下載表格為 PNG</button>
+							<label>
+								字型大小:
+								<span id="td-zoom-val">13px</span>
+							</label>
+							<input type="range" min="10" max="22" value="13" step="1" oninput="adjustTableFontSize('d-summary-table', this.value, 'td-zoom-val')" />
+						</div>
+					</div>
+
+					<h3 style="margin-top: 20px">
+						假設檢定結果 (
+						<span id="hypothesis-type">t-test</span>
+						)
+					</h3>
+					<div class="summary-table-container">
+						<table class="summary-table" id="d-test-table">
+							<thead>
+								<tr>
+									<th>檢定指標名稱</th>
+									<th>數值結果</th>
+									<th>統計學說明</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><b>檢定統計量 (t 或 F 值)</b></td>
+									<td id="ts-stat-val">-</td>
+									<td>組間變異與組內變異的比值強度</td>
+								</tr>
+								<tr>
+									<td><b>自由度 (df)</b></td>
+									<td id="ts-df-val">-</td>
+									<td>決定機率分配曲線形狀的關鍵參數</td>
+								</tr>
+								<tr>
+									<td><b>雙尾 p 值 (p-value)</b></td>
+									<td id="ts-p-val" style="font-weight: bold">-</td>
+									<td>虛無假設成立時，觀察到當前差異的機率</td>
+								</tr>
+								<tr>
+									<td><b>顯著性結論 (α = 0.05)</b></td>
+									<td id="ts-sig-conclusion" style="color: var(--primary); font-weight: bold">-</td>
+									<td>是否具有統計學上的顯著差異</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<!-- 表格控制器 2 -->
+					<div class="control-panel">
+						<div class="control-row">
+							<button class="btn-action" onclick="downloadTableAsImage('d-test-table', '假設檢定結論表')">💾 下載表格為 PNG</button>
+							<label>
+								字型大小:
+								<span id="tdt-zoom-val">13px</span>
+							</label>
+							<input type="range" min="10" max="22" value="13" step="1" oninput="adjustTableFontSize('d-test-table', this.value, 'tdt-zoom-val')" />
+						</div>
+					</div>
+
+					<!-- 圖表區 -->
+					<div class="chart-outer-container">
+						<div id="d-chart" class="chart-container"></div>
+					</div>
+
+					<!-- 圖表控制器 -->
+					<div class="control-panel" style="margin-top: 10px">
+						<div class="control-row">
+							<button class="btn-action" onclick="downloadChartAsImage('d-chart', '分組平均值比較圖')">💾 下載圖表為 PNG</button>
+							<label>
+								寬度:
+								<span id="dc-w-val">800px</span>
+							</label>
+							<input type="range" min="400" max="1200" value="800" step="50" oninput="adjustChartSize('d-chart', this.value, 'width', 'dc-w-val')" />
+							<label>
+								高度:
+								<span id="dc-h-val">400px</span>
+							</label>
+							<input type="range" min="250" max="800" value="400" step="50" oninput="adjustChartSize('d-chart', this.value, 'height', 'dc-h-val')" />
+						</div>
+					</div>
+
+					<div class="process-section">
+						<h4>詳細運算過程</h4>
+						<pre id="d-process-text"></pre>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			// 頁籤切換
+			function switchTab(tabName) {
+				document.querySelectorAll('.tab-btn').forEach((btn) => btn.classList.remove('active'));
+				document.querySelectorAll('.tab-content').forEach((content) => content.classList.add('hidden'));
+
+				if (tabName === 'continuous') {
+					document.getElementById('tab-c-btn').classList.add('active');
+					document.getElementById('continuous-tab').classList.remove('hidden');
+				} else {
+					document.getElementById('tab-d-btn').classList.add('active');
+					document.getElementById('discrete-tab').classList.remove('hidden');
+				}
+			}
+
+			// 快捷鍵：載入粉筆粗細數據
+			function loadHandwrittenChalk() {
+				switchTab('discrete');
+				document.getElementById('d-groups-input').value = '粗粉筆: 4.9, 4.3, 4.4\n中等粉筆: 4.8, 4.1, 4.2\n細粉筆(粉末): 4.7, 4, 4.2';
+				calculateDiscrete();
+			}
+
+			// 快捷鍵：載入時間與電流數據
+			function loadHandwrittenTimeCurrent() {
+				switchTab('continuous');
+				document.getElementById('cx-input').value = '10, 20, 30, 40, 50, 120, 140, 150, 180, 210, 240';
+				document.getElementById('cy-input').value = '1, 2, 3, 3, 3, 4, 5, 5, 5, 5, 6';
+				calculateContinuous();
+			}
+
+			// 調整大小與字型函數
+			function adjustChartSize(chartId, value, target, indicatorId) {
+				const chartEl = document.getElementById(chartId);
+				if (target === 'width') {
+					chartEl.style.width = value + 'px';
+					document.getElementById(indicatorId).innerText = value + 'px';
+				} else {
+					chartEl.style.height = value + 'px';
+					document.getElementById(indicatorId).innerText = value + 'px';
+				}
+				Plotly.Plots.resize(chartEl); // 通知 Plotly 重新編排與繪圖
+			}
+
+			function adjustTableFontSize(tableId, value, indicatorId) {
+				const tableEl = document.getElementById(tableId);
+				tableEl.style.fontSize = value + 'px';
+				document.getElementById(indicatorId).innerText = value + 'px';
+			}
+
+			// 下載 Plotly 圖表為圖片
+			function downloadChartAsImage(chartId, filename) {
+				const chartEl = document.getElementById(chartId);
+				const currentWidth = chartEl.clientWidth;
+				const currentHeight = chartEl.clientHeight;
+
+				// 匯出高畫質靜態圖
+				Plotly.downloadImage(chartEl, {
+					format: 'png',
+					width: currentWidth,
+					height: currentHeight,
+					filename: filename,
+				});
+			}
+
+			// 下載表格為圖片 (純 HTML Canvas 繪製器，避免外部依賴)
+			function downloadTableAsImage(tableId, filename) {
+				const table = document.getElementById(tableId);
+				const rows = table.querySelectorAll('tr');
+
+				const canvas = document.createElement('canvas');
+				const ctx = canvas.getContext('2d');
+
+				ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+				// 1. 測量各列所需的最大寬度
+				let colWidths = [];
+				rows.forEach((row) => {
+					const cells = row.querySelectorAll('th, td');
+					cells.forEach((cell, colIdx) => {
+						const text = cell.innerText;
+						const width = ctx.measureText(text).width + 32; // 32px 襯墊寬度
+						if (!colWidths[colIdx] || width > colWidths[colIdx]) {
+							colWidths[colIdx] = width;
+						}
+					});
+				});
+
+				const totalWidth = colWidths.reduce((a, b) => a + b, 0);
+				const rowHeight = 44;
+				const totalHeight = rows.length * rowHeight;
+
+				canvas.width = totalWidth;
+				canvas.height = totalHeight;
+
+				// 2. 塗白背景
+				ctx.fillStyle = '#ffffff';
+				ctx.fillRect(0, 0, totalWidth, totalHeight);
+
+				// 3. 逐單元格繪製內容與邊框
+				rows.forEach((row, rowIdx) => {
+					const cells = row.querySelectorAll('th, td');
+					const isHeader = row.querySelector('th') !== null;
+
+					// 背景填充
+					ctx.fillStyle = isHeader ? '#f9fafb' : '#ffffff';
+					ctx.fillRect(0, rowIdx * rowHeight, totalWidth, rowHeight);
+
+					let currentX = 0;
+					cells.forEach((cell, colIdx) => {
+						const text = cell.innerText;
+						const cellWidth = colWidths[colIdx];
+
+						// 外框線
+						ctx.strokeStyle = '#e5e7eb';
+						ctx.lineWidth = 1;
+						ctx.strokeRect(currentX, rowIdx * rowHeight, cellWidth, rowHeight);
+
+						// 文字內容
+						ctx.fillStyle = isHeader ? '#111827' : '#374151';
+						ctx.font = isHeader ? 'bold 13px -apple-system, sans-serif' : '13px -apple-system, sans-serif';
+						ctx.textAlign = 'left';
+						ctx.textBaseline = 'middle';
+						ctx.fillText(text, currentX + 16, rowIdx * rowHeight + rowHeight / 2);
+
+						currentX += cellWidth;
+					});
+				});
+
+				// 下載圖片
+				const link = document.createElement('a');
+				link.download = filename + '.png';
+				link.href = canvas.toDataURL('image/png');
+				link.click();
+			}
+
+			// 數據解析輔助
+			function parseInput(str) {
+				return str
+					.trim()
+					.split(/[\s,，\n]+/)
+					.map(Number)
+					.filter((n) => !isNaN(n));
+			}
+
+			// 計算描述統計
+			function getBasicStats(arr) {
+				const n = arr.length;
+				const mean = arr.reduce((sum, v) => sum + v, 0) / n;
+				const sqSum = arr.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0);
+				const sd = n > 1 ? Math.sqrt(sqSum / (n - 1)) : 0;
+				const rawSe = sd / Math.sqrt(n);
+				const ua = Math.ceil(rawSe * 100) / 100; // 向上取整至小數點後二位
+				return { n, mean, sd, rawSe, ua, sqSum };
+			}
+
+			// 不完全 Beta 函數（機率分配計算）
+			function logGamma(z) {
+				let g = 7;
+				let c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+				if (z < 0.5) return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * z)) - logGamma(1 - z);
+				z -= 1;
+				let x = c[0];
+				for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+				let t = z + g + 0.5;
+				return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+			}
+
+			function betaFraction(a, b, x) {
+				let max_iter = 100,
+					eps = 3e-7;
+				let qab = a + b,
+					qap = a + 1,
+					qam = a - 1;
+				let c = 1,
+					d = 1 - (qab * x) / qap;
+				if (Math.abs(d) < eps) d = eps;
+				d = 1 / d;
+				let h = d;
+				for (let m = 1; m <= max_iter; m++) {
+					let m2 = 2 * m;
+					let aa = (m * (b - m) * x) / ((qam + m2) * (a + m2));
+					d = 1 + aa * d;
+					if (Math.abs(d) < eps) d = eps;
+					c = 1 + aa / c;
+					if (Math.abs(c) < eps) c = eps;
+					d = 1 / d;
+					h *= d * c;
+					aa = (-(a + m) * (qab + m) * x) / ((a + m2) * (qap + m2));
+					d = 1 + aa * d;
+					if (Math.abs(d) < eps) d = eps;
+					c = 1 + aa / c;
+					if (Math.abs(c) < eps) c = eps;
+					d = 1 / d;
+					h *= d * c;
+					if (Math.abs(d * c - 1) < eps) break;
+				}
+				return h;
+			}
+
+			function ibeta(a, b, x) {
+				if (x < 0 || x > 1) return NaN;
+				if (x === 0) return 0;
+				if (x === 1) return 1;
+				let lbeta = logGamma(a) + logGamma(b) - logGamma(a + b);
+				let bt = Math.exp(a * Math.log(x) + b * Math.log(1 - x) - lbeta);
+				if (x < (a + 1) / (a + b + 2)) {
+					return (bt * betaFraction(a, b, x)) / a;
+				} else {
+					return 1 - (bt * betaFraction(b, a, 1 - x)) / b;
+				}
+			}
+
+			// t 分配雙尾機率
+			function getTProbability(t, df) {
+				t = Math.abs(t);
+				let x = df / (df + t * t);
+				return ibeta(df / 2, 0.5, x);
+			}
+
+			// F 分配右尾機率 (ANOVA 用)
+			function getFProbability(f, df1, df2) {
+				if (f <= 0) return 1.0;
+				let x = df2 / (df2 + df1 * f);
+				return ibeta(df2 / 2, df1 / 2, x);
+			}
+
+			// Spearman 等級相關
+			function calculateSpearman(x, y) {
+				const getRanks = (arr) => {
+					let sorted = arr.map((val, idx) => ({ val, idx })).sort((a, b) => a.val - b.val);
+					let ranks = new Array(arr.length);
+					let i = 0;
+					while (i < sorted.length) {
+						let j = i;
+						while (j < sorted.length && sorted[j].val === sorted[i].val) j++;
+						let rank = (i + 1 + j) / 2;
+						for (let k = i; k < j; k++) ranks[sorted[k].idx] = rank;
+						i = j;
+					}
+					return ranks;
+				};
+				const rx = getRanks(x);
+				const ry = getRanks(y);
+				return calculatePearson(rx, ry).r;
+			}
+
+			// Pearson 相關
+			function calculatePearson(x, y) {
+				const n = x.length;
+				const mx = x.reduce((a, b) => a + b, 0) / n;
+				const my = y.reduce((a, b) => a + b, 0) / n;
+				let num = 0,
+					denX = 0,
+					denY = 0;
+				for (let i = 0; i < n; i++) {
+					const dx = x[i] - mx;
+					const dy = y[i] - my;
+					num += dx * dy;
+					denX += dx * dx;
+					denY += dy * dy;
+				}
+				const r = denX && denY ? num / Math.sqrt(denX * denY) : 0;
+				const slope = denX !== 0 ? num / denX : 0;
+				const intercept = my - slope * mx;
+				return { r, slope, intercept, num, denX, denY };
+			}
+
+			// 1. 執行連續數據分析
+			function calculateContinuous() {
+				const x = parseInput(document.getElementById('cx-input').value);
+				const y = parseInput(document.getElementById('cy-input').value);
+
+				if (x.length < 3 || y.length < 3) {
+					alert('請輸入至少 3 個資料點以進行擬合。');
+					return;
+				}
+				if (x.length !== y.length) {
+					alert('X 與 Y 的數據點數量必須相同。');
+					return;
+				}
+
+				const statsX = getBasicStats(x);
+				const statsY = getBasicStats(y);
+				const pFit = calculatePearson(x, y);
+				const rSpearman = calculateSpearman(x, y);
+				const r2 = Math.pow(pFit.r, 2);
+
+				// 填入表格中
+				document.getElementById('tc-n').innerText = statsX.n;
+				document.getElementById('tc-x-mean').innerText = statsX.mean.toFixed(2);
+				document.getElementById('tc-y-mean').innerText = statsY.mean.toFixed(2);
+				document.getElementById('tc-y-sd').innerText = statsY.sd.toFixed(2);
+				document.getElementById('tc-y-ua').innerText = statsY.ua.toFixed(2);
+				document.getElementById('tc-pearson').innerText = pFit.r.toFixed(4);
+				document.getElementById('tc-spearman').innerText = rSpearman.toFixed(4);
+				document.getElementById('tc-r2').innerText = r2.toFixed(4);
+				document.getElementById('tc-formula').innerText = `Y = ${pFit.slope.toFixed(4)}X ${pFit.intercept >= 0 ? '+' : '-'} ${Math.abs(pFit.intercept).toFixed(4)}`;
+
+				// 詳細過程
+				let proc = `1. 已解析的有效數據點數量 (n = ${statsX.n}):\n`;
+				proc += `   X: [${x.join(', ')}]\n`;
+				proc += `   Y: [${y.join(', ')}]\n\n`;
+				proc += `2. X 與 Y 平均數:\n`;
+				proc += `   x̄ = ${statsX.mean.toFixed(5)} (四捨五入: ${statsX.mean.toFixed(2)})\n`;
+				proc += `   ȳ = ${statsY.mean.toFixed(5)} (四捨五入: ${statsY.mean.toFixed(2)})\n\n`;
+				proc += `3. Y 樣本標準差與 A類不確定度:\n`;
+				proc += `   s_y = √[ Σ(yᵢ - ȳ)² / (n - 1) ] = ${statsY.sd.toFixed(5)} (四捨五入: ${statsY.sd.toFixed(2)})\n`;
+				proc += `   uA_y = s_y / √n = ${statsY.rawSe.toFixed(5)} => 依規則 "無條件進位" 至小數點後兩位: ${statsY.ua.toFixed(2)}\n\n`;
+				proc += `4. 相關係數計算:\n`;
+				proc += `   (1) Pearson r = ${pFit.r.toFixed(5)}\n`;
+				proc += `   (2) Spearman ρ = ${rSpearman.toFixed(5)}\n`;
+				proc += `   (3) 判定係數 R² = ${r2.toFixed(5)}\n\n`;
+				proc += `5. 線性擬合斜率與截距:\n`;
+				proc += `   Slope (m) = ${pFit.slope.toFixed(5)}\n`;
+				proc += `   Intercept (c) = ${pFit.intercept.toFixed(5)}\n`;
+				proc += `   擬合公式: Y = ${pFit.slope.toFixed(4)}X ${pFit.intercept >= 0 ? '+' : '-'} ${Math.abs(pFit.intercept).toFixed(4)}`;
+
+				document.getElementById('c-process-text').innerText = proc;
+				document.getElementById('c-results-card').classList.remove('hidden');
+
+				// 畫圖
+				const minX = Math.min(...x);
+				const maxX = Math.max(...x);
+				const pRange = (maxX - minX) * 0.1 || 1;
+				const fitX = [minX - pRange, maxX + pRange];
+				const fitY = fitX.map((vx) => pFit.slope * vx + pFit.intercept);
+
+				Plotly.newPlot(
+					'c-chart',
+					[
+						{ x, y, mode: 'markers', name: '實際數據', marker: { color: '#2563eb', size: 8 } },
+						{ x: fitX, y: fitY, mode: 'lines', name: '擬合趨勢線', line: { color: '#10b981', width: 2 } },
+					],
+					{
+						title: '連續數據擬合與趨勢線',
+						xaxis: { title: 'X 數據' },
+						yaxis: { title: 'Y 數據' },
+						margin: { t: 50, b: 50, l: 50, r: 30 },
+					},
+					{ responsive: true },
+				);
+			}
+
+			// 2. 執行不連續數據分析 (多組分析)
+			function calculateDiscrete() {
+				const rawLines = document.getElementById('d-groups-input').value.trim().split('\n');
+				const groups = [];
+
+				rawLines.forEach((line, index) => {
+					if (!line.trim()) return;
+					let groupName = `組別 ${index + 1}`;
+					let dataPart = line;
+					if (line.includes(':')) {
+						const parts = line.split(':');
+						groupName = parts[0].trim();
+						dataPart = parts[1];
+					} else if (line.includes('：')) {
+						const parts = line.split('：');
+						groupName = parts[0].trim();
+						dataPart = parts[1];
+					}
+					const data = parseInput(dataPart);
+					if (data.length > 0) {
+						groups.push({ name: groupName, data: data, stats: getBasicStats(data) });
+					}
+				});
+
+				if (groups.length < 2) {
+					alert('請至少輸入兩組數據以進行組間比較。');
+					return;
+				}
+
+				// 渲染描述統計表格
+				const tbody = document.getElementById('d-summary-body');
+				tbody.innerHTML = '';
+				groups.forEach((g) => {
+					tbody.innerHTML += `<tr>
+                <td><b>${g.name}</b></td>
+                <td>${g.stats.n}</td>
+                <td>${g.stats.mean.toFixed(2)}</td>
+                <td>${g.stats.sd.toFixed(2)}</td>
+                <td>${g.stats.ua.toFixed(2)}</td>
+            </tr>`;
+				});
+
+				let statVal,
+					df,
+					pVal,
+					testType,
+					processText = '';
+
+				if (groups.length === 2) {
+					// 雙組比較: 獨立樣本 t-test
+					testType = '雙樣本 t-檢定 (t-test)';
+					const g1 = groups[0];
+					const g2 = groups[1];
+					df = g1.stats.n + g2.stats.n - 2;
+					const pooledVar = ((g1.stats.n - 1) * Math.pow(g1.stats.sd, 2) + (g2.stats.n - 1) * Math.pow(g2.stats.sd, 2)) / df;
+					const seDiff = Math.sqrt(pooledVar * (1 / g1.stats.n + 1 / g2.stats.n));
+					statVal = (g1.stats.mean - g2.stats.mean) / seDiff;
+					pVal = getTProbability(statVal, df);
+
+					processText = `【雙樣本 t-檢定運算步驟】\n`;
+					processText += `1. 虛無假設 H₀: ${g1.name} 平均值 = ${g2.name} 平均值\n`;
+					processText += `2. 合併變異數 (s_p²) = ${pooledVar.toFixed(5)}\n`;
+					processText += `3. 均值差標準誤 (SE_diff) = ${seDiff.toFixed(5)}\n`;
+					processText += `4. 計算 t 值 = (x̄₁ - x̄₂) / SE_diff = ${statVal.toFixed(5)}\n`;
+					processText += `5. 雙尾檢定 p-value = ${pVal.toFixed(6)}`;
+				} else {
+					// 多組比較: 單因子變異數分析 (One-way ANOVA)
+					testType = '單因子變異數分析 (One-way ANOVA)';
+					const k = groups.length;
+					const allData = groups.flatMap((g) => g.data);
+					const totalN = allData.length;
+					const grandMean = allData.reduce((a, b) => a + b, 0) / totalN;
+
+					let ssBetween = 0;
+					let ssWithin = 0;
+					groups.forEach((g) => {
+						ssBetween += g.stats.n * Math.pow(g.stats.mean - grandMean, 2);
+						ssWithin += (g.stats.n - 1) * Math.pow(g.stats.sd, 2);
+					});
+
+					const dfBetween = k - 1;
+					const dfWithin = totalN - k;
+					const msBetween = ssBetween / dfBetween;
+					const msWithin = ssWithin / dfWithin;
+					statVal = msBetween / msWithin;
+					df = `Between: ${dfBetween}, Within: ${dfWithin}`;
+					pVal = getFProbability(statVal, dfBetween, dfWithin);
+
+					processText = `【單因子變異數分析 (ANOVA) 運算步驟】\n`;
+					processText += `1. 全體總平均值 (Grand Mean) = ${grandMean.toFixed(5)}\n`;
+					processText += `2. 組間平方和 (SS_between) = ${ssBetween.toFixed(5)} (df = ${dfBetween})\n`;
+					processText += `3. 組內平方和 (SS_within) = ${ssWithin.toFixed(5)} (df = ${dfWithin})\n`;
+					processText += `4. 組間均方 (MS_between) = ${msBetween.toFixed(5)}\n`;
+					processText += `5. 組內均方 (MS_within) = ${msWithin.toFixed(5)}\n`;
+					processText += `6. F 統計量 = ${statVal.toFixed(5)}\n`;
+					processText += `7. 檢定 p-value = ${pVal.toFixed(6)}`;
+				}
+
+				document.getElementById('hypothesis-type').innerText = testType;
+				document.getElementById('ts-stat-val').innerText = statVal.toFixed(4);
+				document.getElementById('ts-df-val').innerText = df;
+				document.getElementById('ts-p-val').innerText = pVal.toFixed(5);
+
+				const isSignificant = pVal < 0.05;
+				document.getElementById('ts-sig-conclusion').innerText = isSignificant ? '存在顯著差異 (p < 0.05，拒絕虛無假設)' : '無顯著差異 (p ≥ 0.05，無法拒絕虛無假設)';
+
+				document.getElementById('d-process-text').innerText = processText;
+				document.getElementById('d-results-card').classList.remove('hidden');
+
+				// 畫圖
+				const barNames = groups.map((g) => g.name);
+				const barMeans = groups.map((g) => g.stats.mean);
+				const barErrors = groups.map((g) => g.stats.rawSe); // 標準誤差線
+
+				Plotly.newPlot(
+					'd-chart',
+					[
+						{
+							x: barNames,
+							y: barMeans,
+							type: 'bar',
+							marker: { color: '#3b82f6' },
+							error_y: {
+								type: 'data',
+								array: barErrors,
+								visible: true,
+								color: '#1f2937',
+								thickness: 2,
+								width: 8,
+							},
+						},
+					],
+					{
+						title: '各組平均值比較 (附帶標準誤差 SE 誤差線)',
+						xaxis: { title: '實驗組別' },
+						yaxis: { title: '平均數值' },
+						margin: { t: 50, b: 50, l: 50, r: 30 },
+					},
+					{ responsive: true },
+				);
+			}
+		</script>
+	</body>
+</html>

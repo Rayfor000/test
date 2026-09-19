@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 320
+
+[tool.ruff.format]
+indent-style = "space"
+line-ending = "lf"
+quote-style = "double"
+
+[tool.ruff.lint]
+ignore = ["D203", "D212", "COM812"]
+select = ["ALL"]
