@@ -1,9 +1,9 @@
 {
-	"heroPosX":0.5,
-	"heroPosY":0.5,
-	"heroStrength":0,
-	"radius":16,
-	"resultSettleMs":360,
-	"showGreeting":true,
-	"showWeather":true
+  "heroPosX": 0.5,
+  "heroPosY": 0.5,
+  "heroStrength": 0,
+  "radius": 16,
+  "resultSettleMs": 360,
+  "showGreeting": true,
+  "showWeather": true
 }

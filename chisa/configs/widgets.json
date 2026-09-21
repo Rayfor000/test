@@ -1,15 +1,15 @@
 {
-	"musicAnchor":"free",
-	"musicApp":"pear-desktop",
-	"musicEnabled":true,
-	"musicLocked":true,
-	"musicLyrics":true,
-	"musicOpacity":1,
-	"musicScale":0.75,
-	"musicShape":"wide",
-	"musicStyle":"glass",
-	"musicVideo":"canvas",
-	"musicVideoFile":"",
-	"musicX":1088,
-	"musicY":64
+  "musicAnchor": "free",
+  "musicApp": "pear-desktop",
+  "musicEnabled": true,
+  "musicLocked": true,
+  "musicLyrics": true,
+  "musicOpacity": 1,
+  "musicScale": 0.75,
+  "musicShape": "wide",
+  "musicStyle": "glass",
+  "musicVideo": "canvas",
+  "musicVideoFile": "",
+  "musicX": 1088,
+  "musicY": 64
 }
